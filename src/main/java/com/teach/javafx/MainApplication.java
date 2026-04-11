@@ -84,3 +84,4 @@ public class MainApplication extends Application {
         MainApplication.canClose = canClose;
     }
 }
+//第n加一次提交
