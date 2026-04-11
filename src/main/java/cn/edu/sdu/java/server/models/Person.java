@@ -76,3 +76,4 @@ public class Person {
     @Column(name=" photo", columnDefinition="longblob", nullable=true)
     private byte[] photo;
 }
+//测试
