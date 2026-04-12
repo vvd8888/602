@@ -9,6 +9,7 @@ public class Student {
     private String dept;
     private String card;
     private String gender;
+    private String nation;//xiugai
     private String genderName;
     private String birthday;
     private String email;
@@ -106,6 +107,15 @@ public class Student {
     public void setGenderName(String genderName) {
         this.genderName = genderName;
     }
+
+    public String getNation() {
+        return nation;
+    }
+
+    public void setNation(String nation) {
+        this.nation = nation;
+    }
+    //xiugai
 
     public String getBirthday() {
         return birthday;

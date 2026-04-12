@@ -59,6 +59,8 @@ public class StudentController extends ToolController {
     @FXML
     private TableColumn<Map, String> genderColumn; //学生信息表 性别列
     @FXML
+    private TableColumn<Map,String > nationColumn;//xiugai
+    @FXML
     private TableColumn<Map, String> birthdayColumn; //学生信息表 出生日期列
     @FXML
     private TableColumn<Map, String> emailColumn; //学生信息表 邮箱列
@@ -84,7 +86,9 @@ public class StudentController extends ToolController {
     @FXML
     private TextField cardField; //学生信息  证件号码输入域
     @FXML
-    private ComboBox<OptionItem> genderComboBox;  //学生信息  性别输入域
+    private ComboBox<OptionItem> genderComboBox;//学生信息  性别输入域
+    @FXML
+    private ComboBox<OptionItem> nationComboBox;//xiugai
     @FXML
     private DatePicker birthdayPick;  //学生信息  出生日期选择域
     @FXML
@@ -101,6 +105,7 @@ public class StudentController extends ToolController {
 
     private ArrayList<Map> studentList = new ArrayList();  // 学生信息列表数据
     private List<OptionItem> genderList;   //性别选择列表数据
+    private List<OptionItem> nationList;//xiugai
     private ObservableList<Map> observableList = FXCollections.observableArrayList();  // TableView渲染列表
 
 
@@ -121,6 +126,12 @@ public class StudentController extends ToolController {
 
     @FXML
     public void initialize() {
+
+        nationList = HttpRequestUtil.getDictionaryOptionItemList("MZ");
+        if (nationList != null) {
+            nationComboBox.getItems().addAll(nationList);
+        }//xiugai
+
         photoImageView = new ImageView();
         photoImageView.setFitHeight(100);
         photoImageView.setFitWidth(100);
@@ -140,6 +151,7 @@ public class StudentController extends ToolController {
         gradeColumn.setCellValueFactory(new MapValueFactory<>("grade"));
         cardColumn.setCellValueFactory(new MapValueFactory<>("card"));
         genderColumn.setCellValueFactory(new MapValueFactory<>("genderName"));
+        nationColumn.setCellValueFactory(new MapValueFactory<>("nation"));//xiugai
         birthdayColumn.setCellValueFactory(new MapValueFactory<>("birthday"));
         emailColumn.setCellValueFactory(new MapValueFactory<>("email"));
         phoneColumn.setCellValueFactory(new MapValueFactory<>("phone"));
@@ -196,6 +208,9 @@ public class StudentController extends ToolController {
         gradeField.setText(CommonMethod.getString(form, "grade"));
         cardField.setText(CommonMethod.getString(form, "card"));
         genderComboBox.getSelectionModel().select(CommonMethod.getOptionItemIndexByValue(genderList, CommonMethod.getString(form, "gender")));
+
+        nationComboBox.getSelectionModel().select(CommonMethod.getOptionItemIndexByValue(nationList, CommonMethod.getString(form, "nation")));//xiugai
+
         birthdayPick.getEditor().setText(CommonMethod.getString(form, "birthday"));
         emailField.setText(CommonMethod.getString(form, "email"));
         phoneField.setText(CommonMethod.getString(form, "phone"));
@@ -286,6 +301,11 @@ public class StudentController extends ToolController {
         form.put("email", emailField.getText());
         form.put("phone", phoneField.getText());
         form.put("address", addressField.getText());
+
+        OptionItem selectedNation = nationComboBox.getSelectionModel().getSelectedItem();
+        String nation = (selectedNation != null) ? selectedNation.getValue() : "";
+        form.put("nation", nation);//xiugai
+
         DataRequest req = new DataRequest();
         req.add("personId", personId);
         req.add("form", form);
@@ -392,6 +412,12 @@ public class StudentController extends ToolController {
         genderColumn.setCellValueFactory(new MapValueFactory<>("gender"));
         genderColumn.setCellFactory(TextFieldTableCell.<Map>forTableColumn());
         table.getColumns().add(genderColumn);
+
+        TableColumn<Map, String> nationColumn = new TableColumn<>("民族");
+        nationColumn.setCellValueFactory(new MapValueFactory<>("nation"));
+        nationColumn.setCellFactory(TextFieldTableCell.<Map>forTableColumn());
+        table.getColumns().add(nationColumn);//xiugai
+
         TableColumn<Map, String> ageColumn = new TableColumn<>("年龄");
         ageColumn.setCellValueFactory(new MapValueFactory<>("age"));
         ageColumn.setCellFactory(TextFieldTableCell.<Map>forTableColumn());

@@ -78,6 +78,7 @@
                     <TableColumn fx:id="gradeColumn" prefWidth="75.0" text="年级"/>
                     <TableColumn fx:id="cardColumn" prefWidth="125.0" text="证件号码" />
                     <TableColumn fx:id="genderColumn" prefWidth="55.0" text="性别" />
+                    <TableColumn fx:id="nationColumn" prefWidth="55.0" text="民族" />
                     <TableColumn fx:id="birthdayColumn" prefWidth="75.0" text="出生日期" />
                     <TableColumn fx:id="emailColumn" prefWidth="125.0" text="邮箱" />
                     <TableColumn fx:id="phoneColumn" prefWidth="95.0" text="电话" />
@@ -132,6 +133,8 @@
                         <TextField fx:id="phoneField" GridPane.columnIndex="1" GridPane.rowIndex="10" />
                         <Label text="地址" GridPane.rowIndex="11" />
                         <TextField fx:id="addressField" GridPane.columnIndex="1" GridPane.rowIndex="11" />
+                        <Label text="民族" GridPane.rowIndex="12" />
+                        <ComboBox fx:id="nationComboBox" GridPane.columnIndex="1" GridPane.rowIndex="12"/>
                         <Button fx:id="photoButton" onAction="#onPhotoButtonClick" styleClass="border_black_1" GridPane.columnIndex="2" GridPane.rowIndex="0" GridPane.rowSpan="4" />
                     </children>
                 </GridPane>
