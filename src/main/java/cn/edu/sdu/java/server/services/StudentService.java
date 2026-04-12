@@ -200,6 +200,7 @@ public class StudentService {
         s.setMajor(CommonMethod.getString(form, "major"));
         s.setClassName(CommonMethod.getString(form, "className"));
         s.setGrade(CommonMethod.getString(form, "grade"));
+        s.setNation(CommonMethod.getString(form, "nation"));//xiugai..
         studentRepository.save(s);  //修改保存学生信息
         systemService.modifyLog(s, isNew);
         return CommonMethod.getReturnData(s.getPersonId());  // 将personId返回前端
