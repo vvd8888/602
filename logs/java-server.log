@@ -1157,3 +1157,8 @@
 2026-04-12 20:24:57,869 [http-nio-22222-exec-8] INFO  c.e.s.j.s.c.JwtAuthenticationFilter                - /api/base/getBlobByteData,admin,2026-04-12 20:24:57,0.049
 2026-04-12 20:25:02,350 [http-nio-22222-exec-10] INFO  c.e.s.j.s.c.JwtAuthenticationFilter                - /api/student/studentEditSave,admin,2026-04-12 20:25:02,0.291
 2026-04-12 20:25:02,447 [http-nio-22222-exec-7] INFO  c.e.s.j.s.c.JwtAuthenticationFilter                - /api/student/getStudentList,admin,2026-04-12 20:25:02,0.067
+2026-04-12 20:30:48,765 [SpringApplicationShutdownHook] INFO  o.s.b.w.embedded.tomcat.GracefulShutdown           - Commencing graceful shutdown. Waiting for active requests to complete
+2026-04-12 20:30:48,769 [tomcat-shutdown] INFO  o.s.b.w.embedded.tomcat.GracefulShutdown           - Graceful shutdown complete
+2026-04-12 20:30:48,779 [SpringApplicationShutdownHook] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean     - Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-04-12 20:30:48,781 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource                 - HikariPool-1 - Shutdown initiated...
+2026-04-12 20:30:48,784 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource                 - HikariPool-1 - Shutdown completed.
