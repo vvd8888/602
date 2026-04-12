@@ -209,7 +209,23 @@ public class StudentController extends ToolController {
         cardField.setText(CommonMethod.getString(form, "card"));
         genderComboBox.getSelectionModel().select(CommonMethod.getOptionItemIndexByValue(genderList, CommonMethod.getString(form, "gender")));
 
-        nationComboBox.getSelectionModel().select(CommonMethod.getOptionItemIndexByValue(nationList, CommonMethod.getString(form, "nation")));//xiugai
+        // 民族回显：按 title 匹配（因为保存时存的是名称）
+        String nationName = CommonMethod.getString(form, "nation");
+        if (nationName != null && !nationName.isEmpty()) {
+            boolean found = false;
+            for (int i = 0; i < nationList.size(); i++) {
+                if (nationName.equals(nationList.get(i).getTitle())) {
+                    nationComboBox.getSelectionModel().select(i);
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                nationComboBox.getSelectionModel().select(-1);
+            }
+        } else {
+            nationComboBox.getSelectionModel().select(-1);
+        }
 
         birthdayPick.getEditor().setText(CommonMethod.getString(form, "birthday"));
         emailField.setText(CommonMethod.getString(form, "email"));
@@ -303,7 +319,7 @@ public class StudentController extends ToolController {
         form.put("address", addressField.getText());
 
         OptionItem selectedNation = nationComboBox.getSelectionModel().getSelectedItem();
-        String nation = (selectedNation != null) ? selectedNation.getValue() : "";
+        String nation = (selectedNation != null) ? selectedNation.getTitle() : "";
         form.put("nation", nation);//xiugai
 
         DataRequest req = new DataRequest();
