@@ -38,4 +38,6 @@ public class Student {
     private String className;
     @Size(max = 20)
     private String grade;
+    @Size(max =20)
+    private String nation;//xiugai
 }
