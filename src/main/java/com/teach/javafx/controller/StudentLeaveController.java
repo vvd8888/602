@@ -71,7 +71,7 @@ public class StudentLeaveController extends ToolController {
     @FXML
     private TextField teacherCommentField; //学生信息  班级输入域
     @FXML
-    private TextField adminCommentField; //学生信息  证件号码输入域
+    private TextField adminCommentField; //学生信息  证件号码列
     @FXML
     private ComboBox<OptionItem> teacherComboBox;  //学生信息  性别输入域
     @FXML
