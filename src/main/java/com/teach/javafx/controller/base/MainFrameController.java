@@ -181,7 +181,7 @@ public class MainFrameController {
         Menu leaveMenu = new Menu("请假管理");
         addMenuItem(leaveMenu, "student-leave-panel", "请假管理");
     // 加到「教务管理」后面、「示例程序」前面（索引4的位置，和现有菜单顺序对齐）
-        menuBar.getMenus().add(4, leaveMenu);
+        menuBar.getMenus().add(leaveMenu);
     }
 
 
