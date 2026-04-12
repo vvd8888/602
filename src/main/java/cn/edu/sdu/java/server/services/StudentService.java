@@ -76,6 +76,7 @@ public class StudentService {
         m.put("phone", p.getPhone());
         m.put("address", p.getAddress());
         m.put("introduce", p.getIntroduce());
+        m.put("nation", s.getNation());//xiugai
         return m;
     }
 
