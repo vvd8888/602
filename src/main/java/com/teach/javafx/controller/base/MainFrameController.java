@@ -180,7 +180,6 @@ public class MainFrameController {
     // 新增：顶级「请假管理」菜单（完全匹配你的FXML命名）
         Menu leaveMenu = new Menu("请假管理");
         addMenuItem(leaveMenu, "student-leave-panel", "请假管理");
-    // 加到「教务管理」后面、「示例程序」前面（索引4的位置，和现有菜单顺序对齐）
         menuBar.getMenus().add(leaveMenu);
     }
 

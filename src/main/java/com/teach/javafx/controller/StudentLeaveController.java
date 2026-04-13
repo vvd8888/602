@@ -141,8 +141,9 @@ public class StudentLeaveController extends ToolController {
         stateList.addFirst(new OptionItem(-1,"-1","请选择..."));
         stateComboBox.getItems().addAll(stateList);
         String roleName = AppStore.getJwt().getRole();
-        studentNumField.setDisable(true);
-        studentNameField.setDisable(true);
+        //学号、姓名输入框可以输入
+        studentNumField.setEditable(true);
+        studentNameField.setEditable(true);
         switch(roleName) {
             case "ROLE_STUDENT" -> {
                 stateLabel.setVisible(false);
@@ -244,9 +245,13 @@ public class StudentLeaveController extends ToolController {
 
     @FXML
     protected void onAddButtonClick() {
-        clearPanel();
-    }
-
+        clearPanel(); // 清空所有表单
+        // 🔥 启用学生可编辑的字段（解决填不了的问题）
+        studentNumField.setDisable(false);
+        studentNameField.setDisable(false);
+        leaveDateField.setDisable(false);
+        reasonField.setDisable(false);
+    }//请假系统的添加功能实现
     @FXML
     protected void onSaveButtonClick() {
         doSave(0);
@@ -266,11 +271,20 @@ public class StudentLeaveController extends ToolController {
     protected void doSave(Integer state){
         Map<String,Object> form = new HashMap<>();
         DataRequest req = new DataRequest();
+        //传递学生学号和姓名
+        req.add("studentNum", studentNumField.getText());
+        req.add("studentName", studentNameField.getText());
         OptionItem op;
         op = teacherComboBox.getSelectionModel().getSelectedItem();
+        // 新增：校验必填项不能为空
+        if(studentNumField.getText().isEmpty() || studentNameField.getText().isEmpty() || op == null || leaveDateField.getText().isEmpty() || reasonField.getText().isEmpty()){
+            MessageDialog.showDialog("请填写完整信息！");
+            return;
+        }
         if(op != null) {
             req.add("teacherId",Integer.parseInt(op.getValue()));
         }
+        //新增：启用输入框编辑
         req.add("studentLeaveId",studentLeaveId);
         req.add("leaveDate", leaveDateField.getText());
         req.add("reason", reasonField.getText());
