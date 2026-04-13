@@ -30,6 +30,12 @@ public class CourseService {
             m.put("name",c.getName());
             m.put("credit",c.getCredit()+"");
             m.put("coursePath",c.getCoursePath());
+
+            // 新增字段：教师模式需要的字段
+            m.put("teacher", c.getTeacher());
+            m.put("time", c.getTime());
+            m.put("classroom", c.getClassroom());
+
             pc =c.getPreCourse();
             if(pc != null) {
                 m.put("preCourse",pc.getName());
@@ -47,6 +53,12 @@ public class CourseService {
         String coursePath = dataRequest.getString("coursePath");
         Integer credit = dataRequest.getInteger("credit");
         Integer preCourseId = dataRequest.getInteger("preCourseId");
+
+        // 新增字段：从请求中获取教师模式需要的字段
+        String teacher = dataRequest.getString("teacher");
+        String time = dataRequest.getString("time");
+        String classroom = dataRequest.getString("classroom");
+
         Optional<Course> op;
         Course c= null;
 
@@ -68,9 +80,16 @@ public class CourseService {
         c.setCredit(credit);
         c.setCoursePath(coursePath);
         c.setPreCourse(pc);
+
+        // 设置新增字段
+        c.setTeacher(teacher);
+        c.setTime(time);
+        c.setClassroom(classroom);
+
         courseRepository.save(c);
         return CommonMethod.getReturnMessageOK();
     }
+
     public DataResponse courseDelete(DataRequest dataRequest) {
         Integer courseId = dataRequest.getInteger("courseId");
         Optional<Course> op;
@@ -84,5 +103,4 @@ public class CourseService {
         }
         return CommonMethod.getReturnMessageOK();
     }
-
 }
