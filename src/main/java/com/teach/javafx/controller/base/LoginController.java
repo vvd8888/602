@@ -1,5 +1,6 @@
 package com.teach.javafx.controller.base;
 
+import javafx.scene.control.TextInputDialog;
 import com.teach.javafx.AppStore;
 import com.teach.javafx.MainApplication;
 import com.teach.javafx.request.*;
@@ -10,6 +11,7 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.MapValueFactory;
+import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
 import javafx.collections.FXCollections;
@@ -282,8 +284,7 @@ public class LoginController {
             e.printStackTrace();
             return false;
         }
-    }
-    /**
+    }/**
      * 课程管理界面
      */
     private void openCourseManagement(Stage stage) {
@@ -330,43 +331,68 @@ public class LoginController {
 
         // 课程表格
         TableView<Map<String, Object>> courseTable = new TableView<>();
+        // 设置表格可编辑
+        courseTable.setEditable(true);
 
         // 从API加载课程数据
         ObservableList<Map<String, Object>> courseData = loadCoursesFromAPI();
 
         // 创建列
-        // 课程表格
-
-// 从API加载课程数据
-
-// 创建列
         TableColumn<Map<String, Object>, String> numCol = new TableColumn<>("课程编号");
-        numCol.setCellValueFactory(new MapValueFactory("num"));  // 使用原始类型
+        numCol.setCellValueFactory(new MapValueFactory("num"));
         numCol.setPrefWidth(100);
 
         TableColumn<Map<String, Object>, String> nameCol = new TableColumn<>("课程名称");
-        nameCol.setCellValueFactory(new MapValueFactory("name"));  // 使用原始类型
+        nameCol.setCellValueFactory(new MapValueFactory("name"));
         nameCol.setPrefWidth(150);
 
         TableColumn<Map<String, Object>, String> creditCol = new TableColumn<>("学分");
-        creditCol.setCellValueFactory(new MapValueFactory("credit"));  // 使用原始类型
+        creditCol.setCellValueFactory(new MapValueFactory("credit"));
         creditCol.setPrefWidth(80);
 
+        // 前序课列
         TableColumn<Map<String, Object>, String> preCourseCol = new TableColumn<>("前序课");
-        preCourseCol.setCellValueFactory(new MapValueFactory("preCourse"));  // 使用原始类型
+        preCourseCol.setCellValueFactory(new MapValueFactory("preCourse"));
         preCourseCol.setPrefWidth(100);
+        // 设置为可编辑
+        preCourseCol.setCellFactory(TextFieldTableCell.forTableColumn());
+        preCourseCol.setOnEditCommit(event -> {
+            Map<String, Object> row = event.getRowValue();
+            String newPreCourse = event.getNewValue();
+            row.put("preCourse", newPreCourse);
 
-// 新增字段列
+            // 保存到API
+            boolean success = saveCourseToAPI(row);
+            if (success) {
+                // 重新加载数据
+                courseData.setAll(loadCoursesFromAPI());
+                courseTable.setItems(courseData);
+
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("保存成功");
+                alert.setHeaderText(null);
+                alert.setContentText("前序课已更新为: " + newPreCourse);
+                alert.showAndWait();
+            } else {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("保存失败");
+                alert.setHeaderText(null);
+                alert.setContentText("更新前序课时发生错误，请重试");
+                alert.showAndWait();
+            }
+        });
+
+        // 新增字段列
         TableColumn<Map<String, Object>, String> teacherCol = new TableColumn<>("授课教师");
-        teacherCol.setCellValueFactory(new MapValueFactory("teacher"));  // 使用原始类型
+        teacherCol.setCellValueFactory(new MapValueFactory("teacher"));
         teacherCol.setPrefWidth(120);
 
         TableColumn<Map<String, Object>, String> timeCol = new TableColumn<>("上课时间");
-        timeCol.setCellValueFactory(new MapValueFactory("time"));  // 使用原始类型
+        timeCol.setCellValueFactory(new MapValueFactory("time"));
         timeCol.setPrefWidth(120);
 
         TableColumn<Map<String, Object>, String> classroomCol = new TableColumn<>("上课地点");
-        classroomCol.setCellValueFactory(new MapValueFactory("classroom"));  // 使用原始类型
+        classroomCol.setCellValueFactory(new MapValueFactory("classroom"));
         classroomCol.setPrefWidth(120);
 
         courseTable.getColumns().addAll(numCol, nameCol, creditCol, preCourseCol,
@@ -389,12 +415,14 @@ public class LoginController {
         Button editButton = new Button("编辑课程");
         editButton.setStyle("-fx-background-color: #FF9800; -fx-text-fill: white;");
 
+        Button editPreCourseButton = new Button("编辑前序课");
+        editPreCourseButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white;");
+
         Button deleteButton = new Button("删除课程");
         deleteButton.setStyle("-fx-background-color: #f44336; -fx-text-fill: white;");
 
         Button refreshButton = new Button("刷新列表");
         refreshButton.setStyle("-fx-background-color: #9C27B0; -fx-text-fill: white;");
-
         // 搜索按钮事件
         searchButton.setOnAction(e -> {
             String keyword = searchField.getText().trim().toLowerCase();
@@ -668,6 +696,20 @@ public class LoginController {
             }
         });
 
+        // 编辑前序课按钮事件 - 独立的事件处理
+        editPreCourseButton.setOnAction(e -> {
+            Map<String, Object> selectedCourse = courseTable.getSelectionModel().getSelectedItem();
+            if (selectedCourse != null) {
+                editPreCourse(selectedCourse, courseData, courseTable);
+            } else {
+                Alert alert = new Alert(Alert.AlertType.WARNING);
+                alert.setTitle("提示");
+                alert.setHeaderText(null);
+                alert.setContentText("请先在表格中选择要编辑前序课的课程");
+                alert.showAndWait();
+            }
+        });
+
         // 删除课程按钮事件
         deleteButton.setOnAction(e -> {
             Map<String, Object> selectedCourse = courseTable.getSelectionModel().getSelectedItem();
@@ -728,12 +770,53 @@ public class LoginController {
             alert.showAndWait();
         });
 
-        buttonBox.getChildren().addAll(editButton, deleteButton, refreshButton);
+        buttonBox.getChildren().addAll(editButton, editPreCourseButton, deleteButton, refreshButton);
         root.setBottom(buttonBox);
 
         // 创建场景并设置到Stage
         Scene scene = new Scene(root, 1000, 700);
         stage.setScene(scene);
         stage.setTitle("课程管理 - 教师模式");
+    }
+    /**
+     * 教师模式：编辑前序课
+     */
+    private void editPreCourse(Map<String, Object> selectedCourse,
+                               ObservableList<Map<String, Object>> courseData,
+                               TableView<Map<String, Object>> courseTable) {
+        // 创建对话框编辑前序课
+        TextInputDialog dialog = new TextInputDialog(
+                selectedCourse.get("preCourse") != null ? selectedCourse.get("preCourse").toString() : ""
+        );
+        dialog.setTitle("编辑前序课");
+        dialog.setHeaderText("请输入前序课的名称或编号");
+        dialog.setContentText("前序课:");
+
+        Optional<String> result = dialog.showAndWait();
+        result.ifPresent(newPreCourse -> {
+            // 更新选中的课程
+            Map<String, Object> updatedCourse = new java.util.HashMap<>(selectedCourse);
+            updatedCourse.put("preCourse", newPreCourse);
+
+            // 保存到API
+            boolean success = saveCourseToAPI(updatedCourse);
+            if (success) {
+                // 重新加载数据
+                courseData.setAll(loadCoursesFromAPI());
+                courseTable.setItems(courseData);
+
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("保存成功");
+                alert.setHeaderText(null);
+                alert.setContentText("前序课已更新为: " + newPreCourse);
+                alert.showAndWait();
+            } else {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("保存失败");
+                alert.setHeaderText(null);
+                alert.setContentText("更新前序课时发生错误，请重试");
+                alert.showAndWait();
+            }
+        });
     }
 }

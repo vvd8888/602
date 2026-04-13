@@ -17,6 +17,8 @@ import com.teach.javafx.request.DataResponse;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import javafx.scene.control.TextInputDialog;
+import java.util.Optional;
 
 /**
  * CourseController 登录交互控制类 对应 course-panel.fxml
@@ -62,26 +64,30 @@ public class CourseController {
 
     private void setTableViewData() {
         observableList.clear();
-        Map<String,Object> map;
+        Map<String, Object> map;
         FlowPane flowPane;
-        Button saveButton,deleteButton;
+        Button saveButton, editPreCourseButton, deleteButton;
+
         for (int j = 0; j < courseList.size(); j++) {
             map = courseList.get(j);
             flowPane = new FlowPane();
             flowPane.setHgap(10);
             flowPane.setAlignment(Pos.CENTER);
-            saveButton = new Button("修改保存");
-            saveButton.setId("save"+j);
-            saveButton.setOnAction(e->{
-                saveItem(((Button)e.getSource()).getId());
-            });
+
+            saveButton = new Button("保存");
+            saveButton.setId("save" + j);
+            saveButton.setOnAction(e -> saveItem(((Button) e.getSource()).getId()));
+
+            editPreCourseButton = new Button("编辑前序课");
+            editPreCourseButton.setId("editPre" + j);
+            editPreCourseButton.setOnAction(e -> editPreCourse(((Button) e.getSource()).getId()));
+
             deleteButton = new Button("删除");
-            deleteButton.setId("delete"+j);
-            deleteButton.setOnAction(e->{
-                deleteItem(((Button)e.getSource()).getId());
-            });
-            flowPane.getChildren().addAll(saveButton,deleteButton);
-            map.put("operate",flowPane);
+            deleteButton.setId("delete" + j);
+            deleteButton.setOnAction(e -> deleteItem(((Button) e.getSource()).getId()));
+
+            flowPane.getChildren().addAll(saveButton, editPreCourseButton, deleteButton);
+            map.put("operate", flowPane);
             observableList.addAll(FXCollections.observableArrayList(map));
         }
         dataTableView.setItems(observableList);
@@ -132,6 +138,25 @@ public class CourseController {
         }
     }
 
+    // 编辑前序课的方法
+    private void editPreCourse(String name) {
+        if (name == null) return;
+        int j = Integer.parseInt(name.substring(7));
+        Map<String, Object> data = courseList.get(j);
+
+        // 创建对话框编辑前序课
+        TextInputDialog dialog = new TextInputDialog(data.get("preCourse") != null ? data.get("preCourse").toString() : "");
+        dialog.setTitle("编辑前序课");
+        dialog.setHeaderText("请输入前序课的名称或编号");
+        dialog.setContentText("前序课:");
+
+        Optional<String> result = dialog.showAndWait();
+        result.ifPresent(newPreCourse -> {
+            data.put("preCourse", newPreCourse);
+            observableList.set(j, data);
+        });
+    }
+
     @FXML
     public void initialize() {
         // 设置原有列
@@ -139,7 +164,7 @@ public class CourseController {
         numColumn.setCellFactory(TextFieldTableCell.forTableColumn());
         numColumn.setOnEditCommit(event -> {
             Map<String,Object> map = event.getRowValue();
-            map.put("num", event.getNewValue());  // 这里的put是Java Map的put方法，正确的
+            map.put("num", event.getNewValue());
         });
 
         nameColumn.setCellValueFactory(new MapValueFactory<>("name"));
