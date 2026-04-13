@@ -14,10 +14,12 @@ import lombok.Setter;
         })
 public class Teacher {
     @Id
+    @Column(name = "person_id")  // 指定数据库列名
     private Integer personId;
 
     @OneToOne
-    @JoinColumn(name="personId")
+    @JoinColumn(name = "person_id")  // 指定外键列名
+    @MapsId  // 重要：让 Hibernate 自动设置 personId
     private Person person;
 
     @Size(max = 20)

@@ -4,7 +4,10 @@ import cn.edu.sdu.java.server.models.*;
 import cn.edu.sdu.java.server.payload.request.DataRequest;
 import cn.edu.sdu.java.server.payload.response.DataResponse;
 import cn.edu.sdu.java.server.repositorys.*;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 
@@ -110,71 +113,109 @@ public class TeacherService {
         return response;
     }
 
+    @Transactional
     public DataResponse teacherEditSave(DataRequest dataRequest) {
-        Integer personId = dataRequest.getInteger("personId");
-        Map<String, Object> form = (Map<String, Object>) dataRequest.get("form");
+        try {
+            System.out.println("=== teacherEditSave 开始 ===");
 
-        Person person;
-        Teacher teacher;
+            Integer personId = dataRequest.getInteger("personId");
+            System.out.println("personId = " + personId);
 
-        if (personId != null && personId > 0) {
-            Optional<Teacher> optional = teacherRepository.findById(personId);
-            if (optional.isEmpty()) {
+            Map<String, Object> form = (Map<String, Object>) dataRequest.get("form");
+            System.out.println("form = " + form);
+
+            if (form == null) {
                 DataResponse response = new DataResponse();
                 response.setCode(1);
-                response.setMsg("教师不存在");
+                response.setMsg("表单数据不能为空");
                 return response;
             }
-            teacher = optional.get();
-            person = teacher.getPerson();
-        } else {
-            person = new Person();
-            teacher = new Teacher();
-        }
 
-        person.setNum((String) form.get("num"));
-        person.setName((String) form.get("name"));
-        person.setDept((String) form.get("dept"));
-        person.setGender((String) form.get("gender"));
-        person.setCard((String) form.get("card"));
-        person.setPhone((String) form.get("phone"));
-        person.setEmail((String) form.get("email"));
-        person.setAddress((String) form.get("address"));
+            Person person;
+            Teacher teacher;
 
-        person = personRepository.save(person);
+            if (personId != null && personId > 0) {
+                System.out.println("编辑模式");
+                Optional<Teacher> optional = teacherRepository.findById(personId);
+                if (optional.isEmpty()) {
+                    DataResponse response = new DataResponse();
+                    response.setCode(1);
+                    response.setMsg("教师不存在");
+                    return response;
+                }
+                teacher = optional.get();
+                person = teacher.getPerson();
+            } else {
+                System.out.println("新增模式");
+                person = new Person();
+                teacher = new Teacher();
+            }
 
-        if (personId == null || personId <= 0) {
-            UserType teacherType = userTypeRepository.findByName("ROLE_TEACHER");
-            if (teacherType == null) {
-                teacherType = userTypeRepository.findByName("TEACHER");
+            // 设置 Person 信息
+            person.setNum((String) form.get("num"));
+            person.setName((String) form.get("name"));
+            person.setDept((String) form.get("dept"));
+            person.setGender((String) form.get("gender"));
+            person.setCard((String) form.get("card"));
+            person.setPhone((String) form.get("phone"));
+            person.setEmail((String) form.get("email"));
+            person.setAddress((String) form.get("address"));
+
+            System.out.println("保存 Person 前");
+            person = personRepository.save(person);
+            System.out.println("保存 Person 后，personId = " + person.getPersonId());
+
+            // 新增模式：创建 User 账号
+            if (personId == null || personId <= 0) {
+                System.out.println("开始创建 User 账号");
+
+                UserType teacherType = userTypeRepository.findByName("ROLE_TEACHER");
+                if (teacherType == null) {
+                    teacherType = userTypeRepository.findByName("TEACHER");
+                }
+                System.out.println("teacherType = " + (teacherType != null ? teacherType.getName() : "null"));
+
                 if (teacherType == null) {
                     DataResponse response = new DataResponse();
                     response.setCode(1);
-                    response.setMsg("未找到教师角色类型，请联系管理员");
+                    response.setMsg("未找到教师角色类型");
                     return response;
                 }
+
+                User user = new User();
+                // 注意：不需要 setPersonId！@MapsId 会自动处理
+                user.setPerson(person);
+                user.setUserType(teacherType);
+                user.setUserName(person.getNum());
+                user.setPassword("123456");
+                user.setLoginCount(0);
+
+                System.out.println("保存 User 前");
+                userRepository.save(user);
+                System.out.println("保存 User 成功");
             }
 
-            User user = new User();
-            user.setPersonId(person.getPersonId());
-            user.setPerson(person);
-            user.setUserType(teacherType);
-            user.setUserName(person.getNum());
-            user.setPassword("123456");
-            user.setLoginCount(0);
-            userRepository.save(user);
+            // 设置 Teacher 信息
+            teacher.setPerson(person);
+            teacher.setTitle((String) form.get("title"));
+            teacher.setDegree((String) form.get("degree"));
+
+            System.out.println("保存 Teacher 前");
+            teacherRepository.save(teacher);
+            System.out.println("保存 Teacher 成功");
+
+            DataResponse response = new DataResponse();
+            response.setCode(0);
+            response.setData(person.getPersonId());
+            return response;
+
+        } catch (Exception e) {
+            System.err.println("保存失败：");
+            e.printStackTrace();
+            DataResponse response = new DataResponse();
+            response.setCode(1);
+            response.setMsg("保存失败：" + e.getMessage());
+            return response;
         }
-
-        teacher.setPersonId(person.getPersonId());
-        teacher.setPerson(person);
-        teacher.setTitle((String) form.get("title"));
-        teacher.setDegree((String) form.get("degree"));
-
-        teacherRepository.save(teacher);
-
-        DataResponse response = new DataResponse();
-        response.setCode(0);
-        response.setData(person.getPersonId());
-        return response;
     }
 }
