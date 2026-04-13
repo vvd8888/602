@@ -181,7 +181,22 @@ public class MainFrameController {
         Menu leaveMenu = new Menu("请假管理");
         addMenuItem(leaveMenu, "student-leave-panel", "请假管理");
         menuBar.getMenus().add(leaveMenu);
+
+        javafx.application.Platform.runLater(() -> {
+            addTeacherManageToPersonnelMenu();
+        });//xiugai
+
     }
+    private void addTeacherManageToPersonnelMenu() {
+        for (Menu menu : menuBar.getMenus()) {
+            System.out.println("菜单项: " + menu.getText());  // 调试输出
+            if ("人员管理".equals(menu.getText())) {
+                System.out.println("找到人员管理菜单，添加教师管理");
+                addMenuItem(menu, "teacher-panel", "教师管理");
+                break;
+            }
+        }
+    }//xiugaifirst
 
 
     /**

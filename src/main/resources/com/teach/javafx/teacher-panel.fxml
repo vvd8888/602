@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox spacing="10" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.teach.javafx.controller.TeacherController">
+    <padding>
+        <Insets top="10" right="10" bottom="10" left="10"/>
+    </padding>
+
+    <!-- 查询栏 -->
+    <HBox spacing="10">
+        <Label text="工号/姓名：" />
+        <TextField fx:id="numNameTextField" prefWidth="200" />
+        <Button text="查询" onAction="#onQueryButtonClick" />
+    </HBox>
+
+    <!-- 按钮栏 -->
+    <HBox spacing="10">
+        <Button text="添加" onAction="#onAddButtonClick" />
+        <Button text="删除" onAction="#onDeleteButtonClick" />
+        <Button text="保存" onAction="#onSaveButtonClick" />
+    </HBox>
+
+    <!-- 教师表格 -->
+    <TableView fx:id="dataTableView" prefHeight="300">
+        <columns>
+            <TableColumn text="工号" fx:id="numColumn" prefWidth="120" />
+            <TableColumn text="姓名" fx:id="nameColumn" prefWidth="100" />
+            <TableColumn text="院系" fx:id="deptColumn" prefWidth="150" />
+            <TableColumn text="职称" fx:id="titleColumn" prefWidth="120" />
+            <TableColumn text="学历" fx:id="degreeColumn" prefWidth="100" />
+            <TableColumn text="性别" fx:id="genderColumn" prefWidth="80" />
+            <TableColumn text="电话" fx:id="phoneColumn" prefWidth="120" />
+            <TableColumn text="邮箱" fx:id="emailColumn" prefWidth="150" />
+            <TableColumn text="地址" fx:id="addressColumn" prefWidth="200" />
+        </columns>
+    </TableView>
+
+    <!-- 编辑表单 -->
+    <TitledPane text="教师详细信息" animated="false" collapsible="true">
+        <GridPane hgap="10" vgap="10">
+            <padding><Insets top="10" bottom="10" left="10" right="10"/></padding>
+
+            <Label text="工号：" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+            <TextField fx:id="numField" GridPane.columnIndex="1" GridPane.rowIndex="0" prefWidth="150"/>
+
+            <Label text="姓名：" GridPane.columnIndex="2" GridPane.rowIndex="0"/>
+            <TextField fx:id="nameField" GridPane.columnIndex="3" GridPane.rowIndex="0" prefWidth="150"/>
+
+            <Label text="院系：" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+            <TextField fx:id="deptField" GridPane.columnIndex="1" GridPane.rowIndex="1" prefWidth="150"/>
+
+            <Label text="职称：" GridPane.columnIndex="2" GridPane.rowIndex="1"/>
+            <TextField fx:id="titleField" GridPane.columnIndex="3" GridPane.rowIndex="1" prefWidth="150"/>
+
+            <Label text="学历：" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+            <TextField fx:id="degreeField" GridPane.columnIndex="1" GridPane.rowIndex="2" prefWidth="150"/>
+
+            <Label text="性别：" GridPane.columnIndex="2" GridPane.rowIndex="2"/>
+            <ComboBox fx:id="genderComboBox" GridPane.columnIndex="3" GridPane.rowIndex="2" prefWidth="150"/>
+
+            <Label text="证件号：" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+            <TextField fx:id="cardField" GridPane.columnIndex="1" GridPane.rowIndex="3" prefWidth="150"/>
+
+            <Label text="电话：" GridPane.columnIndex="2" GridPane.rowIndex="3"/>
+            <TextField fx:id="phoneField" GridPane.columnIndex="3" GridPane.rowIndex="3" prefWidth="150"/>
+
+            <Label text="邮箱：" GridPane.columnIndex="0" GridPane.rowIndex="4"/>
+            <TextField fx:id="emailField" GridPane.columnIndex="1" GridPane.rowIndex="4" prefWidth="150"/>
+
+            <Label text="地址：" GridPane.columnIndex="2" GridPane.rowIndex="4"/>
+            <TextField fx:id="addressField" GridPane.columnIndex="3" GridPane.rowIndex="4" prefWidth="250"/>
+        </GridPane>
+    </TitledPane>
+</VBox>
