@@ -1,0 +1,58 @@
+[
+  {
+    "courseId": "CS101",
+    "courseName": "计算机基础",
+    "teacher": "张老师",
+    "time": "周一 1-2节",
+    "classroom": "教学楼A101",
+    "credit": 3
+  },
+  {
+    "courseId": "MA201",
+    "courseName": "高等数学",
+    "teacher": "李老师",
+    "time": "周二 3-4节",
+    "classroom": "教学楼B201",
+    "credit": 4
+  },
+  {
+    "courseId": "EN301",
+    "courseName": "大学英语",
+    "teacher": "王老师",
+    "time": "周三 5-6节",
+    "classroom": "教学楼C301",
+    "credit": 2
+  },
+  {
+    "courseId": "PHY401",
+    "courseName": "大学物理",
+    "teacher": "赵老师",
+    "time": "周四 7-8节",
+    "classroom": "教学楼D401",
+    "credit": 3
+  },
+  {
+    "courseId": "CHE501",
+    "courseName": "大学化学",
+    "teacher": "孙老师",
+    "time": "周五 9-10节",
+    "classroom": "教学楼E501",
+    "credit": 2
+  },
+  {
+    "courseId": "3223",
+    "courseName": "321231",
+    "teacher": "132",
+    "time": "312132",
+    "classroom": "13",
+    "credit": 312
+  },
+  {
+    "courseId": "土",
+    "courseName": "878",
+    "teacher": "87",
+    "time": "99",
+    "classroom": "00",
+    "credit": 98
+  }
+]
