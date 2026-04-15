@@ -239,6 +239,12 @@ public class MainFrameController {
     public  void changeContent(String name, String title) {
         if(name == null || name.length() == 0)
             return;
+
+        if ("logout".equals(name)) {
+            logout();
+            return;
+        }
+
         Tab tab = tabMap.get(name);
         Scene scene;
         Object c;
