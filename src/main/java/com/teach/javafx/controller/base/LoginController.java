@@ -180,8 +180,14 @@ public class LoginController {
             alert.setContentText("成绩录入功能");
             alert.showAndWait();
         });
-
-        functionBox.getChildren().addAll(functionLabel, courseBtn, studentBtn, scoreBtn);
+        // 请假管理按钮
+        Button leaveBtn = new Button("请假管理");
+        leaveBtn.setPrefWidth(200);
+        leaveBtn.setOnAction(e -> {
+            Stage stage = (Stage) leaveBtn.getScene().getWindow();
+            openLeaveManagement(stage);
+        });
+        functionBox.getChildren().addAll(functionLabel, courseBtn, studentBtn, scoreBtn, leaveBtn);
 
         // 底部按钮
         Button logoutButton = new Button("退出登录");
@@ -818,5 +824,21 @@ public class LoginController {
                 alert.showAndWait();
             }
         });
+    }
+    private void openLeaveManagement(Stage stage) {
+        try {
+            FXMLLoader fxmlLoader = new FXMLLoader(
+                    MainApplication.class.getResource("teacher-leave-panel.fxml")
+            );
+            Scene scene = new Scene(fxmlLoader.load(), 900, 600);
+            stage.setScene(scene);
+            stage.setTitle("教师 - 请假审核管理");
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("错误");
+            alert.setContentText("打开请假管理界面失败");
+            alert.showAndWait();
+        }
     }
 }
