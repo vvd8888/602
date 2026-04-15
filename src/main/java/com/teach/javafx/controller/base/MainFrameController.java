@@ -182,6 +182,13 @@ public class MainFrameController {
         addMenuItem(leaveMenu, "student-leave-panel", "请假管理");
         menuBar.getMenus().add(leaveMenu);
 
+        // 先不加条件，直接添加菜单（用于测试）
+        Menu infoMenu = new Menu("信息查询");
+        MenuItem scoreItem = new MenuItem("成绩查询");
+        scoreItem.setId("base/student-score-query");
+        scoreItem.setOnAction(this::changeContent);
+        infoMenu.getItems().add(scoreItem);
+        menuBar.getMenus().add(infoMenu);
         javafx.application.Platform.runLater(() -> {
             addTeacherManageToPersonnelMenu();
         });//xiugai
