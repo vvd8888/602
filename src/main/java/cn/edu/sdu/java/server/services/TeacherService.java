@@ -6,6 +6,8 @@ import cn.edu.sdu.java.server.payload.response.DataResponse;
 import cn.edu.sdu.java.server.repositorys.*;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,15 +20,19 @@ public class TeacherService {
     private final PersonRepository personRepository;
     private final UserRepository userRepository;
     private final UserTypeRepository userTypeRepository;
+    private final PasswordEncoder encoder;  //密码服务自动注入
+
 
     public TeacherService(TeacherRepository teacherRepository,
                           PersonRepository personRepository,
                           UserRepository userRepository,
-                          UserTypeRepository userTypeRepository) {
+                          UserTypeRepository userTypeRepository,
+                          PasswordEncoder encoder) {
         this.teacherRepository = teacherRepository;
         this.personRepository = personRepository;
         this.userRepository = userRepository;
         this.userTypeRepository = userTypeRepository;
+        this.encoder = encoder;
     }
 
     public DataResponse getTeacherList(DataRequest dataRequest) {
@@ -187,7 +193,8 @@ public class TeacherService {
                 user.setPerson(person);
                 user.setUserType(teacherType);
                 user.setUserName(person.getNum());
-                user.setPassword("123456");
+                String password = encoder.encode("123456");
+                user.setPassword(password);
                 user.setLoginCount(0);
 
                 System.out.println("保存 User 前");
