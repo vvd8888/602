@@ -47,48 +47,55 @@ public class LoginController {
 
     @FXML
     protected void onTeacherLoginButtonClick() {
-        System.out.println("=== 测试教师登录 ===");
-
-        // 测试1: 尝试教师账号
-        System.out.println("测试1: 教师账号 200799013517/123456");
-        LoginRequest req1 = new LoginRequest("200799013517", "123456");
-        String result1 = HttpRequestUtil.login(req1);
-        System.out.println("结果: " + (result1 == null ? "成功" : "失败: " + result1));
-
-        // 测试2: 尝试学生账号
-        System.out.println("\n测试2: 学生账号 2022030001/123456");
-        LoginRequest req2 = new LoginRequest("2022030001", "123456");
-        String result2 = HttpRequestUtil.login(req2);
-        System.out.println("结果: " + (result2 == null ? "成功" : "失败: " + result2));
-
-        // 测试3: 尝试管理员账号
-        System.out.println("\n测试3: 管理员账号 admin/123456");
-        LoginRequest req3 = new LoginRequest("admin", "123456");
-        String result3 = HttpRequestUtil.login(req3);
-        System.out.println("结果: " + (result3 == null ? "成功" : "失败: " + result3));
-
-        // 根据结果决定
-        if (result2 == null) {
-            // 学生账号能登录，用学生账号进入教师界面
-            System.out.println("使用学生账号进入教师界面");
-            try {
-                loadTeacherView();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        } else if (result3 == null) {
-            // 管理员账号能登录
-            System.out.println("教师功能未实现，进入管理员界面");
-            onAdminLoginButtonClick();
-        } else {
-            // 使用Alert代替MessageDialog
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("登录失败");
-            alert.setHeaderText(null);
-            alert.setContentText("所有测试登录都失败");
-            alert.showAndWait();
-        }
+        onLoginButtonClick("22","123456");
     }
+
+
+
+//    @FXML
+//    protected void onTeacherLoginButtonClick() {
+//        System.out.println("=== 测试教师登录 ===");
+//
+//        // 测试1: 尝试教师账号
+//        System.out.println("测试1: 教师账号 200799013517/123456");
+//        LoginRequest req1 = new LoginRequest("200799013517", "123456");
+//        String result1 = HttpRequestUtil.login(req1);
+//        System.out.println("结果: " + (result1 == null ? "成功" : "失败: " + result1));
+//
+//        // 测试2: 尝试学生账号
+//        System.out.println("\n测试2: 学生账号 2022030001/123456");
+//        LoginRequest req2 = new LoginRequest("2022030001", "123456");
+//        String result2 = HttpRequestUtil.login(req2);
+//        System.out.println("结果: " + (result2 == null ? "成功" : "失败: " + result2));
+//
+//        // 测试3: 尝试管理员账号
+//        System.out.println("\n测试3: 管理员账号 admin/123456");
+//        LoginRequest req3 = new LoginRequest("admin", "123456");
+//        String result3 = HttpRequestUtil.login(req3);
+//        System.out.println("结果: " + (result3 == null ? "成功" : "失败: " + result3));
+//
+//        // 根据结果决定
+//        if (result2 == null) {
+//            // 学生账号能登录，用学生账号进入教师界面
+//            System.out.println("使用学生账号进入教师界面");
+//            try {
+//                loadTeacherView();
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//        } else if (result3 == null) {
+//            // 管理员账号能登录
+//            System.out.println("教师功能未实现，进入管理员界面");
+//            onAdminLoginButtonClick();
+//        } else {
+//            // 使用Alert代替MessageDialog
+//            Alert alert = new Alert(Alert.AlertType.ERROR);
+//            alert.setTitle("登录失败");
+//            alert.setHeaderText(null);
+//            alert.setContentText("所有测试登录都失败");
+//            alert.showAndWait();
+//        }
+//    }
 
     protected void onLoginButtonClick(String username, String password) {
         LoginRequest loginRequest = new LoginRequest(username,password);
