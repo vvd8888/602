@@ -9,17 +9,14 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-@Table(	name = "teacher",
-        uniqueConstraints = {
-        })
+@Table(name = "teacher")
 public class Teacher {
     @Id
-    @Column(name = "person_id")  // 指定数据库列名
     private Integer personId;
 
     @OneToOne
-    @JoinColumn(name = "person_id")  // 指定外键列名
-    @MapsId  // 重要：让 Hibernate 自动设置 personId
+    @JoinColumn(name = "personId")  // 注意：列名是 personId，不是 person_id
+    @JsonIgnore
     private Person person;
 
     @Size(max = 20)
@@ -27,5 +24,4 @@ public class Teacher {
 
     @Size(max = 10)
     private String degree;
-
 }
