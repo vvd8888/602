@@ -166,7 +166,7 @@ public class MainFrameController {
     @FXML
     public void initialize() {
         handler = new ChangePanelHandler();
-        DataRequest req = new DataRequest();
+        DataRequest req = new DataRequest();//信息查询中的成绩查询
         DataResponse res;
         res = HttpRequestUtil.request("/api/base/getDataBaseUserName", req);
         String userName = (String) res.getData();
@@ -184,12 +184,12 @@ public class MainFrameController {
         menuBar.getMenus().add(leaveMenu);
 
         // 先不加条件，直接添加菜单（用于测试）
-        Menu infoMenu = new Menu("信息查询");
-        MenuItem scoreItem = new MenuItem("成绩查询");
-        scoreItem.setId("base/student-score-query");
-        scoreItem.setOnAction(this::changeContent);
-        infoMenu.getItems().add(scoreItem);
-        menuBar.getMenus().add(infoMenu);
+       // Menu infoMenu = new Menu("信息查询");
+        //MenuItem scoreItem = new MenuItem("成绩查询");
+        //scoreItem.setId("base/student-score-query");
+       // scoreItem.setOnAction(this::changeContent);
+        //infoMenu.getItems().add(scoreItem);
+       // menuBar.getMenus().add(infoMenu);//zanshixiugai
 
         // ========== 删除或注释下面这行 ==========
         // javafx.application.Platform.runLater(() -> {
@@ -227,6 +227,9 @@ public class MainFrameController {
         if(name == null)
             return;
         changeContent(name,title);
+
+
+
     }
 
     /**
@@ -235,7 +238,14 @@ public class MainFrameController {
      * @param title 菜单标题 工作区中的TablePane的标题
      */
 
-    public  void changeContent(String name, String title) {
+    public void changeContent(String name, String title) {
+        // 调试输出
+        System.out.println("=== changeContent 被调用 ===");
+        System.out.println("name = " + name);
+        System.out.println("title = " + title);
+        System.out.println("尝试加载: " + name + ".fxml");
+        System.out.println("资源路径: " + MainApplication.class.getResource(name + ".fxml"));
+
         if(name == null || name.length() == 0)
             return;
 
@@ -254,7 +264,9 @@ public class MainFrameController {
                 try {
                     scene = new Scene(fxmlLoader.load(), 1024, 768);
                     sceneMap.put(name, scene);
+                    System.out.println("加载成功");
                 } catch (IOException e) {
+                    System.out.println("加载失败: " + e.getMessage());
                     e.printStackTrace();
                     return;
                 }

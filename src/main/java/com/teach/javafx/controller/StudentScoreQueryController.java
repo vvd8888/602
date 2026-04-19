@@ -25,7 +25,7 @@ public class StudentScoreQueryController {
     @FXML
     private TableColumn<Map,String> markColumn;
 
-    private ObservableList<Map> observableList= FXCollections.observableArrayList();
+    private ObservableList<Map> observableList = FXCollections.observableArrayList();
 
     @FXML
     public void initialize() {
@@ -44,7 +44,9 @@ public class StudentScoreQueryController {
         if(res != null && res.getCode() == 0) {
             List<Map> scoreList = (List<Map>)res.getData();
             observableList.clear();
-            observableList.addAll(FXCollections.observableArrayList(scoreList));
+            if (scoreList != null) {
+                observableList.addAll(scoreList);
+            }
             dataTableView.setItems(observableList);
         }
     }

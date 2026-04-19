@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.teach.javafx.controller.StudentScoreQueryController">
+    <center>
+        <TableView fx:id="dataTableView" prefHeight="400">
+            <columns>
+                <TableColumn text="课程号" fx:id="courseNumColumn" prefWidth="120" />
+                <TableColumn text="课程名" fx:id="courseNameColumn" prefWidth="200" />
+                <TableColumn text="学分" fx:id="creditColumn" prefWidth="80" />
+                <TableColumn text="成绩" fx:id="markColumn" prefWidth="80" />
+            </columns>
+        </TableView>
+    </center>
+    <bottom>
+        <VBox alignment="CENTER" style="-fx-padding: 10;">
+            <Label text="学生成绩查询" style="-fx-font-size: 12px; -fx-text-fill: #888;" />
+        </VBox>
+    </bottom>
+</BorderPane>
