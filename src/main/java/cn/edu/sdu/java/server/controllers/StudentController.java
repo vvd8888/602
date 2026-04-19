@@ -39,11 +39,10 @@ public class StudentController {
 
 
     @PostMapping("/getStudentList")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('STUDENT')")
     public DataResponse getStudentList(@Valid @RequestBody DataRequest dataRequest) {
         return studentService.getStudentList(dataRequest);
     }
-
 
     /**
      * studentDelete 删除学生信息Web服务 Student页面的列表里点击删除按钮则可以删除已经存在的学生信息， 前端会将该记录的id 回传到后端，方法从参数获取id，查出相关记录，调用delete方法删除
@@ -115,7 +114,7 @@ public class StudentController {
 
 
     @PostMapping("/getStudentPageData")
-    @PreAuthorize(" hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('STUDENT')")
     public DataResponse getStudentPageData(@Valid @RequestBody DataRequest dataRequest) {
         return studentService.getStudentPageData(dataRequest);
     }
