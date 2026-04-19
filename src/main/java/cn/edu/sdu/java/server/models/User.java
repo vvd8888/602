@@ -34,8 +34,6 @@ public class User {
     @OneToOne
     @JoinColumn(name="personId")
 
-    @MapsId
-    //xiugai
     private Person person;
 
     @NotBlank
