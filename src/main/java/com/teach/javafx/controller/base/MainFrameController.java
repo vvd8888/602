@@ -165,19 +165,20 @@ public class MainFrameController {
     }
     @FXML
     public void initialize() {
-        handler =new ChangePanelHandler();
-        DataRequest req= new DataRequest();
+        handler = new ChangePanelHandler();
+        DataRequest req = new DataRequest();
         DataResponse res;
-        res = HttpRequestUtil.request("/api/base/getDataBaseUserName",req);
-        String userName = (String)res.getData();
+        res = HttpRequestUtil.request("/api/base/getDataBaseUserName", req);
+        String userName = (String) res.getData();
         systemPrompt.setText("服务器：" + HttpRequestUtil.serverUrl + " 数据库：" + userName);
-        res = HttpRequestUtil.request("/api/base/getMenuList",req);
-        List<Map> mList = (List<Map>)res.getData();
+        res = HttpRequestUtil.request("/api/base/getMenuList", req);
+        List<Map> mList = (List<Map>) res.getData();
         initMenuBar(mList);
         initMenuTree(mList);
         contentTabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.ALL_TABS);
-        contentTabPane.setStyle("-fx-background-image: url('shanda1.jpg'); -fx-background-repeat: no-repeat; -fx-background-size: cover;");  //inline选择器
-    // 新增：顶级「请假管理」菜单（完全匹配你的FXML命名）
+        contentTabPane.setStyle("-fx-background-image: url('shanda1.jpg'); -fx-background-repeat: no-repeat; -fx-background-size: cover;");
+
+        // 新增：顶级「请假管理」菜单
         Menu leaveMenu = new Menu("请假管理");
         addMenuItem(leaveMenu, "student-leave-panel", "请假管理");
         menuBar.getMenus().add(leaveMenu);
@@ -189,21 +190,12 @@ public class MainFrameController {
         scoreItem.setOnAction(this::changeContent);
         infoMenu.getItems().add(scoreItem);
         menuBar.getMenus().add(infoMenu);
-        javafx.application.Platform.runLater(() -> {
-            addTeacherManageToPersonnelMenu();
-        });//xiugai
 
+        // ========== 删除或注释下面这行 ==========
+        // javafx.application.Platform.runLater(() -> {
+        //     addTeacherManageToPersonnelMenu();
+        // });
     }
-    private void addTeacherManageToPersonnelMenu() {
-        for (Menu menu : menuBar.getMenus()) {
-            System.out.println("菜单项: " + menu.getText());  // 调试输出
-            if ("人员管理".equals(menu.getText())) {
-                System.out.println("找到人员管理菜单，添加教师管理");
-                addMenuItem(menu, "teacher-panel", "教师管理");
-                break;
-            }
-        }
-    }//xiugaifirst
 
 
     /**
