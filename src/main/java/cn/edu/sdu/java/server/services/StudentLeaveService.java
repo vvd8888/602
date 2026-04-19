@@ -47,8 +47,8 @@ public class StudentLeaveService {
         String search = dataRequest.getString("search");
         assert roleName != null;
         List<StudentLeave> slList = switch (roleName) {
-            case "ROLE_STUDENT" -> studentLeaveRepository.getStudentLeaveList(-1, search, userName, "");
-            case "ROLE_TEACHER" -> studentLeaveRepository.getStudentLeaveList(-1, search, "", userName);
+            case "ROLE_STUDENT" -> studentLeaveRepository.getStudentLeaveList(state, search, "", "");
+            case "ROLE_TEACHER" -> studentLeaveRepository.getStudentLeaveList(state, search, "","");
             case "ROLE_ADMIN" -> studentLeaveRepository.getStudentLeaveList(state, search, "", "");
             default -> null;
         };
@@ -86,6 +86,9 @@ public class StudentLeaveService {
         Integer teacherId = dataRequest.getInteger("teacherId");
         String leaveDate = dataRequest.getString("leaveDate");
         String reason = dataRequest.getString("reason");
+        // 接收前端传的 学号+姓名
+        String studentNum = dataRequest.getString("studentNum");
+        String studentName = dataRequest.getString("studentName");
         StudentLeave sl = null;
         if(studentLeaveId != null && studentLeaveId > 0) {
             Optional<StudentLeave> op = studentLeaveRepository.findById(studentLeaveId);
@@ -99,6 +102,10 @@ public class StudentLeaveService {
             sl.setTeacherComment("");
             sl.setAdminComment("");
             sl.setStudent(studentRepository.findByPersonNum(CommonMethod.getUsername()).get());
+            Student student = studentRepository.findByPersonNum(studentNum).orElse(null);
+            if(student != null){
+                sl.setStudent(student);
+            }
         }
         if(teacherId != null && teacherId > 0) {
             Optional<Teacher> op = teacherRepository.findById(teacherId);
