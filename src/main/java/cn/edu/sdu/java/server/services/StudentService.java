@@ -86,12 +86,66 @@ public class StudentService {
 
     public List<Map<String, Object>> getStudentMapList(String numName) {
         List<Map<String, Object>> dataList = new ArrayList<>();
-        List<Student> sList = studentRepository.findStudentListByNumName(numName);  //数据库查询操作
-        if (sList == null || sList.isEmpty())
+
+        // 调试信息
+        System.out.println("=== 开始查询学生数据 ===");
+        System.out.println("查询参数 numName: " + (numName == null ? "null" : "'" + numName + "'"));
+
+        // 处理参数：将空字符串转为 null
+        String queryParam = (numName == null || numName.trim().isEmpty()) ? null : numName.trim();
+
+        // 执行查询
+        List<Student> sList = studentRepository.findStudentListByNumName(queryParam);
+
+        // 调试信息
+        System.out.println("查询结果数量: " + (sList == null ? 0 : sList.size()));
+
+        if (sList == null || sList.isEmpty()) {
+            System.out.println("查询返回空结果");
+
+            // 尝试直接查询所有学生
+            System.out.println("尝试查询所有学生...");
+            List<Student> allStudents = studentRepository.findAll();
+            System.out.println("findAll 返回记录数: " + (allStudents == null ? 0 : allStudents.size()));
+
+            if (allStudents != null && !allStudents.isEmpty()) {
+                for (int i = 0; i < Math.min(allStudents.size(), 3); i++) {
+                    Student s = allStudents.get(i);
+                    if (s != null && s.getPerson() != null) {
+                        Person p = s.getPerson();
+                        System.out.println("  学生" + (i+1) + ": " + p.getNum() + " - " + p.getName() +
+                                ", type: " + p.getType() + ", dept: " + p.getDept());
+                    }
+                }
+
+                // 使用 findAll 的结果
+                for (Student student : allStudents) {
+                    if (student.getPerson() != null && "1".equals(student.getPerson().getType())) {
+                        dataList.add(getMapFromStudent(student));
+                    }
+                }
+            }
+
+            System.out.println("最终返回数据条数: " + dataList.size());
             return dataList;
+        }
+
+        // 处理查询结果
+        System.out.println("前几条记录:");
+        for (int i = 0; i < Math.min(sList.size(), 3); i++) {
+            Student student = sList.get(i);
+            if (student != null && student.getPerson() != null) {
+                Person person = student.getPerson();
+                System.out.println("  学号: " + person.getNum() + ", 姓名: " + person.getName() +
+                        ", 性别: " + person.getGender() + ", 学院: " + person.getDept());
+            }
+        }
+
         for (Student student : sList) {
             dataList.add(getMapFromStudent(student));
         }
+
+        System.out.println("返回数据条数: " + dataList.size());
         return dataList;
     }
 
