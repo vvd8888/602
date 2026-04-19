@@ -98,10 +98,10 @@ public class LoginController {
 //    }
 
     protected void onLoginButtonClick(String username, String password) {
-        LoginRequest loginRequest = new LoginRequest(username,password);
+        LoginRequest loginRequest = new LoginRequest(username, password);
         String msg = HttpRequestUtil.login(loginRequest);
-        if(msg != null) {
-            // 使用Alert代替MessageDialog
+
+        if (msg != null) {
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("登录失败");
             alert.setHeaderText(null);
@@ -109,19 +109,93 @@ public class LoginController {
             alert.showAndWait();
             return;
         }
-        FXMLLoader fxmlLoader = new FXMLLoader(MainApplication.class.getResource("base/main-frame.fxml"));
+
+        // 保存当前登录用户名
+        AppStore.setUsername(username);
+        System.out.println("用户登录: " + username);
+
+        // 判断是否是学生（假设学号以2022开头）
+        if (username.startsWith("2022") || isStudentRole()) {
+            // 学生登录：先进入同学选择界面
+            loadStudentSelectView();
+        } else {
+            // 管理员/教师：直接进入主框架
+            loadMainFrame();
+        }
+    }
+    /**
+     * 加载同学选择界面
+     */
+    /**
+     * 加载同学选择界面
+     */
+    private void loadStudentSelectView() {
         try {
-            Scene scene = new Scene(fxmlLoader.load(), -1, -1);
+            // 正确的资源路径
+            String fxmlPath = "/com/teach/javafx/base/student-select.fxml";
+            System.out.println("正在加载: " + fxmlPath);
+
+            java.net.URL url = getClass().getResource(fxmlPath);
+            if (url == null) {
+                System.err.println("错误: 找不到资源文件: " + fxmlPath);
+                throw new IOException("找不到 FXML 文件: " + fxmlPath);
+            }
+
+            System.out.println("资源文件找到: " + url);
+
+            FXMLLoader fxmlLoader = new FXMLLoader(url);
+            Scene scene = new Scene(fxmlLoader.load(), 800, 600);
+            MainApplication.resetStage("选择同学", scene);
+
+            System.out.println("同学选择界面加载成功");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            showAlert(Alert.AlertType.WARNING, "提示",
+                    "同学选择界面加载失败: " + e.getMessage() + "，将直接进入主界面");
+            loadMainFrame();
+        }
+    }
+    private void showAlert(Alert.AlertType type, String title, String content) {
+        Alert alert = new Alert(type);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(content);
+        alert.showAndWait();
+    }
+
+    /**
+     * 加载主框架
+     */
+    private void loadMainFrame() {
+        try {
+            FXMLLoader fxmlLoader = new FXMLLoader(
+                    MainApplication.class.getResource("base/main-frame.fxml")
+            );
+            Scene scene = new Scene(fxmlLoader.load(), 1000, 700);
             AppStore.setMainFrameController((MainFrameController) fxmlLoader.getController());
-            MainApplication.resetStage("教学管理系统", scene);
-        } catch (IOException e) {
+
+            // 设置窗口标题
+            String username = AppStore.getUsername();
+            String title = "教学管理系统";
+            if (username != null && username.startsWith("2022")) {
+                title += " - 学生";
+            }
+            MainApplication.resetStage(title, scene);
+        } catch (Exception e) {
+            e.printStackTrace();
             throw new RuntimeException(e);
         }
     }
 
     /**
-     * 加载教师界面
+     * 判断是否是学生角色
      */
+    private boolean isStudentRole() {
+        // 这里可以根据实际业务逻辑判断
+        // 比如从登录返回信息中获取角色
+        return true; // 暂时返回true
+    }
     private void loadTeacherView() throws IOException {
         try {
             FXMLLoader fxmlLoader = new FXMLLoader(
@@ -826,6 +900,7 @@ public class LoginController {
             }
         });
     }
+
 }
 //测试
 //测试1
