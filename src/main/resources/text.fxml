@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns="http://javafx.com/javafx/17"
+      alignment="CENTER"
+      style="-fx-padding: 50; -fx-background-color: red;">
+
+    <Label text="✅ 如果看到这个红色背景，说明FXML加载成功"
+           style="-fx-font-size: 20px; -fx-text-fill: white;" />
+
+</VBox>

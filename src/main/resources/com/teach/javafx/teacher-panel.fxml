@@ -22,6 +22,9 @@
         <Button text="添加" onAction="#onAddButtonClick" />
         <Button text="删除" onAction="#onDeleteButtonClick" />
         <Button text="保存" onAction="#onSaveButtonClick" />
+        <!-- 新增：开设课程按钮 -->
+        <Button fx:id="openCourseButton" text="开设课程" onAction="#openCourseWindow"
+                style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-weight: bold;" />
     </HBox>
 
     <!-- 教师表格 -->

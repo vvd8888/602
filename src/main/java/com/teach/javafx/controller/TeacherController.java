@@ -6,15 +6,20 @@ import com.teach.javafx.controller.base.ToolController;
 import com.teach.javafx.request.*;
 import com.teach.javafx.util.CommonMethod;
 import javafx.collections.FXCollections;
-import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.MapValueFactory;
 import javafx.stage.FileChooser;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -74,11 +79,19 @@ public class TeacherController extends ToolController {
     @FXML
     private ComboBox<OptionItem> genderComboBox;  // 性别下拉框
 
+    // ========== 新增：开设课程按钮 ==========
+    @FXML
+    private Button openCourseButton;  // 开设课程按钮
+
     // ========== 数据变量 ==========
     private Integer personId = null;
     private ArrayList<Map> teacherList = new ArrayList<>();
     private List<OptionItem> genderList;
     private ObservableList<Map> observableList = FXCollections.observableArrayList();
+
+    // ========== 用户信息 ==========
+    private String currentUserRole = "";
+    private String currentUserName = "";
 
     private void setTableViewData() {
         observableList.clear();
@@ -88,6 +101,11 @@ public class TeacherController extends ToolController {
 
     @FXML
     public void initialize() {
+        System.out.println("TeacherController 初始化...");
+
+        // 加载用户信息
+        loadUserInfo();
+
         // 初始化性别下拉框
         genderList = HttpRequestUtil.getDictionaryOptionItemList("XBM");
         if (genderList != null) {
@@ -120,7 +138,45 @@ public class TeacherController extends ToolController {
             }
         });
 
+        // 根据用户角色控制按钮显示
+        controlButtonByUserRole();
+
         setTableViewData();
+    }
+
+    /**
+     * 加载用户信息
+     */
+    private void loadUserInfo() {
+        try {
+            // 尝试从全局应用获取当前用户信息
+            currentUserRole = MainApplication.getCurrentUserRole();
+            currentUserName = MainApplication.getCurrentUserName();
+
+            System.out.println("当前用户: " + currentUserName + ", 角色: " + currentUserRole);
+
+        } catch (Exception e) {
+            System.out.println("获取用户信息失败: " + e.getMessage());
+            // 默认为老师角色用于测试
+            currentUserRole = "teacher";
+            currentUserName = "测试老师";
+        }
+    }
+
+    /**
+     * 根据用户角色控制按钮显示
+     */
+    private void controlButtonByUserRole() {
+        // 只有老师角色（"teacher" 或 "2"）才能看到"开设课程"按钮
+        if (openCourseButton != null) {
+            if ("teacher".equals(currentUserRole) || "2".equals(currentUserRole)) {
+                openCourseButton.setVisible(true);
+                openCourseButton.setManaged(true);
+            } else {
+                openCourseButton.setVisible(false);
+                openCourseButton.setManaged(false);
+            }
+        }
     }
 
     public void clearPanel() {
@@ -241,6 +297,45 @@ public class TeacherController extends ToolController {
             MessageDialog.showDialog(res.getMsg());
         }
     }
+
+    /**
+     * 开设课程按钮点击事件
+     */
+    @FXML
+    protected void openCourseWindow() {
+        try {
+            System.out.println("🚀 正在打开老师开设课程界面...");
+
+            // 检查用户角色
+            if (!"teacher".equals(currentUserRole) && !"2".equals(currentUserRole)) {
+                return;
+            }
+
+            // 检查 FXML 文件是否存在
+            String fxmlPath = "/teacher-open-course.fxml";
+            System.out.println("尝试加载 FXML: " + fxmlPath);
+
+            // 加载老师开设课程界面
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
+            Parent root = loader.load();
+
+            // 创建新窗口
+            Stage stage = new Stage();
+            stage.setTitle("老师开设课程 - " + currentUserName);
+            stage.setScene(new Scene(root, 1200, 800));
+
+            // 设置为模态窗口
+            stage.initModality(Modality.APPLICATION_MODAL);
+
+            // 显示窗口
+            stage.show();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    // ========== ToolController 实现 ==========
 
     @Override
     public void doNew() {
