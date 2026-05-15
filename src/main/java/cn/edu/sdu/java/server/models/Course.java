@@ -6,18 +6,6 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
-/*
- * Course 课程表实体类  保存课程的基本信息，
- * Integer courseId 课程表主键 course_id
- * String num 课程编号
- * String name 课程名称
- * Integer credit 学分
- * Course preCourse 前序课程 pre_course_id 关联前序课程的主键 course_id
- * String coursePath 课程路径
- * String teacher 授课教师
- * String time 上课时间
- * String classroom 上课地点
- */
 @Getter
 @Setter
 @Entity
@@ -52,4 +40,8 @@ public class Course {
 
     @Size(max = 50)
     private String classroom;  // 上课地点
+
+    // 添加 status 字段，对应数据库中的 status 列
+    @Column(name = "status")
+    private String status = "OPEN";  // 默认值为 OPEN
 }
