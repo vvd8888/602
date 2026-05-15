@@ -24,9 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * MainFrameController 登录交互控制类 对应 base/main-frame.fxml
- *  @FXML  属性 对应fxml文件中的
- *  @FXML 方法 对应于fxml文件中的 on***Click的属性
+ * MainFrameController 登录交互控制类
  */
 public class MainFrameController {
     class ChangePanelHandler implements EventHandler<ActionEvent> {
@@ -35,9 +33,10 @@ public class MainFrameController {
             changeContent(actionEvent);
         }
     }
-    private Map<String,Tab> tabMap = new HashMap<String,Tab>();
-    private Map<String,Scene> sceneMap = new HashMap<String,Scene>();
-    private Map<String,ToolController> controlMap =new HashMap<String,ToolController>();
+    private Map<String,Tab> tabMap = new HashMap<>();
+    private Map<String,Scene> sceneMap = new HashMap<>();
+    private Map<String,Object> controlMap = new HashMap<>();
+
     @FXML
     private MenuBar menuBar;
     @FXML
@@ -52,10 +51,8 @@ public class MainFrameController {
     void addMenuItems(Menu parent, List<Map> mList) {
         String name, title;
         List sList;
-        Map ms;
-        Menu menu;
         MenuItem item;
-        for ( Map m :mList) {
+        for (Map m : mList) {
             sList = (List<Map>)m.get("sList");
             name = (String)m.get("name");
             title = (String)m.get("title");
@@ -65,25 +62,17 @@ public class MainFrameController {
                 item.setText(title);
                 item.setOnAction(this::changeContent);
                 parent.getItems().add(item);
-            }else {
-                menu = new Menu();
+            } else {
+                Menu menu = new Menu();
                 menu.setText(title);
-                addMenuItems(menu,sList);
+                addMenuItems(menu, sList);
                 parent.getItems().add(menu);
             }
         }
     }
 
-    /**
-     * 页面加载对象创建完成初始话方法，页面中控件属性的设置，初始数据显示等初始操作都在这里完成，其他代码都事件处理方法里
-     * 系统初始时为没个角色增加了框架已经实现好了基础管理的功能，采用代码显示添加的方法加入，加入完缺省的功能菜单后，通过
-     * HttpRequestUtil.request("/api/base/getMenuList",new DataRequest())加载用菜单管理功能，维护的菜单
-     * 项目开发过程中，同学可以扩该方法，增肌自己设计的功能菜单，也可以通过菜单管理程序添加菜单，框架自动加载菜单管理维护的菜单，
-     * 是新功能扩展
-     */
     public void addMenuItem(Menu menu, String name, String title){
-        MenuItem item;
-        item = new MenuItem();
+        MenuItem item = new MenuItem();
         item.setText(title);
         item.setId(name);
         item.setOnAction(this::changeContent);
@@ -91,55 +80,42 @@ public class MainFrameController {
     }
 
     public void initMenuBar(List<Map> mList){
-        Menu menu;
-        Map m;
-        int i;
-        List<Map> sList;
-        for(i = 0; i < mList.size();i++) {
-            m = mList.get(i);
-            sList = (List<Map>)m.get("sList");
-            menu = new Menu();
+        for(int i = 0; i < mList.size(); i++) {
+            Map m = mList.get(i);
+            List<Map> sList = (List<Map>)m.get("sList");
+            Menu menu = new Menu();
             menu.setText((String)m.get("title"));
-            if(sList != null && sList.size()> 0) {
-                addMenuItems(menu,sList);
+            if(sList != null && sList.size() > 0) {
+                addMenuItems(menu, sList);
             }
             menuBar.getMenus().add(menu);
         }
     }
 
-    void addMenuItems( TreeItem<MyTreeNode> parent, List<Map> mList) {
-        List sList;
-        TreeItem<MyTreeNode> menu;
-        for ( Map m :mList) {
-            sList = (List<Map>)m.get("sList");
-            menu = new TreeItem<>(new MyTreeNode(null,(String)m.get("name") ,(String)m.get("title"),0));
+    void addMenuItems(TreeItem<MyTreeNode> parent, List<Map> mList) {
+        for (Map m : mList) {
+            List sList = (List<Map>)m.get("sList");
+            TreeItem<MyTreeNode> menu = new TreeItem<>(new MyTreeNode(null,(String)m.get("name"), (String)m.get("title"), 0));
             parent.getChildren().add(menu);
-            if(sList !=  null && sList.size()> 0) {
+            if(sList != null && sList.size() > 0) {
                 addMenuItems(menu, sList);
             }
         }
     }
 
     public void initMenuTree(List<Map> mList) {
-        String role = AppStore.getJwt().getRole();
-        MyTreeNode node = new MyTreeNode(null, null,"菜单",0);
+        MyTreeNode node = new MyTreeNode(null, null, "菜单", 0);
         TreeItem<MyTreeNode> root = new TreeItem<>(node);
-        TreeItem<MyTreeNode>  menu;
-        int i,j;
-        Map m;
-        List<Map> sList;
-        for(i = 0; i < mList.size();i++) {
-            m = mList.get(i);
-            sList = (List<Map>)m.get("sList");
-            menu = new TreeItem<>(new MyTreeNode(null, (String)m.get("name"), (String)m.get("title"), (Integer)m.get("isLeft")));
-            if(sList != null && sList.size()> 0) {
-                addMenuItems(menu,sList);
+
+        for(int i = 0; i < mList.size(); i++) {
+            Map m = mList.get(i);
+            List<Map> sList = (List<Map>)m.get("sList");
+            TreeItem<MyTreeNode> menu = new TreeItem<>(new MyTreeNode(null, (String)m.get("name"), (String)m.get("title"), (Integer)m.get("isLeft")));
+            if(sList != null && sList.size() > 0) {
+                addMenuItems(menu, sList);
             }
             root.getChildren().add(menu);
         }
-
-        // 新增：手动添加老师开设课程菜单
-        addTeacherCourseMenuToTree(root, role);
 
         menuTree.setRoot(root);
         menuTree.setShowRoot(false);
@@ -154,236 +130,21 @@ public class MainFrameController {
                     return;
                 String name = menu.getValue();
                 if(name == null || name.length() == 0)
-                    return ;
+                    return;
                 if("logout".equals(name)) {
                     logout();
-                }else if(name.endsWith("Command")){
+                } else if(name.endsWith("Command")){
                     try {
                         Method m = this.getClass().getMethod(name);
                         m.invoke(this);
-                    }catch(Exception e) {
+                    } catch(Exception e) {
                         e.printStackTrace();
                     }
-                }else {
-                    changeContent(name,menu.getLabel());
+                } else {
+                    changeContent(name, menu.getLabel());
                 }
             }
         });
-    }
-
-    /**
-     * 手动添加老师开设课程菜单到菜单树
-     */
-    private void addTeacherCourseMenuToTree(TreeItem<MyTreeNode> root, String role) {
-        System.out.println("=== 添加老师课程菜单到菜单树 ===");
-        System.out.println("当前用户角色: " + role);
-
-        // 只有老师角色（teacher 或 2）才显示
-        if (!"teacher".equals(role) && !"2".equals(role)) {
-            System.out.println("当前用户不是老师，不添加老师菜单");
-            return;
-        }
-
-        System.out.println("当前用户是老师，添加老师菜单");
-
-        // 查找是否已存在"老师功能"菜单
-        TreeItem<MyTreeNode> teacherMenu = null;
-        for (TreeItem<MyTreeNode> child : root.getChildren()) {
-            if ("老师功能".equals(child.getValue().getLabel())) {
-                teacherMenu = child;
-                System.out.println("找到已存在的老师功能菜单");
-                break;
-            }
-        }
-
-        // 如果没有"老师功能"菜单，创建一个
-        if (teacherMenu == null) {
-            System.out.println("创建新的老师功能菜单");
-            teacherMenu = new TreeItem<>(new MyTreeNode(null, "teacher-menu", "老师功能", 0));
-            root.getChildren().add(teacherMenu);
-        }
-
-        // 添加"开设课程"子菜单
-        boolean exists = false;
-        for (TreeItem<MyTreeNode> child : teacherMenu.getChildren()) {
-            if ("teacher-open-course".equals(child.getValue().getValue())) {
-                exists = true;
-                System.out.println("开设课程菜单已存在");
-                break;
-            }
-        }
-
-        if (!exists) {
-            System.out.println("添加开设课程子菜单");
-            TreeItem<MyTreeNode> openCourseItem = new TreeItem<>(
-                    new MyTreeNode(null, "teacher-open-course", "开设课程", 0)
-            );
-            teacherMenu.getChildren().add(openCourseItem);
-            teacherMenu.setExpanded(true);
-        }
-    }
-
-    /**
-     * 手动添加老师开设课程菜单到菜单栏
-     */
-    private void addTeacherCourseMenuToMenuBar() {
-        System.out.println("=== 添加老师课程菜单到菜单栏 ===");
-
-        try {
-            String role = AppStore.getJwt().getRole();
-            System.out.println("菜单栏 - 当前用户角色: " + role);
-
-            if (!"teacher".equals(role) && !"2".equals(role)) {
-                System.out.println("菜单栏 - 当前用户不是老师，不添加老师菜单");
-                return;
-            }
-
-            System.out.println("菜单栏 - 当前用户是老师，添加老师菜单");
-
-            // 查找是否已存在"老师功能"菜单
-            Menu teacherMenu = null;
-            for (Menu menu : menuBar.getMenus()) {
-                if ("老师功能".equals(menu.getText())) {
-                    teacherMenu = menu;
-                    System.out.println("菜单栏 - 找到已存在的老师功能菜单");
-                    break;
-                }
-            }
-
-            // 如果没有"老师功能"菜单，创建一个
-            if (teacherMenu == null) {
-                System.out.println("菜单栏 - 创建新的老师功能菜单");
-                teacherMenu = new Menu("老师功能");
-                menuBar.getMenus().add(teacherMenu);
-            }
-
-            // 检查是否已存在"开设课程"子菜单
-            boolean exists = false;
-            for (MenuItem item : teacherMenu.getItems()) {
-                if ("teacher-open-course".equals(item.getId())) {
-                    exists = true;
-                    System.out.println("菜单栏 - 开设课程菜单已存在");
-                    break;
-                }
-            }
-
-            if (!exists) {
-                System.out.println("菜单栏 - 添加开设课程子菜单");
-                MenuItem openCourseItem = new MenuItem("开设课程");
-                openCourseItem.setId("teacher-open-course");
-                openCourseItem.setOnAction(this::changeContent);
-                teacherMenu.getItems().add(openCourseItem);
-            }
-
-        } catch (Exception e) {
-            System.out.println("添加老师菜单到菜单栏失败: " + e.getMessage());
-        }
-    }
-
-    /**
-     * 强制添加测试菜单（无论如何都显示）
-     */
-    private void addForceTestMenus() {
-        System.out.println("=== 强制添加测试菜单 ===");
-
-        try {
-            // 1. 强制添加测试菜单到顶部菜单栏
-            addForceTestMenuToMenuBar();
-
-            // 2. 强制添加测试菜单到左侧菜单树
-            addForceTestMenuToTree();
-
-            // 3. 打印当前用户信息
-            printCurrentUserInfo();
-
-        } catch (Exception e) {
-            System.out.println("❌ 添加测试菜单时出错: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * 强制添加测试菜单到顶部菜单栏
-     */
-    private void addForceTestMenuToMenuBar() {
-        System.out.println("正在添加测试菜单到顶部菜单栏...");
-
-        // 创建一个独立的"测试菜单"，不依赖角色
-        Menu testMenu = new Menu("🚀 测试菜单");
-        MenuItem testItem1 = new MenuItem("测试老师课程");
-        testItem1.setId("teacher-open-course");
-        testItem1.setOnAction(this::changeContent);
-
-        MenuItem testItem2 = new MenuItem("测试界面2");
-        testItem2.setOnAction(e -> {
-            System.out.println("测试菜单2被点击");
-            showTestAlert("测试菜单2");
-        });
-
-        testMenu.getItems().addAll(testItem1, testItem2);
-
-        // 添加到菜单栏
-        menuBar.getMenus().add(testMenu);
-
-        System.out.println("✅ 测试菜单已添加到顶部菜单栏");
-    }
-
-    /**
-     * 强制添加测试菜单到左侧菜单树
-     */
-    private void addForceTestMenuToTree() {
-        System.out.println("正在添加测试菜单到左侧菜单树...");
-
-        // 获取菜单树的根节点
-        TreeItem<MyTreeNode> root = menuTree.getRoot();
-        if (root == null) {
-            System.out.println("❌ 菜单树根节点为null");
-            return;
-        }
-
-        // 创建一个"测试功能"节点
-        MyTreeNode testNode = new MyTreeNode(null, "test-menu", "功能", 0);
-        TreeItem<MyTreeNode> testTreeItem = new TreeItem<>(testNode);
-
-        // 添加"测试老师课程"子节点
-        MyTreeNode openCourseNode = new MyTreeNode(null, "teacher-open-course", "老师课程", 0);
-        TreeItem<MyTreeNode> openCourseItem = new TreeItem<>(openCourseNode);
-        testTreeItem.getChildren().add(openCourseItem);
-
-        // 添加到根节点
-        root.getChildren().add(testTreeItem);
-
-        // 展开测试功能节点
-        testTreeItem.setExpanded(true);
-
-        System.out.println("✅ 测试菜单已添加到左侧菜单树");
-    }
-
-    /**
-     * 打印当前用户信息
-     */
-    private void printCurrentUserInfo() {
-        try {
-            String role = AppStore.getJwt().getRole();
-            String username = AppStore.getJwt().getUsername();
-            System.out.println("=== 当前用户信息 ===");
-            System.out.println("用户名: " + username);
-            System.out.println("角色: " + role);
-            System.out.println("是否是老师: " + ("teacher".equals(role) || "2".equals(role)));
-        } catch (Exception e) {
-            System.out.println("❌ 获取用户信息失败: " + e.getMessage());
-        }
-    }
-
-    /**
-     * 显示测试弹窗
-     */
-    private void showTestAlert(String message) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("测试");
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.show();
     }
 
     @FXML
@@ -405,23 +166,217 @@ public class MainFrameController {
         initMenuBar(mList);
         initMenuTree(mList);
 
+        // 添加自定义菜单
+        addCustomMenus();
+
         contentTabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.ALL_TABS);
         contentTabPane.setStyle("-fx-background-image: url('shanda1.jpg'); -fx-background-repeat: no-repeat; -fx-background-size: cover;");
 
-        // 新增：手动添加老师开设课程菜单到菜单栏
-        addTeacherCourseMenuToMenuBar();
-
-        // 新增：强制添加测试菜单（无论如何都显示）
-        addForceTestMenus();
+        // 打印调试信息
+        printUserInfo();
 
         System.out.println("✅ MainFrameController 初始化完成");
         System.out.println("菜单栏菜单数量: " + menuBar.getMenus().size());
     }
 
     /**
-     * 点击菜单栏中的"退出"菜单，执行onLogoutMenuClick方法 加载登录页面，切换回登录界面
-     * @param event
+     * 添加自定义菜单
      */
+    private void addCustomMenus() {
+        System.out.println("=== 添加自定义菜单 ===");
+
+        // 获取当前用户角色
+        String role = AppStore.getJwt() != null ? AppStore.getJwt().getRole() : "unknown";
+        System.out.println("当前用户角色: " + role);
+
+        // 1. 添加老师功能菜单
+        addTeacherMenu(role);
+
+        // 2. 添加学生功能菜单
+        addStudentMenu(role);
+
+        // 3. 添加测试功能菜单
+        addTestMenu();
+    }
+
+    /**
+     * 判断是否为管理员
+     */
+    private boolean isAdmin(String role) {
+        return "admin".equals(role) || "administrator".equals(role) || "超级管理员".equals(role)
+                || "管理员".equals(role) || "0".equals(role) || "ROLE_ADMIN".equals(role);
+    }
+
+    /**
+     * 判断是否为老师
+     */
+    private boolean isTeacher(String role) {
+        return "teacher".equals(role) || "老师".equals(role) || "教师".equals(role)
+                || "2".equals(role) || "ROLE_TEACHER".equals(role);
+    }
+
+    /**
+     * 判断是否为学生
+     */
+    private boolean isStudent(String role) {
+        return "student".equals(role) || "学生".equals(role) || "1".equals(role)
+                || "ROLE_STUDENT".equals(role);
+    }
+
+    /**
+     * 添加老师菜单
+     */
+    private void addTeacherMenu(String role) {
+        // 老师和管理员都能看到老师功能
+        if (!isTeacher(role) && !isAdmin(role)) {
+            System.out.println("当前用户不是老师也不是管理员，不显示老师功能菜单");
+            return;
+        }
+
+        // 在菜单栏中添加老师功能菜单
+        Menu teacherMenu = new Menu("老师功能");
+        menuBar.getMenus().add(teacherMenu);
+
+        MenuItem openCourseItem = new MenuItem("开设课程");
+        openCourseItem.setId("teacher-open-course");
+        openCourseItem.setOnAction(this::changeContent);
+        teacherMenu.getItems().add(openCourseItem);
+
+        MenuItem courseManageItem = new MenuItem("课程管理");
+        courseManageItem.setId("teacher-course-manage");
+        courseManageItem.setOnAction(this::changeContent);
+        teacherMenu.getItems().add(courseManageItem);
+
+        // 在菜单树中添加老师功能菜单
+        MyTreeNode rootNode = (MyTreeNode) menuTree.getRoot().getValue();
+        if (rootNode == null) {
+            rootNode = new MyTreeNode(null, null, "菜单", 0);
+            TreeItem<MyTreeNode> root = new TreeItem<>(rootNode);
+            menuTree.setRoot(root);
+        }
+
+        TreeItem<MyTreeNode> root = menuTree.getRoot();
+        TreeItem<MyTreeNode> teacherMenuItem = new TreeItem<>(new MyTreeNode(null, "teacher-menu", "老师功能", 0));
+
+        TreeItem<MyTreeNode> openCourseTreeItem = new TreeItem<>(
+                new MyTreeNode(null, "teacher-open-course", "开设课程", 0)
+        );
+        teacherMenuItem.getChildren().add(openCourseTreeItem);
+
+        TreeItem<MyTreeNode> courseManageTreeItem = new TreeItem<>(
+                new MyTreeNode(null, "teacher-course-manage", "课程管理", 0)
+        );
+        teacherMenuItem.getChildren().add(courseManageTreeItem);
+
+        root.getChildren().add(teacherMenuItem);
+
+        System.out.println("✅ 老师功能菜单已添加");
+    }
+
+    /**
+     * 添加学生菜单
+     */
+    private void addStudentMenu(String role) {
+        // 学生和管理员都能看到学生功能
+        if (!isStudent(role) && !isAdmin(role)) {
+            System.out.println("当前用户不是学生也不是管理员，不显示学生功能菜单");
+            return;
+        }
+
+        // 在菜单栏中添加学生功能菜单
+        Menu studentMenu = new Menu("学生功能");
+        menuBar.getMenus().add(studentMenu);
+
+        MenuItem selectCourseItem = new MenuItem("选课");
+        selectCourseItem.setId("student-select-course");
+        selectCourseItem.setOnAction(this::changeContent);
+        studentMenu.getItems().add(selectCourseItem);
+
+        MenuItem myCourseItem = new MenuItem("我的课程");
+        myCourseItem.setId("student-my-course");
+        myCourseItem.setOnAction(this::changeContent);
+        studentMenu.getItems().add(myCourseItem);
+
+        // 在菜单树中添加学生功能菜单
+        TreeItem<MyTreeNode> root = menuTree.getRoot();
+        TreeItem<MyTreeNode> studentMenuItem = new TreeItem<>(new MyTreeNode(null, "student-menu", "学生功能", 0));
+
+        TreeItem<MyTreeNode> selectCourseTreeItem = new TreeItem<>(
+                new MyTreeNode(null, "student-select-course", "选课", 0)
+        );
+        studentMenuItem.getChildren().add(selectCourseTreeItem);
+
+        TreeItem<MyTreeNode> myCourseTreeItem = new TreeItem<>(
+                new MyTreeNode(null, "student-my-course", "我的课程", 0)
+        );
+        studentMenuItem.getChildren().add(myCourseTreeItem);
+
+        root.getChildren().add(studentMenuItem);
+
+        System.out.println("✅ 学生功能菜单已添加");
+    }
+
+    /**
+     * 添加测试菜单
+     */
+    private void addTestMenu() {
+        // 所有人都能看到测试功能
+        Menu testMenu = new Menu("测试功能");
+        menuBar.getMenus().add(testMenu);
+
+        MenuItem teacherTestItem = new MenuItem("老师课程测试");
+        teacherTestItem.setId("teacher-open-course");
+        teacherTestItem.setOnAction(this::changeContent);
+        testMenu.getItems().add(teacherTestItem);
+
+        // 获取当前用户角色
+        String role = AppStore.getJwt() != null ? AppStore.getJwt().getRole() : "unknown";
+        if (isStudent(role) || isAdmin(role)) {
+            MenuItem studentTestItem = new MenuItem("学生选课测试");
+            studentTestItem.setId("student-select-course");
+            studentTestItem.setOnAction(this::changeContent);
+            testMenu.getItems().add(studentTestItem);
+        }
+
+        // 在菜单树中添加测试功能菜单
+        TreeItem<MyTreeNode> root = menuTree.getRoot();
+        TreeItem<MyTreeNode> testMenuItem = new TreeItem<>(new MyTreeNode(null, "test-menu", "测试功能", 0));
+
+        TreeItem<MyTreeNode> teacherTestTreeItem = new TreeItem<>(
+                new MyTreeNode(null, "teacher-open-course", "老师课程测试", 0)
+        );
+        testMenuItem.getChildren().add(teacherTestTreeItem);
+
+        if (isStudent(role) || isAdmin(role)) {
+            TreeItem<MyTreeNode> studentTestTreeItem = new TreeItem<>(
+                    new MyTreeNode(null, "student-select-course", "学生选课测试", 0)
+            );
+            testMenuItem.getChildren().add(studentTestTreeItem);
+        }
+
+        root.getChildren().add(testMenuItem);
+
+        System.out.println("✅ 测试功能菜单已添加");
+    }
+
+    /**
+     * 打印用户信息
+     */
+    private void printUserInfo() {
+        try {
+            String role = AppStore.getJwt() != null ? AppStore.getJwt().getRole() : "unknown";
+            String username = AppStore.getJwt() != null ? AppStore.getJwt().getUsername() : "unknown";
+            System.out.println("=== 当前用户信息 ===");
+            System.out.println("用户名: " + username);
+            System.out.println("角色: " + role);
+            System.out.println("是否是老师: " + isTeacher(role));
+            System.out.println("是否是学生: " + isStudent(role));
+            System.out.println("是否是管理员: " + isAdmin(role));
+        } catch (Exception e) {
+            System.out.println("获取用户信息失败: " + e.getMessage());
+        }
+    }
+
     protected void onLogoutMenuClick(ActionEvent event){
         logout();
     }
@@ -436,9 +391,9 @@ public class MainFrameController {
         }
     }
 
-    public  void changeContent(ActionEvent ae) {
+    public void changeContent(ActionEvent ae) {
         Object obj = ae.getSource();
-        String name= null, title= null;
+        String name = null, title = null;
         if(obj instanceof MenuItem) {
             MenuItem item = (MenuItem)obj;
             name = item.getId();
@@ -446,32 +401,45 @@ public class MainFrameController {
         }
         if(name == null)
             return;
-        changeContent(name,title);
+        changeContent(name, title);
     }
 
     /**
-     * 点击菜单栏中的菜单 执行changeContent 在主框架工作区增加和显示一个工作面板
-     * @param name  菜单名 name.fxml 对应面板的配置文件
-     * @param title 菜单标题 工作区中的TablePane的标题
+     * 修改主工作区内容
      */
     public void changeContent(String name, String title) {
-        // 调试输出
         System.out.println("=== changeContent 被调用 ===");
         System.out.println("name = " + name);
         System.out.println("title = " + title);
-        System.out.println("尝试加载: " + name + ".fxml");
 
-        // 尝试多种路径
-        String[] possiblePaths = {
-                name + ".fxml",                      // teacher-open-course.fxml
-                "/" + name + ".fxml",               // /teacher-open-course.fxml
-                "com/teach/javafx/view/" + name + ".fxml",  // 完整路径
-                "/com/teach/javafx/view/" + name + ".fxml"  // 带斜杠的完整路径
-        };
+        // 获取当前用户角色
+        String role = AppStore.getJwt() != null ? AppStore.getJwt().getRole() : "unknown";
+        System.out.println("当前用户角色: " + role);
 
-        for (String path : possiblePaths) {
-            java.net.URL url = MainApplication.class.getResource(path);
-            System.out.println("尝试路径: " + path + " -> " + (url != null ? "✅ 找到" : "❌ 未找到"));
+        // 检查学生选课权限
+        if ("student-select-course".equals(name) || "student-my-course".equals(name)) {
+            if (!isStudent(role) && !isAdmin(role)) {
+                System.out.println("❌ 权限不足：只有学生和管理员可以访问学生功能");
+                Alert alert = new Alert(Alert.AlertType.WARNING);
+                alert.setTitle("权限不足");
+                alert.setHeaderText(null);
+                alert.setContentText("您没有权限访问学生功能，只有学生和管理员可以访问");
+                alert.showAndWait();
+                return;
+            }
+        }
+
+        // 检查老师功能权限
+        if ("teacher-open-course".equals(name) || "teacher-course-manage".equals(name)) {
+            if (!isTeacher(role) && !isAdmin(role)) {
+                System.out.println("❌ 权限不足：只有老师和管理员可以访问老师功能");
+                Alert alert = new Alert(Alert.AlertType.WARNING);
+                alert.setTitle("权限不足");
+                alert.setHeaderText(null);
+                alert.setContentText("您没有权限访问老师功能，只有老师和管理员可以访问");
+                alert.showAndWait();
+                return;
+            }
         }
 
         if(name == null || name.length() == 0)
@@ -488,34 +456,54 @@ public class MainFrameController {
         if(tab == null) {
             scene = sceneMap.get(name);
             if(scene == null) {
-                FXMLLoader fxmlLoader = new FXMLLoader(MainApplication.class.getResource(name + ".fxml"));
-                try {
-                    scene = new Scene(fxmlLoader.load(), 1024, 768);
-                    sceneMap.put(name, scene);
-                    System.out.println("✅ 加载成功");
-                } catch (IOException e) {
-                    System.out.println("❌ 加载失败: " + e.getMessage());
-                    e.printStackTrace();
+                // 尝试不同的路径
+                String[] possiblePaths = {
+                        "com/teach/javafx/view/" + name + ".fxml",  // 默认路径
+                        "/com/teach/javafx/view/" + name + ".fxml",  // 绝对路径
+                        name + ".fxml",  // 相对路径
+                        "/" + name + ".fxml"  // 绝对路径
+                };
 
-                    // 如果找不到文件，尝试不加 .fxml 后缀
+                FXMLLoader fxmlLoader = null;
+                boolean loaded = false;
+
+                for (String path : possiblePaths) {
                     try {
-                        fxmlLoader = new FXMLLoader(MainApplication.class.getResource(name));
-                        scene = new Scene(fxmlLoader.load(), 1024, 768);
-                        sceneMap.put(name, scene);
-                        System.out.println("✅ 加载成功（不加.fxml后缀）");
-                    } catch (IOException ex) {
-                        ex.printStackTrace();
-
-                        // 创建错误提示界面
-                        Label errorLabel = new Label("无法加载界面: " + name + "\n" + ex.getMessage());
-                        errorLabel.setStyle("-fx-text-fill: red; -fx-font-size: 16px; -fx-padding: 20;");
-                        scene = new Scene(new javafx.scene.layout.StackPane(errorLabel), 400, 200);
-                        sceneMap.put(name, scene);
+                        System.out.println("尝试加载路径: " + path);
+                        java.net.URL url = MainApplication.class.getResource(path);
+                        if (url != null) {
+                            System.out.println("找到资源: " + url);
+                            fxmlLoader = new FXMLLoader(url);
+                            scene = new Scene(fxmlLoader.load(), 1024, 768);
+                            sceneMap.put(name, scene);
+                            c = fxmlLoader.getController();
+                            if(c != null) {
+                                controlMap.put(name, c);
+                            }
+                            loaded = true;
+                            System.out.println("✅ 成功加载: " + path);
+                            break;
+                        } else {
+                            System.out.println("❌ 资源未找到: " + path);
+                        }
+                    } catch (Exception e) {
+                        System.out.println("加载失败 (" + path + "): " + e.getMessage());
                     }
                 }
-                c = fxmlLoader.getController();
-                if(c instanceof ToolController) {
-                    controlMap.put(name,(ToolController)c);
+
+                if (!loaded) {
+                    System.out.println("❌ 所有路径都尝试失败，创建默认界面");
+                    // 创建默认界面
+                    Label label = new Label("功能界面: " + title);
+                    label.setStyle("-fx-font-size: 24px; -fx-font-weight: bold;");
+
+                    // 使用StackPane避免VBox导入问题
+                    javafx.scene.layout.StackPane stackPane = new javafx.scene.layout.StackPane();
+                    stackPane.getChildren().add(label);
+                    stackPane.setAlignment(javafx.geometry.Pos.CENTER);
+
+                    scene = new Scene(stackPane, 600, 400);
+                    sceneMap.put(name, scene);
                 }
             }
             tab = new Tab(title);
@@ -532,27 +520,35 @@ public class MainFrameController {
     public void tabSelectedChanged(Event e) {
         Tab tab = (Tab)e.getSource();
         String name = tab.getId();
-        ToolController c = controlMap.get(name);
-        if(c != null)
-            c.doRefresh();
+        Object c = controlMap.get(name);
+        if(c != null) {
+            try {
+                // 尝试调用doRefresh方法
+                Method method = c.getClass().getMethod("doRefresh");
+                if (method != null) {
+                    method.invoke(c);
+                }
+            } catch (Exception ex) {
+                // 如果控制器没有doRefresh方法，忽略
+            }
+        }
     }
 
     /**
-     * 点击TablePane 标签页 的关闭图标 执行tabOnClosed方法
-     * @param e
+     * 关闭标签页
      */
     public void tabOnClosed(Event e) {
         Tab tab = (Tab)e.getSource();
         String name = tab.getId();
         contentTabPane.getTabs().remove(tab);
         tabMap.remove(name);
+        controlMap.remove(name);
     }
 
     /**
-     * ToolController getCurrentToolController() 获取当前显示的面板的控制对象， 如果面板响应编辑菜单中的编辑命名，交互控制需要继承 ToolController， 重写里面的方法
-     * @return
+     * 获取当前显示的面板的控制对象
      */
-    public ToolController getCurrentToolController(){
+    public Object getCurrentToolController(){
         Iterator<String> iterator = controlMap.keySet().iterator();
         String name;
         Tab tab;
@@ -567,77 +563,127 @@ public class MainFrameController {
     }
 
     /**
-     * 点击编辑菜单中的"新建"菜单，执行doNewCommand方法， 执行当前显示的面板对应的控制类中的doNew()方法
+     * 新建命令
      */
-    protected  void doNewCommand(){
-        ToolController c = getCurrentToolController();
+    protected void doNewCommand(){
+        Object c = getCurrentToolController();
         if(c == null)
             return;
-        c.doNew();
-    }
-
-    /**
-     * 点击编辑菜单中的"保存"菜单，执行doSaveCommand方法， 执行当前显示的面板对应的控制类中的doSave()方法
-     */
-    protected  void doSaveCommand(){
-        ToolController c = getCurrentToolController();
-        if(c == null)
-            return;
-        c.doSave();
-    }
-
-    /**
-     * 点击编辑菜单中的"删除"菜单，执行doDeleteCommand方法， 执行当前显示的面板对应的控制类中的doDelete()方法
-     */
-    protected  void doDeleteCommand(){
-        ToolController c = getCurrentToolController();
-        if(c == null)
-            return;
-        c.doDelete();
-    }
-
-    /**
-     * 点击编辑菜单中的"打印"菜单，执行doPrintCommand方法， 执行当前显示的面板对应的控制类中的doPrint()方法
-     */
-    protected  void doPrintCommand(){
-        ToolController c = getCurrentToolController();
-        if(c == null)
-            return;
-        c.doPrint();
-    }
-
-    /**
-     * 点击编辑菜单中的"导出"菜单，执行doExportCommand方法， 执行当前显示的面板对应的控制类中的doExport方法
-     */
-    protected  void doExportCommand(){
-        ToolController c = getCurrentToolController();
-        if(c == null)
-            return;
-        c.doExport();
-    }
-
-    /**
-     * 点击编辑菜单中的"导入"菜单，执行doImportCommand方法， 执行当前显示的面板对应的控制类中的doImport()方法
-     */
-    protected  void doImportCommand(){
-        ToolController c = getCurrentToolController();
-        if(c == null)
-            return;
-        c.doImport();
-    }
-
-    /**
-     * 点击编辑菜单中的"测试"菜单，执行doTestCommand方法， 执行当前显示的面板对应的控制类中的doImport()方法
-     */
-    protected  void doTestCommand(){
-        ToolController c = getCurrentToolController();
-        if(c == null) {
-            c= new ToolController(){};
+        try {
+            Method method = c.getClass().getMethod("doNew");
+            if (method != null) {
+                method.invoke(c);
+            }
+        } catch (Exception e) {
+            System.out.println("⚠️ 控制器没有doNew方法: " + e.getMessage());
         }
-        c.doTest();
     }
 
-    public ToolController getToolController(String name){
-        return  controlMap.get(name);
+    /**
+     * 保存命令
+     */
+    protected void doSaveCommand(){
+        Object c = getCurrentToolController();
+        if(c == null)
+            return;
+        try {
+            Method method = c.getClass().getMethod("doSave");
+            if (method != null) {
+                method.invoke(c);
+            }
+        } catch (Exception e) {
+            System.out.println("⚠️ 控制器没有doSave方法: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 删除命令
+     */
+    protected void doDeleteCommand(){
+        Object c = getCurrentToolController();
+        if(c == null)
+            return;
+        try {
+            Method method = c.getClass().getMethod("doDelete");
+            if (method != null) {
+                method.invoke(c);
+            }
+        } catch (Exception e) {
+            System.out.println("⚠️ 控制器没有doDelete方法: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 打印命令
+     */
+    protected void doPrintCommand(){
+        Object c = getCurrentToolController();
+        if(c == null)
+            return;
+        try {
+            Method method = c.getClass().getMethod("doPrint");
+            if (method != null) {
+                method.invoke(c);
+            }
+        } catch (Exception e) {
+            System.out.println("⚠️ 控制器没有doPrint方法: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 导出命令
+     */
+    protected void doExportCommand(){
+        Object c = getCurrentToolController();
+        if(c == null)
+            return;
+        try {
+            Method method = c.getClass().getMethod("doExport");
+            if (method != null) {
+                method.invoke(c);
+            }
+        } catch (Exception e) {
+            System.out.println("⚠️ 控制器没有doExport方法: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 导入命令
+     */
+    protected void doImportCommand(){
+        Object c = getCurrentToolController();
+        if(c == null)
+            return;
+        try {
+            Method method = c.getClass().getMethod("doImport");
+            if (method != null) {
+                method.invoke(c);
+            }
+        } catch (Exception e) {
+            System.out.println("⚠️ 控制器没有doImport方法: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 测试命令
+     */
+    protected void doTestCommand(){
+        Object c = getCurrentToolController();
+        if(c == null) {
+            System.out.println("当前没有选中的控制器");
+            return;
+        }
+        try {
+            Method method = c.getClass().getMethod("doTest");
+            if (method != null) {
+                method.invoke(c);
+            }
+        } catch (Exception e) {
+            System.out.println("⚠️ 控制器没有doTest方法: " + e.getMessage());
+        }
+    }
+
+    public Object getToolController(String name){
+        return controlMap.get(name);
     }
 }

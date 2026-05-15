@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.control.ToggleGroup?>
+
+<VBox xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.teach.javafx.controller.StudentSelectCourseController"
+      spacing="10" style="-fx-padding: 20;">
+
+    <!-- 顶部标题和统计信息 -->
+    <HBox spacing="20" alignment="CENTER_LEFT">
+        <Label text="🎒 学生选课中心" style="-fx-font-size: 20px; -fx-font-weight: bold;" />
+        <HBox spacing="10">
+            <Label text="可选课程总数：" style="-fx-font-weight: bold;" />
+            <Label fx:id="totalCourseCount" text="0" style="-fx-text-fill: blue; -fx-font-weight: bold;" />
+        </HBox>
+        <HBox spacing="10">
+            <Label text="已选课程数：" style="-fx-font-weight: bold;" />
+            <Label fx:id="selectedCourseCount" text="0" style="-fx-text-fill: green; -fx-font-weight: bold;" />
+        </HBox>
+        <HBox spacing="10">
+            <Label text="剩余可选：" style="-fx-font-weight: bold;" />
+            <Label fx:id="remainingCourseCount" text="0" style="-fx-text-fill: orange; -fx-font-weight: bold;" />
+        </HBox>
+    </HBox>
+
+    <!-- 搜索和筛选区域 -->
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <TextField fx:id="searchField" promptText="搜索课程名称或教师..." prefWidth="200" />
+        <Button text="搜索" onAction="#handleSearch" />
+        <Button text="重置" onAction="#handleReset" />
+        <Label text="状态筛选：" />
+        <ToggleButton text="全部" fx:id="toggleAll" toggleGroup="$statusGroup" selected="true" />
+        <ToggleButton text="可选" fx:id="toggleAvailable" toggleGroup="$statusGroup" />
+        <ToggleButton text="已选" fx:id="toggleSelected" toggleGroup="$statusGroup" />
+    </HBox>
+
+    <!-- 课程列表区域 -->
+    <TabPane fx:id="mainTabPane" tabClosingPolicy="UNAVAILABLE">
+        <Tab text="可选课程列表" fx:id="availableTab">
+            <VBox>
+                <TableView fx:id="courseTable" prefHeight="400">
+                    <columns>
+                        <TableColumn text="课程编号" fx:id="courseIdCol" prefWidth="80" />
+                        <TableColumn text="课程名称" fx:id="courseNameCol" prefWidth="150" />
+                        <TableColumn text="课程类型" fx:id="courseTypeCol" prefWidth="100" />
+                        <TableColumn text="学分" fx:id="creditCol" prefWidth="60" />
+                        <TableColumn text="教师" fx:id="teacherNameCol" prefWidth="120" />
+                        <TableColumn text="已选/总人数" fx:id="studentCountCol" prefWidth="100" />
+                        <TableColumn text="上课时间" fx:id="courseTimeCol" prefWidth="150" />
+                        <TableColumn text="操作" fx:id="actionCol" prefWidth="100" />
+                    </columns>
+                </TableView>
+                <HBox spacing="10" style="-fx-padding: 10 0 0 0;">
+                    <Button text="一键全选" onAction="#handleSelectAll" style="-fx-background-color: #4CAF50; -fx-text-fill: white;" />
+                    <Button text="刷新列表" onAction="#handleRefresh" />
+                </HBox>
+            </VBox>
+        </Tab>
+
+        <Tab text="已选课程列表" fx:id="selectedTab">
+            <VBox>
+                <TableView fx:id="selectedCourseTable" prefHeight="400">
+                    <columns>
+                        <TableColumn text="课程编号" fx:id="selectedCourseIdCol" prefWidth="80" />
+                        <TableColumn text="课程名称" fx:id="selectedCourseNameCol" prefWidth="150" />
+                        <TableColumn text="课程类型" fx:id="selectedCourseTypeCol" prefWidth="100" />
+                        <TableColumn text="学分" fx:id="selectedCreditCol" prefWidth="60" />
+                        <TableColumn text="教师" fx:id="selectedTeacherNameCol" prefWidth="120" />
+                        <TableColumn text="上课时间" fx:id="selectedCourseTimeCol" prefWidth="150" />
+                        <TableColumn text="操作" fx:id="selectedActionCol" prefWidth="100" />
+                    </columns>
+                </TableView>
+                <HBox spacing="10" style="-fx-padding: 10 0 0 0;">
+                    <Label fx:id="totalCreditsLabel" text="总学分：0" style="-fx-font-weight: bold;" />
+                    <Button text="退选全部" onAction="#handleDeselectAll" style="-fx-background-color: #f44336; -fx-text-fill: white;" />
+                </HBox>
+            </VBox>
+        </Tab>
+    </TabPane>
+
+    <!-- 底部操作区域 -->
+    <HBox spacing="20" alignment="CENTER_RIGHT" style="-fx-padding: 20 0 0 0;">
+        <Button text="提交选课" onAction="#handleSubmitSelection" style="-fx-background-color: #2196F3; -fx-text-fill: white; -fx-font-size: 14px;" />
+        <Button text="查看选课结果" onAction="#handleViewResult" />
+    </HBox>
+</VBox>
