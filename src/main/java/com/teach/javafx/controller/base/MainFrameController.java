@@ -179,9 +179,9 @@ public class MainFrameController {
         contentTabPane.setStyle("-fx-background-image: url('shanda1.jpg'); -fx-background-repeat: no-repeat; -fx-background-size: cover;");
 
         // 新增：顶级「请假管理」菜单
-        Menu leaveMenu = new Menu("请假管理");
-        addMenuItem(leaveMenu, "student-leave-panel", "请假管理");
-        menuBar.getMenus().add(leaveMenu);
+        //Menu leaveMenu = new Menu("请假管理");
+       // addMenuItem(leaveMenu, "student-leave-panel", "请假管理");
+       // menuBar.getMenus().add(leaveMenu);
 
         // 先不加条件，直接添加菜单（用于测试）
        // Menu infoMenu = new Menu("信息查询");
