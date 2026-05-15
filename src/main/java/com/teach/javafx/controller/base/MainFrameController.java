@@ -13,6 +13,9 @@ import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
+import javafx.geometry.Pos;
 import com.teach.javafx.request.DataRequest;
 import com.teach.javafx.request.DataResponse;
 
@@ -163,8 +166,16 @@ public class MainFrameController {
         List<Map> mList = (List<Map>) res.getData();
         System.out.println("获取到的菜单列表大小: " + (mList != null ? mList.size() : 0));
 
-        initMenuBar(mList);
-        initMenuTree(mList);
+        if (mList != null && !mList.isEmpty()) {
+            initMenuBar(mList);
+            initMenuTree(mList);
+        } else {
+            System.out.println("警告: 菜单列表为空");
+            // 如果后端没有返回菜单，初始化一个基本的菜单树
+            MyTreeNode node = new MyTreeNode(null, null, "菜单", 0);
+            TreeItem<MyTreeNode> root = new TreeItem<>(node);
+            menuTree.setRoot(root);
+        }
 
         // 添加自定义菜单
         addCustomMenus();
@@ -176,7 +187,6 @@ public class MainFrameController {
         printUserInfo();
 
         System.out.println("✅ MainFrameController 初始化完成");
-        System.out.println("菜单栏菜单数量: " + menuBar.getMenus().size());
     }
 
     /**
@@ -189,14 +199,11 @@ public class MainFrameController {
         String role = AppStore.getJwt() != null ? AppStore.getJwt().getRole() : "unknown";
         System.out.println("当前用户角色: " + role);
 
-        // 1. 添加老师功能菜单
-        addTeacherMenu(role);
+        // 1. 在菜单栏添加自定义菜单
+        addCustomMenusToMenuBar(role);
 
-        // 2. 添加学生功能菜单
-        addStudentMenu(role);
-
-        // 3. 添加测试功能菜单
-        addTestMenu();
+        // 2. 在菜单树添加自定义菜单
+        addCustomMenusToTree(role);
     }
 
     /**
@@ -224,103 +231,46 @@ public class MainFrameController {
     }
 
     /**
-     * 添加老师菜单
+     * 在菜单栏添加自定义菜单
      */
-    private void addTeacherMenu(String role) {
-        // 老师和管理员都能看到老师功能
-        if (!isTeacher(role) && !isAdmin(role)) {
-            System.out.println("当前用户不是老师也不是管理员，不显示老师功能菜单");
-            return;
+    private void addCustomMenusToMenuBar(String role) {
+        // 添加老师功能菜单
+        if (isTeacher(role) || isAdmin(role)) {
+            Menu teacherMenu = new Menu("老师功能");
+            menuBar.getMenus().add(teacherMenu);
+
+            MenuItem openCourseItem = new MenuItem("开设课程");
+            openCourseItem.setId("teacher-open-course");
+            openCourseItem.setOnAction(this::changeContent);
+            teacherMenu.getItems().add(openCourseItem);
+
+            MenuItem courseManageItem = new MenuItem("课程管理");
+            courseManageItem.setId("teacher-course-manage");
+            courseManageItem.setOnAction(this::changeContent);
+            teacherMenu.getItems().add(courseManageItem);
+
+            System.out.println("✅ 老师功能菜单已添加到菜单栏");
         }
 
-        // 在菜单栏中添加老师功能菜单
-        Menu teacherMenu = new Menu("老师功能");
-        menuBar.getMenus().add(teacherMenu);
+        // 添加学生功能菜单
+        if (isStudent(role) || isAdmin(role)) {
+            Menu studentMenu = new Menu("学生功能");
+            menuBar.getMenus().add(studentMenu);
 
-        MenuItem openCourseItem = new MenuItem("开设课程");
-        openCourseItem.setId("teacher-open-course");
-        openCourseItem.setOnAction(this::changeContent);
-        teacherMenu.getItems().add(openCourseItem);
+            MenuItem selectCourseItem = new MenuItem("选课");
+            selectCourseItem.setId("student-select-course");
+            selectCourseItem.setOnAction(this::changeContent);
+            studentMenu.getItems().add(selectCourseItem);
 
-        MenuItem courseManageItem = new MenuItem("课程管理");
-        courseManageItem.setId("teacher-course-manage");
-        courseManageItem.setOnAction(this::changeContent);
-        teacherMenu.getItems().add(courseManageItem);
+            MenuItem myCourseItem = new MenuItem("我的课程");
+            myCourseItem.setId("student-my-course");
+            myCourseItem.setOnAction(this::changeContent);
+            studentMenu.getItems().add(myCourseItem);
 
-        // 在菜单树中添加老师功能菜单
-        MyTreeNode rootNode = (MyTreeNode) menuTree.getRoot().getValue();
-        if (rootNode == null) {
-            rootNode = new MyTreeNode(null, null, "菜单", 0);
-            TreeItem<MyTreeNode> root = new TreeItem<>(rootNode);
-            menuTree.setRoot(root);
+            System.out.println("✅ 学生功能菜单已添加到菜单栏");
         }
 
-        TreeItem<MyTreeNode> root = menuTree.getRoot();
-        TreeItem<MyTreeNode> teacherMenuItem = new TreeItem<>(new MyTreeNode(null, "teacher-menu", "老师功能", 0));
-
-        TreeItem<MyTreeNode> openCourseTreeItem = new TreeItem<>(
-                new MyTreeNode(null, "teacher-open-course", "开设课程", 0)
-        );
-        teacherMenuItem.getChildren().add(openCourseTreeItem);
-
-        TreeItem<MyTreeNode> courseManageTreeItem = new TreeItem<>(
-                new MyTreeNode(null, "teacher-course-manage", "课程管理", 0)
-        );
-        teacherMenuItem.getChildren().add(courseManageTreeItem);
-
-        root.getChildren().add(teacherMenuItem);
-
-        System.out.println("✅ 老师功能菜单已添加");
-    }
-
-    /**
-     * 添加学生菜单
-     */
-    private void addStudentMenu(String role) {
-        // 学生和管理员都能看到学生功能
-        if (!isStudent(role) && !isAdmin(role)) {
-            System.out.println("当前用户不是学生也不是管理员，不显示学生功能菜单");
-            return;
-        }
-
-        // 在菜单栏中添加学生功能菜单
-        Menu studentMenu = new Menu("学生功能");
-        menuBar.getMenus().add(studentMenu);
-
-        MenuItem selectCourseItem = new MenuItem("选课");
-        selectCourseItem.setId("student-select-course");
-        selectCourseItem.setOnAction(this::changeContent);
-        studentMenu.getItems().add(selectCourseItem);
-
-        MenuItem myCourseItem = new MenuItem("我的课程");
-        myCourseItem.setId("student-my-course");
-        myCourseItem.setOnAction(this::changeContent);
-        studentMenu.getItems().add(myCourseItem);
-
-        // 在菜单树中添加学生功能菜单
-        TreeItem<MyTreeNode> root = menuTree.getRoot();
-        TreeItem<MyTreeNode> studentMenuItem = new TreeItem<>(new MyTreeNode(null, "student-menu", "学生功能", 0));
-
-        TreeItem<MyTreeNode> selectCourseTreeItem = new TreeItem<>(
-                new MyTreeNode(null, "student-select-course", "选课", 0)
-        );
-        studentMenuItem.getChildren().add(selectCourseTreeItem);
-
-        TreeItem<MyTreeNode> myCourseTreeItem = new TreeItem<>(
-                new MyTreeNode(null, "student-my-course", "我的课程", 0)
-        );
-        studentMenuItem.getChildren().add(myCourseTreeItem);
-
-        root.getChildren().add(studentMenuItem);
-
-        System.out.println("✅ 学生功能菜单已添加");
-    }
-
-    /**
-     * 添加测试菜单
-     */
-    private void addTestMenu() {
-        // 所有人都能看到测试功能
+        // 添加测试功能菜单
         Menu testMenu = new Menu("测试功能");
         menuBar.getMenus().add(testMenu);
 
@@ -329,8 +279,6 @@ public class MainFrameController {
         teacherTestItem.setOnAction(this::changeContent);
         testMenu.getItems().add(teacherTestItem);
 
-        // 获取当前用户角色
-        String role = AppStore.getJwt() != null ? AppStore.getJwt().getRole() : "unknown";
         if (isStudent(role) || isAdmin(role)) {
             MenuItem studentTestItem = new MenuItem("学生选课测试");
             studentTestItem.setId("student-select-course");
@@ -338,8 +286,57 @@ public class MainFrameController {
             testMenu.getItems().add(studentTestItem);
         }
 
-        // 在菜单树中添加测试功能菜单
+        System.out.println("✅ 测试功能菜单已添加到菜单栏");
+    }
+
+    /**
+     * 在菜单树添加自定义菜单
+     */
+    private void addCustomMenusToTree(String role) {
         TreeItem<MyTreeNode> root = menuTree.getRoot();
+        if (root == null) {
+            MyTreeNode rootNode = new MyTreeNode(null, null, "菜单", 0);
+            root = new TreeItem<>(rootNode);
+            menuTree.setRoot(root);
+        }
+
+        // 添加老师功能菜单
+        if (isTeacher(role) || isAdmin(role)) {
+            TreeItem<MyTreeNode> teacherMenuItem = new TreeItem<>(new MyTreeNode(null, "teacher-menu", "老师功能", 0));
+
+            TreeItem<MyTreeNode> openCourseTreeItem = new TreeItem<>(
+                    new MyTreeNode(null, "teacher-open-course", "开设课程", 0)
+            );
+            teacherMenuItem.getChildren().add(openCourseTreeItem);
+
+            TreeItem<MyTreeNode> courseManageTreeItem = new TreeItem<>(
+                    new MyTreeNode(null, "teacher-course-manage", "课程管理", 0)
+            );
+            teacherMenuItem.getChildren().add(courseManageTreeItem);
+
+            root.getChildren().add(teacherMenuItem);
+            teacherMenuItem.setExpanded(true);
+        }
+
+        // 添加学生功能菜单
+        if (isStudent(role) || isAdmin(role)) {
+            TreeItem<MyTreeNode> studentMenuItem = new TreeItem<>(new MyTreeNode(null, "student-menu", "学生功能", 0));
+
+            TreeItem<MyTreeNode> selectCourseTreeItem = new TreeItem<>(
+                    new MyTreeNode(null, "student-select-course", "选课", 0)
+            );
+            studentMenuItem.getChildren().add(selectCourseTreeItem);
+
+            TreeItem<MyTreeNode> myCourseTreeItem = new TreeItem<>(
+                    new MyTreeNode(null, "student-my-course", "我的课程", 0)
+            );
+            studentMenuItem.getChildren().add(myCourseTreeItem);
+
+            root.getChildren().add(studentMenuItem);
+            studentMenuItem.setExpanded(true);
+        }
+
+        // 添加测试功能菜单
         TreeItem<MyTreeNode> testMenuItem = new TreeItem<>(new MyTreeNode(null, "test-menu", "测试功能", 0));
 
         TreeItem<MyTreeNode> teacherTestTreeItem = new TreeItem<>(
@@ -355,8 +352,9 @@ public class MainFrameController {
         }
 
         root.getChildren().add(testMenuItem);
+        testMenuItem.setExpanded(true);
 
-        System.out.println("✅ 测试功能菜单已添加");
+        System.out.println("✅ 自定义菜单已添加到菜单树");
     }
 
     /**
@@ -456,51 +454,89 @@ public class MainFrameController {
         if(tab == null) {
             scene = sceneMap.get(name);
             if(scene == null) {
-                // 尝试不同的路径
-                String[] possiblePaths = {
-                        "com/teach/javafx/view/" + name + ".fxml",  // 默认路径
-                        "/com/teach/javafx/view/" + name + ".fxml",  // 绝对路径
-                        name + ".fxml",  // 相对路径
-                        "/" + name + ".fxml"  // 绝对路径
-                };
+                // 尝试加载FXML文件 - 使用第一种方法（第一种版本的方法）
+                try {
+                    // 第一种尝试：使用第一种版本的加载方式
+                    String fxmlPath = "com/teach/javafx/view/" + name + ".fxml";
+                    System.out.println("尝试加载FXML: " + fxmlPath);
 
-                FXMLLoader fxmlLoader = null;
-                boolean loaded = false;
-
-                for (String path : possiblePaths) {
-                    try {
-                        System.out.println("尝试加载路径: " + path);
-                        java.net.URL url = MainApplication.class.getResource(path);
-                        if (url != null) {
-                            System.out.println("找到资源: " + url);
-                            fxmlLoader = new FXMLLoader(url);
-                            scene = new Scene(fxmlLoader.load(), 1024, 768);
-                            sceneMap.put(name, scene);
-                            c = fxmlLoader.getController();
-                            if(c != null) {
-                                controlMap.put(name, c);
-                            }
-                            loaded = true;
-                            System.out.println("✅ 成功加载: " + path);
-                            break;
-                        } else {
-                            System.out.println("❌ 资源未找到: " + path);
-                        }
-                    } catch (Exception e) {
-                        System.out.println("加载失败 (" + path + "): " + e.getMessage());
+                    // 尝试从类路径加载
+                    java.net.URL url = getClass().getClassLoader().getResource(fxmlPath);
+                    if (url == null) {
+                        // 第二种尝试：从MainApplication类加载
+                        url = MainApplication.class.getResource(fxmlPath);
                     }
-                }
 
-                if (!loaded) {
-                    System.out.println("❌ 所有路径都尝试失败，创建默认界面");
-                    // 创建默认界面
-                    Label label = new Label("功能界面: " + title);
-                    label.setStyle("-fx-font-size: 24px; -fx-font-weight: bold;");
+                    if (url == null) {
+                        // 第三种尝试：从绝对路径加载
+                        fxmlPath = "/com/teach/javafx/view/" + name + ".fxml";
+                        url = MainApplication.class.getResource(fxmlPath);
+                    }
 
-                    // 使用StackPane避免VBox导入问题
-                    javafx.scene.layout.StackPane stackPane = new javafx.scene.layout.StackPane();
+                    if (url == null) {
+                        // 第四种尝试：从resources目录直接加载
+                        fxmlPath = name + ".fxml";
+                        url = MainApplication.class.getResource(fxmlPath);
+                    }
+
+                    if (url != null) {
+                        System.out.println("✅ 找到FXML文件: " + url);
+                        FXMLLoader fxmlLoader = new FXMLLoader(url);
+                        scene = new Scene(fxmlLoader.load(), 1024, 768);
+                        sceneMap.put(name, scene);
+                        c = fxmlLoader.getController();
+                        if(c != null) {
+                            controlMap.put(name, c);
+                            System.out.println("✅ 成功加载控制器: " + c.getClass().getName());
+
+                            // 如果控制器是老师开课控制器，尝试调用初始化方法
+                            if (c.getClass().getSimpleName().contains("CourseEditController") ||
+                                    c.getClass().getSimpleName().contains("TeacherOpenCourseController")) {
+                                System.out.println("检测到老师开课控制器，尝试调用初始化方法");
+                                try {
+                                    // 尝试调用可能存在的初始化方法
+                                    Method initMethod = c.getClass().getMethod("initialize");
+                                    if (initMethod != null) {
+                                        initMethod.invoke(c);
+                                        System.out.println("✅ 成功调用控制器的initialize方法");
+                                    }
+                                } catch (NoSuchMethodException e) {
+                                    System.out.println("控制器没有initialize方法，跳过");
+                                } catch (Exception e) {
+                                    System.out.println("调用initialize方法失败: " + e.getMessage());
+                                }
+                            }
+                        } else {
+                            System.out.println("⚠️ 控制器为null");
+                        }
+                    } else {
+                        System.out.println("❌ 未找到FXML文件: " + name + ".fxml");
+                        // 创建默认界面
+                        Label label = new Label("功能界面: " + title + "\n\nFXML文件未找到: " + name + ".fxml\n\n请确保FXML文件位于正确的路径");
+                        label.setStyle("-fx-font-size: 18px; -fx-font-weight: normal; -fx-text-fill: red;");
+                        label.setWrapText(true);
+                        label.setAlignment(javafx.geometry.Pos.CENTER);
+
+                        StackPane stackPane = new StackPane();
+                        stackPane.getChildren().add(label);
+                        stackPane.setAlignment(Pos.CENTER);
+
+                        scene = new Scene(stackPane, 600, 400);
+                        sceneMap.put(name, scene);
+                    }
+                } catch (Exception e) {
+                    System.out.println("❌ 加载FXML文件时出错: " + e.getMessage());
+                    e.printStackTrace();
+
+                    // 创建错误界面
+                    Label label = new Label("加载界面时出错: " + e.getMessage());
+                    label.setStyle("-fx-font-size: 16px; -fx-font-weight: normal; -fx-text-fill: red;");
+                    label.setWrapText(true);
+                    label.setAlignment(javafx.geometry.Pos.CENTER);
+
+                    StackPane stackPane = new StackPane();
                     stackPane.getChildren().add(label);
-                    stackPane.setAlignment(javafx.geometry.Pos.CENTER);
+                    stackPane.setAlignment(Pos.CENTER);
 
                     scene = new Scene(stackPane, 600, 400);
                     sceneMap.put(name, scene);
@@ -530,6 +566,7 @@ public class MainFrameController {
                 }
             } catch (Exception ex) {
                 // 如果控制器没有doRefresh方法，忽略
+                // System.out.println("⚠️ 控制器 " + c.getClass().getName() + " 没有doRefresh方法，跳过");
             }
         }
     }
@@ -687,4 +724,3 @@ public class MainFrameController {
         return controlMap.get(name);
     }
 }
-//
