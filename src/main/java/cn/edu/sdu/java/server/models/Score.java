@@ -1,36 +1,54 @@
 package cn.edu.sdu.java.server.models;
 
 import jakarta.persistence.*;
-/*
- * Score 成绩表实体类  保存成绩的的基本信息信息，
- * Integer scoreId 人员表 score 主键 score_id
- * Student student 关联学生 student_id 关联学生的主键 student_id
- * Course course 关联课程 course_id 关联课程的主键 course_id
- * Integer mark 成绩
- * Integer ranking 排名
- */
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
+import java.util.Date;
+
 @Getter
 @Setter
 @Entity
-@Table(	name = "score",
-        uniqueConstraints = {
-        })
+@Table(name = "score")
+@EntityListeners(AuditingEntityListener.class)
 public class Score {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "score_id")
     private Integer scoreId;
 
+    // 修改为简单的 @JoinColumn
     @ManyToOne
-    @JoinColumn(name = "personId")
+    @JoinColumn(name = "person_id")
     private Student student;
 
+    // 修改为简单的 @JoinColumn
     @ManyToOne
-    @JoinColumn(name = "courseId")
+    @JoinColumn(name = "course_id")
     private Course course;
 
     private Integer mark;
     private Integer ranking;
 
+    @Column(name = "selection_status")
+    private String selectionStatus = "PENDING";
+
+    @Column(name = "apply_time")
+    @CreatedDate
+    private Date applyTime;
+
+    @Column(name = "approve_time")
+    private Date approveTime;
+
+    @Column(name = "approve_by")
+    private Integer approveBy;
+
+    @Column(name = "reject_reason", length = 255)
+    private String rejectReason;
+
+    public Score() {
+        // 构造器为空
+    }
 }

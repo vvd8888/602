@@ -264,16 +264,33 @@ public class StudentService {
         List<Map<String, Object>> list = new ArrayList<>();
         if (sList == null || sList.isEmpty())
             return list;
+
         Map<String, Object> m;
         Course c;
+
         for (Score s : sList) {
             m = new HashMap<>();
             c = s.getCourse();
-            m.put("studentNum", s.getStudent().getPerson().getNum());
+
+            // 修复：通过 Student -> Person 链获取学号
+            String studentNum = "";
+            if (s.getStudent() != null && s.getStudent().getPerson() != null) {
+                studentNum = s.getStudent().getPerson().getNum();
+            }
+            m.put("studentNum", studentNum);
+
             m.put("scoreId", s.getScoreId());
-            m.put("courseNum", c.getNum());
-            m.put("courseName", c.getName());
-            m.put("credit", c.getCredit());
+
+            if (c != null) {
+                m.put("courseNum", c.getNum());
+                m.put("courseName", c.getName());
+                m.put("credit", c.getCredit());
+            } else {
+                m.put("courseNum", "");
+                m.put("courseName", "");
+                m.put("credit", 0);
+            }
+
             m.put("mark", s.getMark());
             m.put("ranking", s.getRanking());
             list.add(m);
