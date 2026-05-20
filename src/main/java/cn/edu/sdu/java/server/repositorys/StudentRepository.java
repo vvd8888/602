@@ -5,7 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;  // 添加这行
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -23,4 +23,6 @@ public interface StudentRepository extends JpaRepository<Student, Integer> {
     @Query(value = "SELECT s FROM Student s WHERE (:numName IS NULL OR :numName = '' OR s.person.num LIKE %:numName% OR s.person.name LIKE %:numName%)",
             countQuery = "SELECT COUNT(s) FROM Student s WHERE (:numName IS NULL OR :numName = '' OR s.person.num LIKE %:numName% OR s.person.name LIKE %:numName%)")
     Page<Student> findStudentPageByNumName(@Param("numName") String numName, Pageable pageable);
+
+    List<Student> findByClassName(String className);
 }

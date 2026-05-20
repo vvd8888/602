@@ -25,7 +25,6 @@ import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBo
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.*;
-import java.util.List;
 
 @Service
 public class StudentService {
@@ -153,6 +152,18 @@ public class StudentService {
         String numName = dataRequest.getString("numName");
         List<Map<String, Object>> dataList = getStudentMapList(numName);
         return CommonMethod.getReturnData(dataList);  //按照测试框架规范会送Map的list
+    }
+
+    public DataResponse getStudentListByClassName(DataRequest dataRequest) {
+        String className = dataRequest.getString("className");
+        List<Map<String, Object>> dataList = new ArrayList<>();
+        List<Student> sList = studentRepository.findByClassName(className);
+        if (sList != null) {
+            for (Student s : sList) {
+                dataList.add(getMapFromStudent(s));
+            }
+        }
+        return CommonMethod.getReturnData(dataList);
     }
 
 

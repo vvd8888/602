@@ -3,8 +3,6 @@ package cn.edu.sdu.java.server.controllers;
 import cn.edu.sdu.java.server.payload.request.DataRequest;
 import cn.edu.sdu.java.server.payload.response.DataResponse;
 import cn.edu.sdu.java.server.services.StudentService;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -12,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
-import java.util.*;
+import java.util.Map;
 
 /**
  * StudentController 主要是为学生管理数据管理提供的Web请求服务
@@ -42,6 +40,17 @@ public class StudentController {
     @PreAuthorize("hasRole('ADMIN') or hasRole('STUDENT')")
     public DataResponse getStudentList(@Valid @RequestBody DataRequest dataRequest) {
         return studentService.getStudentList(dataRequest);
+    }
+
+    /**
+     * getStudentListByClassName 按班级筛选学生
+     * 前台请求参数 className 班级名称
+     * 返回前端 存储学生信息的 MapList
+     */
+    @PostMapping("/getStudentListByClassName")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('TEACHER')")
+    public DataResponse getStudentListByClassName(@Valid @RequestBody DataRequest dataRequest) {
+        return studentService.getStudentListByClassName(dataRequest);
     }
 
     /**
