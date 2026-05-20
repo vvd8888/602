@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+            prefWidth="960.0" prefHeight="680.0"
+            fx:controller="com.teach.javafx.controller.PracticeManageController">
+    <top>
+        <VBox spacing="0">
+            <HBox alignment="CENTER_LEFT" spacing="10.0"
+                  style="-fx-background-color: #f0f4f8; -fx-padding: 12 16;">
+                <Label text="社会实践管理" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
+                <Pane HBox.hgrow="ALWAYS"/>
+            </HBox>
+            <HBox alignment="CENTER_LEFT" spacing="8.0"
+                  style="-fx-background-color: #f8fafc; -fx-padding: 8 16; -fx-border-color: #e2e8f0; -fx-border-width: 1 0;">
+                <Label text="类型：" style="-fx-font-size: 13px;"/>
+                <ComboBox fx:id="typeComboBox" prefWidth="100" style="-fx-font-size: 12px;"
+                          onAction="#onFilterChanged"/>
+                <Label text="状态：" style="-fx-font-size: 13px;"/>
+                <ComboBox fx:id="statusComboBox" prefWidth="100" style="-fx-font-size: 12px;"
+                          onAction="#onFilterChanged"/>
+                <Pane HBox.hgrow="ALWAYS"/>
+                <Button text="刷新" onAction="#onRefreshButtonClick" prefWidth="60"
+                        style="-fx-font-size: 12px; -fx-background-color: #3b82f6; -fx-text-fill: white;"/>
+            </HBox>
+        </VBox>
+    </top>
+    <center>
+        <SplitPane dividerPositions="0.45" style="-fx-padding: 8;">
+            <VBox spacing="6" style="-fx-padding: 4;">
+                <TabPane fx:id="mainTabPane" VBox.vgrow="ALWAYS" style="-fx-font-size: 13px;">
+                    <Tab text="立项审核" closable="false">
+                        <VBox spacing="6" style="-fx-padding: 4;">
+                            <TableView fx:id="dataTableView" VBox.vgrow="ALWAYS">
+                                <columns>
+                                    <TableColumn fx:id="titleColumn" prefWidth="140" text="项目名称"/>
+                                    <TableColumn fx:id="projectTypeColumn" prefWidth="60" text="类型"/>
+                                    <TableColumn fx:id="leaderColumn" prefWidth="70" text="队长"/>
+                                    <TableColumn fx:id="statusColumn" prefWidth="70" text="状态"/>
+                                    <TableColumn fx:id="submitTimeColumn" prefWidth="100" text="提交时间"/>
+                                </columns>
+                            </TableView>
+                        </VBox>
+                    </Tab>
+                    <Tab text="重点选题管理" closable="false">
+                        <VBox spacing="6" style="-fx-padding: 4;">
+                            <HBox spacing="8" alignment="CENTER_LEFT">
+                                <ToggleButton fx:id="allTopicBtn" text="全部" prefWidth="56" style="-fx-font-size: 12px;"
+                                              onAction="#onTopicFilterChanged" selected="true"/>
+                                <ToggleButton fx:id="draftTopicBtn" text="草稿" prefWidth="56" style="-fx-font-size: 12px;"
+                                              onAction="#onTopicFilterChanged"/>
+                                <ToggleButton fx:id="publishedTopicBtn" text="已发布" prefWidth="56" style="-fx-font-size: 12px;"
+                                              onAction="#onTopicFilterChanged"/>
+                                <ToggleButton fx:id="withdrawnTopicBtn" text="已撤回" prefWidth="56" style="-fx-font-size: 12px;"
+                                              onAction="#onTopicFilterChanged"/>
+                                <Pane HBox.hgrow="ALWAYS"/>
+                                <Button text="+ 新建选题" onAction="#onNewTopicClick" prefWidth="90"
+                                        style="-fx-font-size: 12px; -fx-background-color: #22c55e; -fx-text-fill: white;"/>
+                            </HBox>
+                            <TableView fx:id="topicTableView" VBox.vgrow="ALWAYS">
+                                <columns>
+                                    <TableColumn fx:id="topicTitleColumn" prefWidth="180" text="标题"/>
+                                    <TableColumn fx:id="topicStatusColumn" prefWidth="60" text="状态"/>
+                                    <TableColumn fx:id="topicTimeColumn" prefWidth="100" text="创建时间"/>
+                                </columns>
+                            </TableView>
+                        </VBox>
+                    </Tab>
+                </TabPane>
+            </VBox>
+            <ScrollPane fitToWidth="true" style="-fx-padding: 0;">
+                <VBox spacing="8" style="-fx-padding: 12; -fx-background-color: #f8fafc; -fx-border-color: #e2e8f0; -fx-border-radius: 6; -fx-background-radius: 6;">
+                    <!-- 立项审核详情 -->
+                    <VBox fx:id="reviewDetailBox" spacing="8">
+                        <Label fx:id="reviewTitleLabel" text="选择左侧项目查看详情"
+                               wrapText="true"
+                               style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #1e293b;"/>
+                        <HBox spacing="16">
+                            <Label fx:id="reviewTypeLabel" style="-fx-font-size: 12px; -fx-text-fill: #64748b;"/>
+                            <Label fx:id="reviewLeaderLabel" style="-fx-font-size: 12px; -fx-text-fill: #64748b;"/>
+                            <Label fx:id="reviewMentorLabel" style="-fx-font-size: 12px; -fx-text-fill: #64748b;"/>
+                        </HBox>
+                        <Label text="团队成员：" style="-fx-font-size: 13px; -fx-font-weight: bold;"/>
+                        <Label fx:id="reviewMembersLabel" wrapText="true"
+                               style="-fx-font-size: 12px; -fx-text-fill: #475569;"/>
+                        <Label text="项目说明：" style="-fx-font-size: 13px; -fx-font-weight: bold;"/>
+                        <TextArea fx:id="reviewDescArea" editable="false" wrapText="true" prefRowCount="3"
+                                  style="-fx-font-size: 13px; -fx-background-color: white; -fx-border-color: #e2e8f0;"/>
+                        <Separator/>
+                        <Label text="审核意见：" style="-fx-font-size: 13px; -fx-font-weight: bold;"/>
+                        <TextArea fx:id="reviewCommentArea" promptText="请输入审核意见（驳回时必填）" wrapText="true" prefRowCount="2"
+                                  style="-fx-font-size: 13px;"/>
+                        <HBox spacing="10" alignment="CENTER">
+                            <Button fx:id="approveBtn" text="通过" onAction="#onApproveButtonClick"
+                                    prefWidth="80" style="-fx-font-size: 13px; -fx-background-color: #22c55e; -fx-text-fill: white;"/>
+                            <Button fx:id="rejectBtn" text="驳回" onAction="#onRejectButtonClick"
+                                    prefWidth="80" style="-fx-font-size: 13px; -fx-background-color: #ef4444; -fx-text-fill: white;"/>
+                            <Button fx:id="progressBtn" text="设为进行中" onAction="#onSetProgressButtonClick"
+                                    prefWidth="100" style="-fx-font-size: 13px; -fx-background-color: #3b82f6; -fx-text-fill: white;"/>
+                            <Button fx:id="completeBtn" text="设为已完成" onAction="#onSetCompleteButtonClick"
+                                    prefWidth="100" style="-fx-font-size: 13px; -fx-background-color: #8b5cf6; -fx-text-fill: white;"/>
+                        </HBox>
+                        <Separator/>
+                        <Label text="审核记录：" style="-fx-font-size: 13px; -fx-font-weight: bold;"/>
+                        <TextArea fx:id="reviewHistoryArea" editable="false" wrapText="true" prefRowCount="3"
+                                  style="-fx-font-size: 12px; -fx-background-color: white; -fx-border-color: #e2e8f0; -fx-text-fill: #64748b;"/>
+                    </VBox>
+
+                    <!-- 选题编辑详情 -->
+                    <VBox fx:id="topicEditBox" spacing="8" visible="false" managed="false">
+                        <Label fx:id="topicEditTitleLabel" text="编辑选题"
+                               style="-fx-font-size: 15px; -fx-font-weight: bold;"/>
+                        <Label text="标题 *" style="-fx-font-size: 13px;"/>
+                        <TextField fx:id="topicTitleField" promptText="请输入选题标题" style="-fx-font-size: 13px;"/>
+                        <Label text="说明" style="-fx-font-size: 13px;"/>
+                        <TextArea fx:id="topicDescArea" prefRowCount="3" wrapText="true" promptText="选题说明"
+                                  style="-fx-font-size: 13px;"/>
+                        <Label text="申请要求" style="-fx-font-size: 13px;"/>
+                        <TextArea fx:id="topicReqArea" prefRowCount="2" wrapText="true" promptText="申请要求（可选）"
+                                  style="-fx-font-size: 12px;"/>
+                        <HBox spacing="10" alignment="CENTER">
+                            <Button fx:id="topicDraftBtn" text="保存草稿" onAction="#onSaveTopicDraftButtonClick"
+                                    prefWidth="90" style="-fx-font-size: 13px; -fx-background-color: #94a3b8; -fx-text-fill: white;"/>
+                            <Button fx:id="topicPublishBtn" text="发布选题" onAction="#onPublishTopicButtonClick"
+                                    prefWidth="90" style="-fx-font-size: 13px; -fx-background-color: #3b82f6; -fx-text-fill: white;"/>
+                            <Button fx:id="topicWithdrawBtn" text="撤回" onAction="#onWithdrawTopicButtonClick"
+                                    prefWidth="70" style="-fx-font-size: 13px; -fx-background-color: #ef4444; -fx-text-fill: white;"/>
+                        </HBox>
+                    </VBox>
+                </VBox>
+            </ScrollPane>
+        </SplitPane>
+    </center>
+</BorderPane>

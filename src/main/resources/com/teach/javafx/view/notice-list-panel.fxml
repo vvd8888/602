@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+            prefWidth="900.0" prefHeight="650.0"
+            fx:controller="com.teach.javafx.controller.NoticeListController">
+    <top>
+        <VBox spacing="0">
+            <!-- 标题栏 -->
+            <HBox alignment="CENTER_LEFT" spacing="10.0"
+                  style="-fx-background-color: #f0f4f8; -fx-padding: 12 16;">
+                <Label text="📋 通知中心" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
+                <Pane HBox.hgrow="ALWAYS"/>
+            </HBox>
+            <!-- 筛选栏 -->
+            <HBox alignment="CENTER_LEFT" spacing="8.0"
+                  style="-fx-background-color: #f8fafc; -fx-padding: 8 16; -fx-border-color: #e2e8f0; -fx-border-width: 1 0;">
+                <Label text="筛选：" style="-fx-font-size: 13px;"/>
+                <ToggleButton fx:id="allFilterBtn" text="全部" prefWidth="56" style="-fx-font-size: 12px;"
+                              onAction="#onFilterChanged" selected="true"/>
+                <ToggleButton fx:id="unreadFilterBtn" text="未读" prefWidth="56" style="-fx-font-size: 12px;"
+                              onAction="#onFilterChanged"/>
+                <ToggleButton fx:id="readFilterBtn" text="已读" prefWidth="56" style="-fx-font-size: 12px;"
+                              onAction="#onFilterChanged"/>
+                <Pane prefWidth="20"/>
+                <Label text="类型：" style="-fx-font-size: 13px;"/>
+                <ComboBox fx:id="typeComboBox" prefWidth="120" style="-fx-font-size: 12px;"/>
+                <Pane HBox.hgrow="ALWAYS"/>
+                <Button text="刷新" onAction="#onRefreshButtonClick" prefWidth="60"
+                        style="-fx-font-size: 12px; -fx-background-color: #3b82f6; -fx-text-fill: white;"/>
+            </HBox>
+        </VBox>
+    </top>
+    <center>
+        <SplitPane dividerPositions="0.55" style="-fx-padding: 8;">
+            <!-- 左侧：通知列表 -->
+            <VBox spacing="6" style="-fx-padding: 4;">
+                <Label text="通知列表" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
+                <TableView fx:id="dataTableView" VBox.vgrow="ALWAYS">
+                    <columns>
+                        <TableColumn fx:id="titleColumn" prefWidth="200" text="标题"/>
+                        <TableColumn fx:id="noticeTypeColumn" prefWidth="80" text="类型"/>
+                        <TableColumn fx:id="creatorNameColumn" prefWidth="80" text="发布者"/>
+                        <TableColumn fx:id="publishTimeColumn" prefWidth="130" text="发布时间"/>
+                        <TableColumn fx:id="isReadColumn" prefWidth="60" text="状态"/>
+                    </columns>
+                </TableView>
+            </VBox>
+            <!-- 右侧：详情 -->
+            <VBox spacing="10" style="-fx-padding: 8; -fx-background-color: #f8fafc; -fx-border-color: #e2e8f0; -fx-border-radius: 6; -fx-background-radius: 6;">
+                <Label fx:id="detailTitleLabel" text="选择左侧通知查看详情"
+                       wrapText="true"
+                       style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #1e293b;"/>
+                <HBox spacing="16">
+                    <Label fx:id="detailTypeLabel" style="-fx-font-size: 12px; -fx-text-fill: #64748b;"/>
+                    <Label fx:id="detailCreatorLabel" style="-fx-font-size: 12px; -fx-text-fill: #64748b;"/>
+                    <Label fx:id="detailTimeLabel" style="-fx-font-size: 12px; -fx-text-fill: #64748b;"/>
+                </HBox>
+                <HBox spacing="16">
+                    <Label fx:id="detailReadInfoLabel" style="-fx-font-size: 12px; -fx-text-fill: #3b82f6;"/>
+                </HBox>
+                <Separator/>
+                <Label text="通知内容：" style="-fx-font-size: 13px; -fx-font-weight: bold;"/>
+                <TextArea fx:id="detailContentArea" editable="false" wrapText="true"
+                          VBox.vgrow="ALWAYS"
+                          style="-fx-font-size: 13px; -fx-background-color: white; -fx-border-color: #e2e8f0;"/>
+            </VBox>
+        </SplitPane>
+    </center>
+</BorderPane>

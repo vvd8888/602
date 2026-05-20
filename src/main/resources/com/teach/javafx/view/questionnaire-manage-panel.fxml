@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+            prefWidth="960.0" prefHeight="680.0"
+            fx:controller="com.teach.javafx.controller.QuestionnaireManageController">
+    <top>
+        <VBox spacing="0">
+            <HBox alignment="CENTER_LEFT" spacing="10.0"
+                  style="-fx-background-color: #f0f4f8; -fx-padding: 12 16;">
+                <Label text="📊 问卷管理" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
+                <Pane HBox.hgrow="ALWAYS"/>
+                <Button text="+ 新建问卷" onAction="#onNewButtonClick" prefWidth="100"
+                        style="-fx-font-size: 13px; -fx-background-color: #22c55e; -fx-text-fill: white;"/>
+            </HBox>
+            <HBox alignment="CENTER_LEFT" spacing="8.0"
+                  style="-fx-background-color: #f8fafc; -fx-padding: 8 16; -fx-border-color: #e2e8f0; -fx-border-width: 1 0;">
+                <Label text="状态：" style="-fx-font-size: 13px;"/>
+                <ToggleButton fx:id="allStatusBtn" text="全部" prefWidth="60" style="-fx-font-size: 12px;"
+                              onAction="#onStatusFilterChanged" selected="true"/>
+                <ToggleButton fx:id="draftStatusBtn" text="草稿" prefWidth="60" style="-fx-font-size: 12px;"
+                              onAction="#onStatusFilterChanged"/>
+                <ToggleButton fx:id="publishedStatusBtn" text="已发布" prefWidth="60" style="-fx-font-size: 12px;"
+                              onAction="#onStatusFilterChanged"/>
+                <ToggleButton fx:id="withdrawnStatusBtn" text="已撤回" prefWidth="60" style="-fx-font-size: 12px;"
+                              onAction="#onStatusFilterChanged"/>
+                <Pane HBox.hgrow="ALWAYS"/>
+                <Button text="刷新" onAction="#onRefreshButtonClick" prefWidth="60"
+                        style="-fx-font-size: 12px; -fx-background-color: #3b82f6; -fx-text-fill: white;"/>
+            </HBox>
+        </VBox>
+    </top>
+    <center>
+        <SplitPane dividerPositions="0.45" style="-fx-padding: 8;">
+            <!-- 左侧：问卷列表 -->
+            <VBox spacing="6" style="-fx-padding: 4;">
+                <Label text="我的问卷" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
+                <TableView fx:id="dataTableView" VBox.vgrow="ALWAYS">
+                    <columns>
+                        <TableColumn fx:id="titleColumn" prefWidth="140" text="标题"/>
+                        <TableColumn fx:id="statusColumn" prefWidth="60" text="状态"/>
+                        <TableColumn fx:id="deadlineColumn" prefWidth="100" text="截止时间"/>
+                        <TableColumn fx:id="answerCountColumn" prefWidth="60" text="答题数"/>
+                    </columns>
+                </TableView>
+            </VBox>
+            <!-- 右侧：编辑区 -->
+            <ScrollPane fitToWidth="true" style="-fx-padding: 0;">
+                <VBox spacing="8" style="-fx-padding: 12; -fx-background-color: #f8fafc; -fx-border-color: #e2e8f0; -fx-border-radius: 6; -fx-background-radius: 6;">
+                    <Label fx:id="editTitleLabel" text="编辑问卷" style="-fx-font-size: 15px; -fx-font-weight: bold;"/>
+
+                    <Label text="标题 *" style="-fx-font-size: 13px;"/>
+                    <TextField fx:id="titleField" promptText="请输入问卷标题" style="-fx-font-size: 13px;"/>
+
+                    <Label text="说明" style="-fx-font-size: 13px;"/>
+                    <TextArea fx:id="descArea" prefRowCount="2" wrapText="true" promptText="问卷说明（可选）"
+                              style="-fx-font-size: 13px;"/>
+
+                    <HBox spacing="16">
+                        <CheckBox fx:id="anonymousCheckBox" text="匿名" style="-fx-font-size: 13px;"/>
+                        <CheckBox fx:id="allowLateCheckBox" text="允许补交" style="-fx-font-size: 13px;"/>
+                        <CheckBox fx:id="allowModifyCheckBox" text="允许修改" style="-fx-font-size: 13px;"/>
+                    </HBox>
+
+                    <Label text="截止时间" style="-fx-font-size: 13px;"/>
+                    <DatePicker fx:id="deadlineField" promptText="yyyy-MM-dd（可留空）" style="-fx-font-size: 13px;"/>
+
+                    <Separator/>
+                    <HBox alignment="CENTER_LEFT" spacing="8">
+                        <Label text="题目列表" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
+                        <Button text="+ 添加单选" onAction="#onAddSingleQuestion" prefWidth="80"
+                                style="-fx-font-size: 11px;"/>
+                        <Button text="+ 添加多选" onAction="#onAddMultiQuestion" prefWidth="80"
+                                style="-fx-font-size: 11px;"/>
+                        <Button text="+ 添加文本" onAction="#onAddTextQuestion" prefWidth="80"
+                                style="-fx-font-size: 11px;"/>
+                        <Button text="+ 添加量表" onAction="#onAddScaleQuestion" prefWidth="80"
+                                style="-fx-font-size: 11px;"/>
+                    </HBox>
+
+                    <ScrollPane fx:id="questionsScrollPane" fitToWidth="true" prefHeight="300"
+                                style="-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-radius: 4; -fx-padding: 4;">
+                        <VBox fx:id="questionsContainer" spacing="8"/>
+                    </ScrollPane>
+
+                    <Separator/>
+
+                    <HBox spacing="10" alignment="CENTER" style="-fx-padding: 8 0;">
+                        <Button fx:id="draftBtn" text="保存草稿" onAction="#onSaveDraftButtonClick"
+                                prefWidth="90" style="-fx-font-size: 13px; -fx-background-color: #94a3b8; -fx-text-fill: white;"/>
+                        <Button fx:id="publishBtn" text="发布问卷" onAction="#onPublishButtonClick"
+                                prefWidth="90" style="-fx-font-size: 13px; -fx-background-color: #3b82f6; -fx-text-fill: white;"/>
+                        <Button fx:id="withdrawBtn" text="撤回" onAction="#onWithdrawButtonClick"
+                                prefWidth="70" style="-fx-font-size: 13px; -fx-background-color: #ef4444; -fx-text-fill: white;"/>
+                    </HBox>
+                    <Button fx:id="statsBtn" text="查看统计" onAction="#onViewStatsButtonClick"
+                            prefWidth="130" style="-fx-font-size: 12px; -fx-background-color: transparent; -fx-text-fill: #3b82f6; -fx-underline: true;"/>
+                </VBox>
+            </ScrollPane>
+        </SplitPane>
+    </center>
+</BorderPane>

@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<VBox xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+      prefWidth="600.0" prefHeight="550.0" spacing="10"
+      style="-fx-padding: 16; -fx-background-color: #f8fafc;"
+      fx:controller="com.teach.javafx.controller.PracticeProjectEditController">
+    <Label fx:id="dialogTitle" text="编辑项目" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
+
+    <Label text="项目名称 *" style="-fx-font-size: 13px;"/>
+    <TextField fx:id="titleField" promptText="请输入项目名称" style="-fx-font-size: 13px;"/>
+
+    <HBox spacing="16">
+        <VBox spacing="6">
+            <Label text="团队名称" style="-fx-font-size: 13px;"/>
+            <TextField fx:id="teamNameField" promptText="团队名称" prefWidth="280" style="-fx-font-size: 13px;"/>
+        </VBox>
+        <VBox spacing="6">
+            <Label text="指导老师" style="-fx-font-size: 13px;"/>
+            <TextField fx:id="mentorField" promptText="指导老师姓名" prefWidth="280" style="-fx-font-size: 13px;"/>
+        </VBox>
+    </HBox>
+
+    <HBox spacing="16">
+        <VBox spacing="6">
+            <Label text="开始日期" style="-fx-font-size: 13px;"/>
+            <DatePicker fx:id="startDateField" prefWidth="280" style="-fx-font-size: 13px;"/>
+        </VBox>
+        <VBox spacing="6">
+            <Label text="结束日期" style="-fx-font-size: 13px;"/>
+            <DatePicker fx:id="endDateField" prefWidth="280" style="-fx-font-size: 13px;"/>
+        </VBox>
+    </HBox>
+
+    <Label text="项目说明" style="-fx-font-size: 13px;"/>
+    <TextArea fx:id="descArea" prefRowCount="4" wrapText="true" promptText="请描述项目内容"
+              style="-fx-font-size: 13px;"/>
+
+    <Separator/>
+
+    <HBox alignment="CENTER_LEFT" spacing="8">
+        <Label text="队员列表" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
+        <Button text="+ 添加队员" onAction="#onAddMemberButtonClick" prefWidth="90"
+                style="-fx-font-size: 12px; -fx-background-color: #3b82f6; -fx-text-fill: white;"/>
+    </HBox>
+    <TextField fx:id="memberSearchField" promptText="输入学号或姓名搜索学生，回车添加"
+               onAction="#onSearchMember" style="-fx-font-size: 13px;"/>
+
+    <HBox alignment="CENTER_LEFT" spacing="8">
+        <Label text="批量添加：" style="-fx-font-size: 12px; -fx-text-fill: #64748b;"/>
+        <ComboBox fx:id="batchClassCombo" prefWidth="160" promptText="选择班级" style="-fx-font-size: 12px;"/>
+        <Button text="添加该班学生" onAction="#onBatchAddByClass" prefWidth="110"
+                style="-fx-font-size: 12px; -fx-background-color: #8b5cf6; -fx-text-fill: white;"/>
+    </HBox>
+
+    <ScrollPane fitToWidth="true" prefHeight="100" style="-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-radius: 4;">
+        <VBox fx:id="membersContainer" spacing="4" style="-fx-padding: 6;"/>
+    </ScrollPane>
+
+    <HBox spacing="10" alignment="CENTER" style="-fx-padding: 8 0;">
+        <Button fx:id="draftBtn" text="保存草稿" onAction="#onSaveDraftButtonClick"
+                prefWidth="100" style="-fx-font-size: 14px; -fx-background-color: #94a3b8; -fx-text-fill: white;"/>
+        <Button fx:id="submitEditBtn" text="提交审核" onAction="#onSubmitButtonClick"
+                prefWidth="100" style="-fx-font-size: 14px; -fx-background-color: #22c55e; -fx-text-fill: white;"/>
+        <Button text="取消" onAction="#onCancelButtonClick"
+                prefWidth="80" style="-fx-font-size: 14px; -fx-background-color: #e2e8f0; -fx-text-fill: #475569;"/>
+    </HBox>
+</VBox>

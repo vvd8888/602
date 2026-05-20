@@ -56,14 +56,8 @@ public class LoginController {
         AppStore.setUsername(username);
         System.out.println("用户登录: " + username);
 
-        // 恢复原来的逻辑：学生登录先选择同学，其他直接进入
-        if (username.startsWith("2022")) {
-            // 学生登录：先进入同学选择界面
-            loadStudentSelectView();
-        } else {
-            // 教师和管理员：直接进入主框架
-            loadMainFrame();
-        }
+        // 所有角色统一进入主框架
+        loadMainFrame();
     }
 
     /**
