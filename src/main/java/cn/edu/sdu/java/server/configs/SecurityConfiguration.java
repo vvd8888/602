@@ -44,6 +44,8 @@ public class SecurityConfiguration {
                         authz -> {
                             try {
                                 authz
+                                        .requestMatchers("/api/schoolbus/**")
+                                        .permitAll()
                                         .requestMatchers("/api/**")
                                         .authenticated()
                                         .anyRequest().permitAll();
