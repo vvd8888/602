@@ -270,6 +270,9 @@ public class MainFrameController {
             System.out.println("✅ 学生功能菜单已添加到菜单栏");
         }
 
+        // 添加校车功能菜单（已移至MySQL数据库，从数据库加载）
+        // 注释掉硬编码菜单，避免与数据库菜单重复
+
         // 添加测试功能菜单
         Menu testMenu = new Menu("测试功能");
         menuBar.getMenus().add(testMenu);
@@ -335,6 +338,9 @@ public class MainFrameController {
             root.getChildren().add(studentMenuItem);
             studentMenuItem.setExpanded(true);
         }
+
+        // 添加校车功能菜单（已移至MySQL数据库，从数据库加载）
+        // 注释掉硬编码菜单，避免与数据库菜单重复
 
         // 添加测试功能菜单
         TreeItem<MyTreeNode> testMenuItem = new TreeItem<>(new MyTreeNode(null, "test-menu", "测试功能", 0));
@@ -414,6 +420,14 @@ public class MainFrameController {
         String role = AppStore.getJwt() != null ? AppStore.getJwt().getRole() : "unknown";
         System.out.println("当前用户角色: " + role);
 
+        // 如果是一级菜单（包含"-menu"后缀），不加载界面，只展开/折叠
+        if (name != null && name.endsWith("-menu")) {
+            System.out.println("📁 点击了一级菜单，不加载界面，只展开/折叠子菜单");
+            // 查找对应的 TreeItem 并切换展开状态
+            toggleTreeNode(name);
+            return;
+        }
+
         // 检查学生选课权限
         if ("student-select-course".equals(name) || "student-my-course".equals(name)) {
             if (!isStudent(role) && !isAdmin(role)) {
@@ -435,6 +449,33 @@ public class MainFrameController {
                 alert.setTitle("权限不足");
                 alert.setHeaderText(null);
                 alert.setContentText("您没有权限访问老师功能，只有老师和管理员可以访问");
+                alert.showAndWait();
+                return;
+            }
+        }
+
+        // 检查校车功能权限
+        if ("shuttle-bus".equals(name)) {
+            // 班次管理：仅管理员
+            if (!isAdmin(role)) {
+                System.out.println("❌ 权限不足：只有管理员可以访问班次管理");
+                Alert alert = new Alert(Alert.AlertType.WARNING);
+                alert.setTitle("权限不足");
+                alert.setHeaderText(null);
+                alert.setContentText("您没有权限访问班次管理，只有管理员可以访问");
+                alert.showAndWait();
+                return;
+            }
+        }
+
+        if ("shuttle-reserve".equals(name) || "my-reservations".equals(name)) {
+            // 预约班车和我的预约：学生、老师、管理员
+            if (!isStudent(role) && !isTeacher(role) && !isAdmin(role)) {
+                System.out.println("❌ 权限不足：只有学生、老师和管理员可以访问校车预约功能");
+                Alert alert = new Alert(Alert.AlertType.WARNING);
+                alert.setTitle("权限不足");
+                alert.setHeaderText(null);
+                alert.setContentText("您没有权限访问校车预约功能");
                 alert.showAndWait();
                 return;
             }
@@ -580,6 +621,42 @@ public class MainFrameController {
         contentTabPane.getTabs().remove(tab);
         tabMap.remove(name);
         controlMap.remove(name);
+    }
+
+    /**
+     * 切换树节点的展开/折叠状态
+     */
+    private void toggleTreeNode(String nodeName) {
+        TreeItem<MyTreeNode> root = menuTree.getRoot();
+        if (root == null) return;
+        
+        // 递归查找对应的 TreeItem
+        TreeItem<MyTreeNode> targetNode = findTreeNode(root, nodeName);
+        if (targetNode != null) {
+            // 切换展开状态
+            targetNode.setExpanded(!targetNode.isExpanded());
+            System.out.println("🔄 已切换节点 " + nodeName + " 的展开状态: " + targetNode.isExpanded());
+        } else {
+            System.out.println("⚠️ 未找到节点: " + nodeName);
+        }
+    }
+    
+    /**
+     * 递归查找树节点
+     */
+    private TreeItem<MyTreeNode> findTreeNode(TreeItem<MyTreeNode> parent, String nodeName) {
+        if (parent.getValue() != null && nodeName.equals(parent.getValue().getValue())) {
+            return parent;
+        }
+        
+        for (TreeItem<MyTreeNode> child : parent.getChildren()) {
+            TreeItem<MyTreeNode> found = findTreeNode(child, nodeName);
+            if (found != null) {
+                return found;
+            }
+        }
+        
+        return null;
     }
 
     /**

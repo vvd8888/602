@@ -59,7 +59,7 @@ public class HttpRequestUtil {
     }
 
     /**
-     * DataResponse request(String url,DataRequest request) 一般数据请求业务的实现
+     * DataResponse request(String url, DataRequest request) 一般数据请求业务的实现
      * @param url  Web请求的Url 对用后的 RequestMapping
      * @param request 请求参数对象
      * @return DataResponse 返回后台返回数据
@@ -76,13 +76,48 @@ public class HttpRequestUtil {
             try {
                 HttpResponse<String> response = client.send(httpRequest, HttpResponse.BodyHandlers.ofString());
                 System.out.println("url=" + url +"    response.statusCode="+response.statusCode());
+                System.out.println("response.body=" + response.body());
                 if (response.statusCode() == 200) {
                     //                System.out.println(response.body());
                     return gson.fromJson(response.body(), DataResponse.class);
+                } else {
+                    // 非200状态码，打印错误信息
+                    System.err.println("HTTP错误 " + response.statusCode() + ": " + response.body());
                 }
             } catch (IOException | InterruptedException e) {
                 e.printStackTrace();
             }
+        return null;
+    }
+    
+    /**
+     * DataResponse requestWithoutUsername(String url, Object requestObj) 特殊数据请求业务（不自动添加username字段）
+     * 适用于后端使用@RequestBody接收特定Request对象的场景
+     * @param url  Web请求的Url 对用后的 RequestMapping
+     * @param requestObj 请求参数对象（会被序列化为JSON）
+     * @return DataResponse 返回后台返回数据
+     */
+    public static DataResponse requestWithoutUsername(String url, Object requestObj){
+        HttpRequest httpRequest = HttpRequest.newBuilder()
+                .uri(URI.create(serverUrl + url))
+                .POST(HttpRequest.BodyPublishers.ofString(gson.toJson(requestObj)))
+                .headers("Content-Type", "application/json")
+                .headers("Authorization", "Bearer " + AppStore.getJwt().getToken())
+                .build();
+        HttpClient client = HttpClient.newHttpClient();
+        try {
+            HttpResponse<String> response = client.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+            System.out.println("url=" + url +"    response.statusCode="+response.statusCode());
+            System.out.println("response.body=" + response.body());
+            if (response.statusCode() == 200) {
+                return gson.fromJson(response.body(), DataResponse.class);
+            } else {
+                // 非200状态码，打印错误信息
+                System.err.println("HTTP错误 " + response.statusCode() + ": " + response.body());
+            }
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
         return null;
     }
 
