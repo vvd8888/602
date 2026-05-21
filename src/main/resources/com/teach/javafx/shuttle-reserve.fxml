@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+            prefWidth="960.0" prefHeight="680.0"
+            fx:controller="com.teach.javafx.controller.ShuttleReservationController">
+    <top>
+        <VBox spacing="0">
+            <HBox alignment="CENTER_LEFT" spacing="10.0"
+                  style="-fx-background-color: #f0f4f8; -fx-padding: 12 16;">
+                <Label text="预约班车" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
+                <Pane HBox.hgrow="ALWAYS"/>
+                <Button text="刷新" onAction="#onRefreshButtonClick" prefWidth="60"
+                        style="-fx-font-size: 12px; -fx-background-color: #3b82f6; -fx-text-fill: white;"/>
+            </HBox>
+            <HBox alignment="CENTER_LEFT" spacing="8.0"
+                  style="-fx-background-color: #f8fafc; -fx-padding: 8 16; -fx-border-color: #e2e8f0; -fx-border-width: 1 0;">
+                <Label text="起点：" style="-fx-font-size: 13px;"/>
+                <ComboBox fx:id="departureCampusCombo" prefWidth="120" style="-fx-font-size: 12px;"/>
+                <Label text="终点：" style="-fx-font-size: 13px;"/>
+                <ComboBox fx:id="arrivalCampusCombo" prefWidth="120" style="-fx-font-size: 12px;"/>
+                <Button text="查询" onAction="#onQueryButtonClick" prefWidth="60"
+                        style="-fx-font-size: 12px; -fx-background-color: #22c55e; -fx-text-fill: white;"/>
+            </HBox>
+        </VBox>
+    </top>
+    <center>
+        <SplitPane dividerPositions="0.45" style="-fx-padding: 8;">
+            <VBox spacing="6" style="-fx-padding: 4;">
+                <TableView fx:id="scheduleTableView" VBox.vgrow="ALWAYS">
+                    <columns>
+                        <TableColumn fx:id="routeColumn" prefWidth="140" text="路线"/>
+                        <TableColumn fx:id="departureTimeColumn" prefWidth="70" text="发车时间"/>
+                        <TableColumn fx:id="arrivalTimeColumn" prefWidth="70" text="到达时间"/>
+                        <TableColumn fx:id="availableSeatsColumn" prefWidth="80" text="剩余座位"/>
+                        <TableColumn fx:id="statusColumn" prefWidth="80" text="状态"/>
+                    </columns>
+                </TableView>
+                <HBox spacing="8" alignment="CENTER">
+                    <Button text="预约座位" onAction="#onReserveClick" prefWidth="100"
+                            style="-fx-font-size: 13px; -fx-background-color: #22c55e; -fx-text-fill: white;"/>
+                    <Pane HBox.hgrow="ALWAYS"/>
+                    <Label text="提示：选择班次后点击预约按钮" style="-fx-font-size: 12px; -fx-text-fill: #64748b;"/>
+                </HBox>
+            </VBox>
+            <ScrollPane fitToWidth="true" style="-fx-padding: 0;">
+                <VBox spacing="8" style="-fx-padding: 12; -fx-background-color: #f8fafc; -fx-border-color: #e2e8f0; -fx-border-radius: 6; -fx-background-radius: 6;">
+                    <VBox fx:id="scheduleDetailBox" spacing="8">
+                        <Label fx:id="detailTitleLabel" text="选择班次查看详情" wrapText="true"
+                               style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #1e293b;"/>
+                        <Separator/>
+                        <GridPane hgap="10" vgap="8">
+                            <columnConstraints>
+                                <ColumnConstraints hgrow="NEVER" minWidth="80"/>
+                                <ColumnConstraints hgrow="ALWAYS"/>
+                            </columnConstraints>
+                            <Label text="起点校区:" style="-fx-font-size: 13px; -fx-font-weight: bold;" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                            <Label fx:id="detailDepartureCampus" style="-fx-font-size: 13px;" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+                            
+                            <Label text="终点校区:" style="-fx-font-size: 13px; -fx-font-weight: bold;" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                            <Label fx:id="detailArrivalCampus" style="-fx-font-size: 13px;" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                            
+                            <Label text="发车时间:" style="-fx-font-size: 13px; -fx-font-weight: bold;" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+                            <Label fx:id="detailDepartureTime" style="-fx-font-size: 13px;" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+                            
+                            <Label text="到达时间:" style="-fx-font-size: 13px; -fx-font-weight: bold;" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+                            <Label fx:id="detailArrivalTime" style="-fx-font-size: 13px;" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+                            
+                            <Label text="座位总数:" style="-fx-font-size: 13px; -fx-font-weight: bold;" GridPane.columnIndex="0" GridPane.rowIndex="4"/>
+                            <Label fx:id="detailTotalSeats" style="-fx-font-size: 13px;" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
+                            
+                            <Label text="已预约:" style="-fx-font-size: 13px; -fx-font-weight: bold;" GridPane.columnIndex="0" GridPane.rowIndex="5"/>
+                            <Label fx:id="detailReservedSeats" style="-fx-font-size: 13px;" GridPane.columnIndex="1" GridPane.rowIndex="5"/>
+                            
+                            <Label text="剩余座位:" style="-fx-font-size: 13px; -fx-font-weight: bold;" GridPane.columnIndex="0" GridPane.rowIndex="6"/>
+                            <Label fx:id="detailAvailableSeats" style="-fx-font-size: 13px; -fx-text-fill: #22c55e; -fx-font-weight: bold;" GridPane.columnIndex="1" GridPane.rowIndex="6"/>
+                            
+                            <Label text="状态:" style="-fx-font-size: 13px; -fx-font-weight: bold;" GridPane.columnIndex="0" GridPane.rowIndex="7"/>
+                            <Label fx:id="detailStatus" style="-fx-font-size: 13px;" GridPane.columnIndex="1" GridPane.rowIndex="7"/>
+                            
+                            <Label text="备注:" style="-fx-font-size: 13px; -fx-font-weight: bold;" GridPane.columnIndex="0" GridPane.rowIndex="8"/>
+                            <TextArea fx:id="detailRemark" editable="false" wrapText="true" prefRowCount="2"
+                                      style="-fx-font-size: 12px;" GridPane.columnIndex="1" GridPane.rowIndex="8"/>
+                        </GridPane>
+                    </VBox>
+                </VBox>
+            </ScrollPane>
+        </SplitPane>
+    </center>
+</BorderPane>
