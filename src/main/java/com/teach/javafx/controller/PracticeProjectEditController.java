@@ -6,6 +6,7 @@ import com.teach.javafx.controller.base.ToolController;
 import com.teach.javafx.request.DataRequest;
 import com.teach.javafx.request.DataResponse;
 import com.teach.javafx.request.HttpRequestUtil;
+import com.teach.javafx.request.OptionItem;
 import com.teach.javafx.util.CommonMethod;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
@@ -16,6 +17,7 @@ import javafx.stage.Stage;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class PracticeProjectEditController {
 
@@ -27,6 +29,7 @@ public class PracticeProjectEditController {
     @FXML private DatePicker endDateField;
     @FXML private TextArea descArea;
     @FXML private TextField memberSearchField;
+    @FXML private ComboBox<OptionItem> batchClassCombo;
     @FXML private VBox membersContainer;
     @FXML private Button draftBtn;
     @FXML private Button submitEditBtn;
@@ -58,6 +61,87 @@ public class PracticeProjectEditController {
 
     public void setOwnerController(ToolController owner) {
         this.ownerController = owner;
+    }
+
+    @FXML
+    public void initialize() {
+        loadClassNames();
+    }
+
+    private void loadClassNames() {
+        DataRequest req = new DataRequest();
+        req.add("numName", "");
+        DataResponse res = HttpRequestUtil.request("/api/student/getStudentList", req);
+        if (res != null && res.getCode() == 0 && res.getData() != null) {
+            List<Map> students = (List<Map>) res.getData();
+            List<String> classNames = students.stream()
+                    .map(s -> CommonMethod.getString(s, "className"))
+                    .filter(c -> c != null && !c.isEmpty())
+                    .distinct()
+                    .sorted()
+                    .collect(Collectors.toList());
+            batchClassCombo.getItems().clear();
+            for (String cn : classNames) {
+                batchClassCombo.getItems().add(new OptionItem(null, cn, cn));
+            }
+        }
+    }
+
+    @FXML
+    protected void onBatchAddByClass() {
+        OptionItem selected = batchClassCombo.getSelectionModel().getSelectedItem();
+        if (selected == null || selected.getValue() == null) {
+            MessageDialog.showDialog("请先选择班级");
+            return;
+        }
+        String className = selected.getValue();
+
+        DataRequest req = new DataRequest();
+        req.add("numName", "");
+        DataResponse res = HttpRequestUtil.request("/api/student/getStudentList", req);
+        if (res == null || res.getCode() != 0 || res.getData() == null) {
+            MessageDialog.showDialog("获取学生列表失败");
+            return;
+        }
+
+        List<Map> students = (List<Map>) res.getData();
+        Integer myPersonId = AppStore.getJwt().getId();
+        int added = 0;
+
+        for (Map student : students) {
+            String cn = CommonMethod.getString(student, "className");
+            if (!className.equals(cn)) continue;
+
+            Integer personId = CommonMethod.getInteger(student, "personId");
+            String name = CommonMethod.getString(student, "name");
+
+            if (personId == null) continue;
+            if (personId.equals(myPersonId)) continue;
+
+            boolean alreadyInList = false;
+            for (Map m : tempMembers) {
+                if (personId.equals(m.get("personId"))) {
+                    alreadyInList = true;
+                    break;
+                }
+            }
+            if (alreadyInList) continue;
+            if (tempMembers.size() >= 10) break;
+
+            Map<String, Object> member = new HashMap<>();
+            member.put("personId", personId);
+            member.put("personName", name);
+            member.put("className", cn);
+            tempMembers.add(member);
+            added++;
+        }
+
+        if (added == 0) {
+            MessageDialog.showDialog("该班级没有可添加的学生");
+        } else {
+            MessageDialog.showDialog("已添加 " + added + " 名学生");
+        }
+        rebuildMembersUI();
     }
 
     private void loadExistingProject(Integer projectId) {
