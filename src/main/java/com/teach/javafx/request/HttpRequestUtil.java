@@ -209,6 +209,31 @@ public class HttpRequestUtil {
     }
 
     /**
+     * byte[] downloadFile(String url) 下载文件（使用GET请求）
+     * @param url  Web请求的Url（完整路径，不包含serverUrl）
+     * @return byte[] 返回文件字节数据
+     */
+    public static byte[] downloadFile(String url){
+        HttpRequest httpRequest = HttpRequest.newBuilder()
+                .uri(URI.create(serverUrl + url))
+                .GET()
+                .headers("Authorization", "Bearer "+AppStore.getJwt().getToken())
+                .build();
+        HttpClient client = HttpClient.newHttpClient();
+        try {
+            HttpResponse<byte[]>  response = client.send(httpRequest, HttpResponse.BodyHandlers.ofByteArray());
+            if(response.statusCode() == 200) {
+                return response.body();
+            } else {
+                System.err.println("下载失败 HTTP " + response.statusCode() + ": " + response.body());
+            }
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    /**
      *  byte[] requestByteData(String url, DataRequest request) 获取byte[] 对象 下载数据文件等
      * @param url  Web请求的Url 对用后的 RequestMapping
      * @param request 请求参数对象

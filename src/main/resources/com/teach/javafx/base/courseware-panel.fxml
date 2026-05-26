@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+        <?import javafx.geometry.Insets?>
+        <?import javafx.scene.control.*?>
+        <?import javafx.scene.layout.*?>
+
+<VBox spacing="10" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.teach.javafx.controller.CoursewareController">
+<padding><Insets top="10" right="10" bottom="10" left="10"/></padding>
+
+<!-- 教师/管理员：上传区域 -->
+<VBox fx:id="uploadArea" spacing="5" visible="false">
+    <Label text="上传新课件" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
+    <GridPane hgap="10" vgap="10">
+        <Label text="标题：" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+        <TextField fx:id="titleField" GridPane.columnIndex="1" GridPane.rowIndex="0" prefWidth="300"/>
+
+        <Label text="描述：" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+        <TextField fx:id="descField" GridPane.columnIndex="1" GridPane.rowIndex="1" prefWidth="300"/>
+
+        <Label text="所属课程：" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+        <ComboBox fx:id="courseComboBox" GridPane.columnIndex="1" GridPane.rowIndex="2" prefWidth="300"/>
+
+        <Label text="文件：" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+        <HBox spacing="5" GridPane.columnIndex="1" GridPane.rowIndex="3">
+            <TextField fx:id="fileField" editable="false" prefWidth="250"/>
+            <Button text="选择文件" onAction="#onChooseFileClick"/>
+            <Button text="上传" onAction="#onUploadClick" style="-fx-background-color: #4CAF50; -fx-text-fill: white;"/>
+        </HBox>
+    </GridPane>
+    <Separator/>
+</VBox>
+
+<!-- 课件列表 -->
+<Label text="课件列表" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
+<TableView fx:id="dataTableView" prefHeight="400">
+    <columns>
+        <TableColumn text="标题" fx:id="titleColumn" prefWidth="150"/>
+        <TableColumn text="描述" fx:id="descColumn" prefWidth="200"/>
+        <TableColumn text="文件名" fx:id="fileNameColumn" prefWidth="150"/>
+        <TableColumn text="大小(KB)" fx:id="fileSizeColumn" prefWidth="80"/>
+        <TableColumn text="课程" fx:id="courseNameColumn" prefWidth="120"/>
+        <TableColumn text="上传教师" fx:id="teacherColumn" prefWidth="100"/>
+        <TableColumn text="下载次数" fx:id="downloadCountColumn" prefWidth="80"/>
+        <TableColumn text="上传时间" fx:id="timeColumn" prefWidth="150"/>
+        <TableColumn text="操作" fx:id="actionColumn" prefWidth="180"/>
+    </columns>
+</TableView>
+</VBox>
