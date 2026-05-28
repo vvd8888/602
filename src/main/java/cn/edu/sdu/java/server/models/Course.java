@@ -41,7 +41,12 @@ public class Course {
     @Size(max = 50)
     private String classroom;  // 上课地点
 
-    // 添加 status 字段，对应数据库中的 status 列
+    @Column(name = "max_capacity")
+    private Integer maxCapacity;  // 最大选课人数
+
+    @Column(name = "current_enrolled")
+    private Integer currentEnrolled = 0;  // 当前已选人数
+
     @Column(name = "status")
     private String status = "OPEN";  // 默认值为 OPEN
 }

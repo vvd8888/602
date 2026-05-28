@@ -341,21 +341,42 @@ public class CourseService {
             }
             Person student = personOpt.get();
 
-            // 3. 获取该学生已选的课程ID
+            // 3. 获取所有开放选课的课程
+            List<Course> openCourses = courseRepository.findByStatus("OPEN");
+            
+            // 4. 同步课程人数 - 从数据库重新计算，并确保maxCapacity有值
+            for (Course course : openCourses) {
+                // 从数据库计算实际选课人数
+                long actualCount = scoreRepository.findByCourseId(course.getCourseId()).stream()
+                        .filter(s -> "APPROVED".equals(s.getSelectionStatus()))
+                        .count();
+                
+                course.setCurrentEnrolled((int) actualCount);
+                
+                // 如果maxCapacity为null或0，设置默认值为50
+                if (course.getMaxCapacity() == null || course.getMaxCapacity() == 0) {
+                    course.setMaxCapacity(50);
+                }
+                
+                // 保存更新后的课程信息
+                courseRepository.save(course);
+                
+                System.out.println("同步课程人数: " + course.getName() + 
+                        " (已选:" + course.getCurrentEnrolled() + "/总容量:" + course.getMaxCapacity() + ")");
+            }
+
+            // 5. 获取该学生已选的课程ID
             List<Score> studentScores = scoreRepository.findByStudentPersonId(student.getPersonId());
             Set<Integer> selectedCourseIds = studentScores.stream()
                     .map(score -> score.getCourse().getCourseId())
                     .collect(Collectors.toSet());
 
-            // 4. 获取所有开放选课的课程
-            List<Course> allCourses = courseRepository.findByStatus("OPEN");
-
-            // 5. 过滤掉已选课程
-            List<Course> availableCourses = allCourses.stream()
+            // 6. 过滤掉已选课程
+            List<Course> availableCourses = openCourses.stream()
                     .filter(course -> !selectedCourseIds.contains(course.getCourseId()))
                     .collect(Collectors.toList());
 
-            // 6. 转换为前端需要的格式
+            // 7. 转换为前端需要的格式
             List<Map<String, Object>> dataList = new ArrayList<>();
             for (Course course : availableCourses) {
                 Map<String, Object> m = new HashMap<>();
@@ -367,6 +388,10 @@ public class CourseService {
                 m.put("time", course.getTime());
                 m.put("classroom", course.getClassroom());
                 m.put("status", course.getStatus());
+                m.put("maxCapacity", course.getMaxCapacity());
+                m.put("currentEnrolled", course.getCurrentEnrolled());
+                m.put("availableSeats", course.getMaxCapacity() != null && course.getCurrentEnrolled() != null 
+                        ? course.getMaxCapacity() - course.getCurrentEnrolled() : null);
 
                 // 前置课程信息
                 Course preCourse = course.getPreCourse();
@@ -378,6 +403,7 @@ public class CourseService {
                 dataList.add(m);
             }
 
+            System.out.println("✅ 返回可选课程数量: " + dataList.size());
             return CommonMethod.getReturnData(dataList);
 
         } catch (Exception e) {
@@ -391,38 +417,37 @@ public class CourseService {
      */
     public DataResponse applyForCourse(DataRequest dataRequest) {
         try {
-            // 1. 获取当前登录用户
             String currentUsername = getCurrentUsername();
             if (currentUsername == null) {
                 return CommonMethod.getReturnMessageError("用户未登录");
             }
 
-            // 2. 获取课程ID
             Integer courseId = dataRequest.getInteger("courseId");
             if (courseId == null) {
                 return CommonMethod.getReturnMessageError("课程ID不能为空");
             }
 
-            // 3. 查询课程信息
             Optional<Course> courseOpt = courseRepository.findById(courseId);
             if (!courseOpt.isPresent()) {
                 return CommonMethod.getReturnMessageError("课程不存在");
             }
             Course course = courseOpt.get();
 
-            // 4. 检查课程是否开放选课
             if (!"OPEN".equals(course.getStatus())) {
                 return CommonMethod.getReturnMessageError("该课程暂不开放选课");
             }
 
-            // 5. 查询学生信息
+            if (course.getMaxCapacity() != null && course.getCurrentEnrolled() != null 
+                    && course.getCurrentEnrolled() >= course.getMaxCapacity()) {
+                return CommonMethod.getReturnMessageError("该课程已满，无法选课");
+            }
+
             Optional<Person> personOpt = personRepository.findByNum(currentUsername);
             if (!personOpt.isPresent()) {
                 return CommonMethod.getReturnMessageError("学生信息不存在");
             }
             Person student = personOpt.get();
 
-            // 6. 检查是否已选过该课程
             Optional<Score> existingScore = scoreRepository.findByPersonIdAndCourseId(
                     student.getPersonId(), courseId);
             if (existingScore.isPresent()) {
@@ -437,15 +462,25 @@ public class CourseService {
                 }
             }
 
-            // 7. 创建选课记录
+            if (!hasCompletedPreCourse(student.getPersonId(), course)) {
+                Course preCourse = course.getPreCourse();
+                String preCourseName = preCourse != null ? preCourse.getName() : "未知课程";
+                return CommonMethod.getReturnMessageError("需要先完成前置课程：" + preCourseName);
+            }
+
+            List<Score> approvedCourses = scoreRepository.findByStudentPersonIdAndSelectionStatus(
+                    student.getPersonId(), "APPROVED");
+            
+            if (hasTimeConflict(approvedCourses, course)) {
+                return CommonMethod.getReturnMessageError("课程时间与已选课程冲突");
+            }
+
             Score score = new Score();
 
-            // 创建 Student 对象并设置关联
             Optional<Student> studentOpt = studentRepository.findById(student.getPersonId());
             if (studentOpt.isPresent()) {
                 score.setStudent(studentOpt.get());
             } else {
-                // 如果 Student 记录不存在，需要创建
                 Student newStudent = new Student();
                 newStudent.setPersonId(student.getPersonId());
                 studentRepository.save(newStudent);
@@ -453,10 +488,9 @@ public class CourseService {
             }
 
             score.setCourse(course);
-            score.setSelectionStatus("PENDING");  // 待审核
+            score.setSelectionStatus("PENDING");
             score.setApplyTime(new Date());
 
-            // 保存选课记录
             scoreRepository.save(score);
 
             Map<String, Object> result = new HashMap<>();
@@ -472,8 +506,226 @@ public class CourseService {
     }
 
     /**
-     * 学生查看自己的选课记录
+     * 学生批量提交选课申请
      */
+    // ... existing code ...
+
+    /**
+     * 学生批量提交选课申请
+     */
+    public DataResponse submitSelections(DataRequest dataRequest) {
+        try {
+            System.out.println(" submitSelections 被调用");
+            System.out.println("请求数据: " + dataRequest.getData());
+
+            String currentUsername = getCurrentUsername();
+            if (currentUsername == null) {
+                return CommonMethod.getReturnMessageError("用户未登录");
+            }
+
+            Optional<Person> personOpt = personRepository.findByNum(currentUsername);
+            if (!personOpt.isPresent()) {
+                return CommonMethod.getReturnMessageError("学生信息不存在");
+            }
+            Person student = personOpt.get();
+
+            List<Integer> courseIds = new ArrayList<>();
+
+            // 尝试获取courseIds列表
+            List<?> courseIdsObj = dataRequest.getList("courseIds");
+            System.out.println("courseIds列表: " + courseIdsObj);
+
+            if (courseIdsObj != null && !courseIdsObj.isEmpty()) {
+                for (Object obj : courseIdsObj) {
+                    if (obj instanceof Integer) {
+                        courseIds.add((Integer) obj);
+                    } else if (obj instanceof String) {
+                        try {
+                            courseIds.add(Integer.parseInt((String) obj));
+                        } catch (NumberFormatException e) {
+                            System.err.println("无效的课程ID: " + obj);
+                        }
+                    } else if (obj instanceof Number) {
+                        courseIds.add(((Number) obj).intValue());
+                    }
+                }
+            }
+
+            // 如果courseIds为空，尝试获取单个courseId
+            if (courseIds.isEmpty()) {
+                Integer courseId = dataRequest.getInteger("courseId");
+                System.out.println("单个courseId: " + courseId);
+                if (courseId != null) {
+                    courseIds.add(courseId);
+                }
+            }
+
+            // 如果还是空，尝试从data中直接获取所有可能的key
+            if (courseIds.isEmpty()) {
+                System.out.println("尝试从data中查找课程ID...");
+                for (Map.Entry<String, Object> entry : dataRequest.getData().entrySet()) {
+                    String key = entry.getKey();
+                    Object value = entry.getValue();
+                    System.out.println("  key: " + key + ", value: " + value + ", type: " + (value != null ? value.getClass().getName() : "null"));
+
+                    if (key.toLowerCase().contains("course") && key.toLowerCase().contains("id")) {
+                        if (value instanceof Integer) {
+                            courseIds.add((Integer) value);
+                        } else if (value instanceof String) {
+                            try {
+                                courseIds.add(Integer.parseInt((String) value));
+                            } catch (NumberFormatException e) {
+                                // ignore
+                            }
+                        }
+                    }
+                }
+            }
+
+            System.out.println("最终解析到的courseIds: " + courseIds);
+
+            if (courseIds.isEmpty()) {
+                return CommonMethod.getReturnMessageError("课程ID不能为空，请检查前端传参格式");
+            }
+
+            // 检查是否有已APPROVED的课程（不能重复选）
+            List<Score> allScores = scoreRepository.findByStudentPersonId(student.getPersonId());
+            for (Integer courseId : courseIds) {
+                Optional<Score> existingScore = scoreRepository.findByPersonIdAndCourseId(
+                        student.getPersonId(), courseId);
+                if (existingScore.isPresent()) {
+                    Score score = existingScore.get();
+                    if ("APPROVED".equals(score.getSelectionStatus())) {
+                        return CommonMethod.getReturnMessageError("课程ID " + courseId + " 已成功选修，不能重复提交");
+                    }
+                }
+            }
+
+            // 删除该学生所有PENDING状态的选课记录（允许重新提交）
+            List<Score> pendingScores = allScores.stream()
+                    .filter(s -> "PENDING".equals(s.getSelectionStatus()))
+                    .collect(Collectors.toList());
+
+            if (!pendingScores.isEmpty()) {
+                System.out.println("删除旧的PENDING选课记录: " + pendingScores.size() + " 条");
+                scoreRepository.deleteAll(pendingScores);
+            }
+
+            List<Map<String, Object>> results = new ArrayList<>();
+            int successCount = 0;
+            int failCount = 0;
+
+            for (Integer courseId : courseIds) {
+                try {
+                    System.out.println("处理课程ID: " + courseId);
+
+                    // 为每个课程创建选课申请
+                    Optional<Course> courseOpt = courseRepository.findById(courseId);
+                    if (!courseOpt.isPresent()) {
+                        Map<String, Object> errorResult = new HashMap<>();
+                        errorResult.put("courseId", courseId);
+                        errorResult.put("error", "课程不存在");
+                        results.add(errorResult);
+                        failCount++;
+                        continue;
+                    }
+                    Course course = courseOpt.get();
+
+                    if (!"OPEN".equals(course.getStatus())) {
+                        Map<String, Object> errorResult = new HashMap<>();
+                        errorResult.put("courseId", courseId);
+                        errorResult.put("error", "该课程暂不开放选课");
+                        results.add(errorResult);
+                        failCount++;
+                        continue;
+                    }
+
+                    if (course.getMaxCapacity() != null && course.getCurrentEnrolled() != null
+                            && course.getCurrentEnrolled() >= course.getMaxCapacity()) {
+                        Map<String, Object> errorResult = new HashMap<>();
+                        errorResult.put("courseId", courseId);
+                        errorResult.put("error", "该课程已满");
+                        results.add(errorResult);
+                        failCount++;
+                        continue;
+                    }
+
+                    // 检查前置课程
+                    if (!hasCompletedPreCourse(student.getPersonId(), course)) {
+                        Course preCourse = course.getPreCourse();
+                        String preCourseName = preCourse != null ? preCourse.getName() : "未知课程";
+                        Map<String, Object> errorResult = new HashMap<>();
+                        errorResult.put("courseId", courseId);
+                        errorResult.put("error", "需要先完成前置课程：" + preCourseName);
+                        results.add(errorResult);
+                        failCount++;
+                        continue;
+                    }
+
+                    // 检查时间冲突（只检查APPROVED的课程）
+                    List<Score> approvedCourses = scoreRepository.findByStudentPersonIdAndSelectionStatus(
+                            student.getPersonId(), "APPROVED");
+
+                    if (hasTimeConflict(approvedCourses, course)) {
+                        Map<String, Object> errorResult = new HashMap<>();
+                        errorResult.put("courseId", courseId);
+                        errorResult.put("error", "课程时间冲突");
+                        results.add(errorResult);
+                        failCount++;
+                        continue;
+                    }
+
+                    Score score = new Score();
+                    Optional<Student> studentOpt = studentRepository.findById(student.getPersonId());
+                    if (studentOpt.isPresent()) {
+                        score.setStudent(studentOpt.get());
+                    } else {
+                        Student newStudent = new Student();
+                        newStudent.setPersonId(student.getPersonId());
+                        studentRepository.save(newStudent);
+                        score.setStudent(newStudent);
+                    }
+
+                    score.setCourse(course);
+                    score.setSelectionStatus("PENDING");
+                    score.setApplyTime(new Date());
+
+                    scoreRepository.save(score);
+
+                    Map<String, Object> successResult = new HashMap<>();
+                    successResult.put("courseId", courseId);
+                    successResult.put("scoreId", score.getScoreId());
+                    successResult.put("message", "选课申请已提交");
+                    results.add(successResult);
+                    successCount++;
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Map<String, Object> errorResult = new HashMap<>();
+                    errorResult.put("courseId", courseId);
+                    errorResult.put("error", "处理失败: " + e.getMessage());
+                    results.add(errorResult);
+                    failCount++;
+                }
+            }
+
+            Map<String, Object> finalResult = new HashMap<>();
+            finalResult.put("successCount", successCount);
+            finalResult.put("failCount", failCount);
+            finalResult.put("results", results);
+            finalResult.put("message", String.format("提交完成：成功%d个，失败%d个", successCount, failCount));
+
+            System.out.println("提交结果: " + finalResult);
+            return CommonMethod.getReturnData(finalResult);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return CommonMethod.getReturnMessageError("批量选课失败：" + e.getMessage());
+        }
+    }
+
+// ... existing code ...
+
     public DataResponse getMySelections(DataRequest dataRequest) {
         try {
             // 1. 获取当前登录用户
@@ -602,26 +854,22 @@ public class CourseService {
      */
     public DataResponse approveSelection(DataRequest dataRequest) {
         try {
-            // 1. 获取当前登录用户
             String currentUsername = getCurrentUsername();
             if (currentUsername == null) {
                 return CommonMethod.getReturnMessageError("用户未登录");
             }
 
-            // 2. 获取选课记录ID
             Integer scoreId = dataRequest.getInteger("scoreId");
             if (scoreId == null) {
                 return CommonMethod.getReturnMessageError("选课记录ID不能为空");
             }
 
-            // 3. 查询选课记录
             Optional<Score> scoreOpt = scoreRepository.findById(scoreId);
             if (!scoreOpt.isPresent()) {
                 return CommonMethod.getReturnMessageError("选课记录不存在");
             }
             Score score = scoreOpt.get();
 
-            // 4. 验证是否为管理员
             Optional<Person> personOpt = personRepository.findByNum(currentUsername);
             if (!personOpt.isPresent()) {
                 return CommonMethod.getReturnMessageError("用户信息不存在");
@@ -632,16 +880,26 @@ public class CourseService {
                 return CommonMethod.getReturnMessageError("需要管理员权限");
             }
 
-            // 5. 验证选课状态是否为待审核
             if (!"PENDING".equals(score.getSelectionStatus())) {
                 return CommonMethod.getReturnMessageError("该选课申请状态不可操作");
             }
 
-            // 6. 批准选课
+            Course course = score.getCourse();
+            if (course.getMaxCapacity() != null && course.getCurrentEnrolled() != null 
+                    && course.getCurrentEnrolled() >= course.getMaxCapacity()) {
+                return CommonMethod.getReturnMessageError("该课程已满，无法批准");
+            }
+
             score.setSelectionStatus("APPROVED");
             score.setApproveTime(new Date());
             score.setApproveBy(admin.getPersonId());
             score.setRejectReason(null);
+
+            if (course.getCurrentEnrolled() == null) {
+                course.setCurrentEnrolled(0);
+            }
+            course.setCurrentEnrolled(course.getCurrentEnrolled() + 1);
+            courseRepository.save(course);
 
             scoreRepository.save(score);
 
@@ -726,11 +984,251 @@ public class CourseService {
      * 判断用户是否为管理员
      */
     private boolean isAdmin(Person person) {
-        // 修正：判断是否为管理员（假设管理员类型为 0 或 1）
         if (person.getType() == null) {
             return false;
         }
-        String type = person.getType().toString(); // 转为字符串比较
+        String type = person.getType().toString();
         return "0".equals(type) || "1".equals(type);
+    }
+
+    /**
+     * 学生退课
+     */
+    public DataResponse dropCourse(DataRequest dataRequest) {
+        try {
+            String currentUsername = getCurrentUsername();
+            if (currentUsername == null) {
+                return CommonMethod.getReturnMessageError("用户未登录");
+            }
+
+            Integer scoreId = dataRequest.getInteger("scoreId");
+            if (scoreId == null) {
+                return CommonMethod.getReturnMessageError("选课记录ID不能为空");
+            }
+
+            Optional<Person> personOpt = personRepository.findByNum(currentUsername);
+            if (!personOpt.isPresent()) {
+                return CommonMethod.getReturnMessageError("学生信息不存在");
+            }
+            Person student = personOpt.get();
+
+            Optional<Score> scoreOpt = scoreRepository.findById(scoreId);
+            if (!scoreOpt.isPresent()) {
+                return CommonMethod.getReturnMessageError("选课记录不存在");
+            }
+
+            Score score = scoreOpt.get();
+
+            if (!score.getStudent().getPersonId().equals(student.getPersonId())) {
+                return CommonMethod.getReturnMessageError("无权操作此选课记录");
+            }
+
+            if ("APPROVED".equals(score.getSelectionStatus())) {
+                Course course = score.getCourse();
+                if (course.getCurrentEnrolled() != null && course.getCurrentEnrolled() > 0) {
+                    course.setCurrentEnrolled(course.getCurrentEnrolled() - 1);
+                    courseRepository.save(course);
+                }
+            }
+
+            scoreRepository.deleteByScoreIdAndStudentPersonId(scoreId, student.getPersonId());
+
+            Map<String, Object> result = new HashMap<>();
+            result.put("message", "退课成功");
+            return CommonMethod.getReturnData(result);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return CommonMethod.getReturnMessageError("退课失败：" + e.getMessage());
+        }
+    }
+
+    /**
+     * 取消选课（简化版退课，通过courseId）
+     */
+    public DataResponse cancelCourse(DataRequest dataRequest) {
+        try {
+            System.out.println("️ cancelCourse 被调用");
+            System.out.println("请求数据: " + dataRequest.getData());
+
+            String currentUsername = getCurrentUsername();
+            if (currentUsername == null) {
+                return CommonMethod.getReturnMessageError("用户未登录");
+            }
+
+            Integer courseId = dataRequest.getInteger("courseId");
+            if (courseId == null) {
+                return CommonMethod.getReturnMessageError("课程ID不能为空");
+            }
+
+            Optional<Person> personOpt = personRepository.findByNum(currentUsername);
+            if (!personOpt.isPresent()) {
+                return CommonMethod.getReturnMessageError("学生信息不存在");
+            }
+            Person student = personOpt.get();
+
+            Optional<Score> scoreOpt = scoreRepository.findByPersonIdAndCourseId(
+                    student.getPersonId(), courseId);
+            if (!scoreOpt.isPresent()) {
+                return CommonMethod.getReturnMessageError("未找到选课记录");
+            }
+
+            Score score = scoreOpt.get();
+
+            if ("APPROVED".equals(score.getSelectionStatus())) {
+                Course course = score.getCourse();
+                if (course.getCurrentEnrolled() != null && course.getCurrentEnrolled() > 0) {
+                    course.setCurrentEnrolled(course.getCurrentEnrolled() - 1);
+                    courseRepository.save(course);
+                    System.out.println(" 课程人数已减少: " + course.getName() + " -> " + course.getCurrentEnrolled());
+                }
+            }
+
+            scoreRepository.delete(score);
+            System.out.println("✅ 退课成功: courseId=" + courseId);
+
+            Map<String, Object> result = new HashMap<>();
+            result.put("message", "退课成功");
+            return CommonMethod.getReturnData(result);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return CommonMethod.getReturnMessageError("退课失败：" + e.getMessage());
+        }
+    }
+
+    /**
+     * 获取课程详情（包含选课人数等信息）
+     */
+    public DataResponse getCourseDetail(DataRequest dataRequest) {
+        try {
+            Integer courseId = dataRequest.getInteger("courseId");
+            if (courseId == null) {
+                return CommonMethod.getReturnMessageError("课程ID不能为空");
+            }
+
+            Optional<Course> courseOpt = courseRepository.findById(courseId);
+            if (!courseOpt.isPresent()) {
+                return CommonMethod.getReturnMessageError("课程不存在");
+            }
+
+            Course course = courseOpt.get();
+            Map<String, Object> result = new HashMap<>();
+            result.put("courseId", course.getCourseId());
+            result.put("num", course.getNum());
+            result.put("name", course.getName());
+            result.put("credit", course.getCredit());
+            result.put("teacher", course.getTeacher());
+            result.put("time", course.getTime());
+            result.put("classroom", course.getClassroom());
+            result.put("status", course.getStatus());
+            result.put("maxCapacity", course.getMaxCapacity());
+            result.put("currentEnrolled", course.getCurrentEnrolled());
+            result.put("availableSeats", course.getMaxCapacity() != null && course.getCurrentEnrolled() != null 
+                    ? course.getMaxCapacity() - course.getCurrentEnrolled() : null);
+
+            Course preCourse = course.getPreCourse();
+            if (preCourse != null) {
+                result.put("preCourseId", preCourse.getCourseId());
+                result.put("preCourseName", preCourse.getName());
+            }
+
+            return CommonMethod.getReturnData(result);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return CommonMethod.getReturnMessageError("获取课程详情失败：" + e.getMessage());
+        }
+    }
+
+    /**
+     * 检查课程时间冲突
+     */
+    private boolean hasTimeConflict(List<Score> approvedCourses, Course newCourse) {
+        String newCourseTime = newCourse.getTime();
+        if (newCourseTime == null || newCourseTime.isEmpty()) {
+            return false;
+        }
+
+        for (Score score : approvedCourses) {
+            Course existingCourse = score.getCourse();
+            String existingTime = existingCourse.getTime();
+            
+            if (existingTime != null && !existingTime.isEmpty()) {
+                if (isTimeOverlap(newCourseTime, existingTime)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 判断两个时间字符串是否有重叠
+     */
+    private boolean isTimeOverlap(String time1, String time2) {
+        if (time1.equals(time2)) {
+            return true;
+        }
+        
+        String[] days1 = extractDays(time1);
+        String[] days2 = extractDays(time2);
+        
+        for (String day1 : days1) {
+            for (String day2 : days2) {
+                if (day1.equals(day2)) {
+                    String period1 = extractPeriod(time1);
+                    String period2 = extractPeriod(time2);
+                    if (period1 != null && period2 != null && period1.equals(period2)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    private String[] extractDays(String time) {
+        if (time.contains("星期")) {
+            StringBuilder days = new StringBuilder();
+            int index = 0;
+            while ((index = time.indexOf("星期", index)) != -1) {
+                if (index + 2 < time.length()) {
+                    days.append(time.charAt(index + 2)).append(",");
+                }
+                index += 3;
+            }
+            if (days.length() > 0) {
+                return days.toString().split(",");
+            }
+        }
+        return new String[]{time};
+    }
+
+    private String extractPeriod(String time) {
+        if (time.contains("第") && time.contains("节")) {
+            int start = time.indexOf("第");
+            int end = time.indexOf("节");
+            if (start != -1 && end != -1 && end > start) {
+                return time.substring(start, end + 1);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 检查前置课程是否完成
+     */
+    private boolean hasCompletedPreCourse(Integer personId, Course course) {
+        Course preCourse = course.getPreCourse();
+        if (preCourse == null) {
+            return true;
+        }
+
+        Optional<Score> preCourseScore = scoreRepository.findApprovedByPersonIdAndCourseId(
+                personId, preCourse.getCourseId());
+        
+        return preCourseScore.isPresent() && preCourseScore.get().getMark() != null 
+                && preCourseScore.get().getMark() >= 60;
     }
 }

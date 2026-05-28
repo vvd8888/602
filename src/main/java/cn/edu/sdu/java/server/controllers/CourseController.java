@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
-@RequestMapping("/api/course")
+@RequestMapping("/api")
 public class CourseController {
     private final CourseService courseService;
 
@@ -16,42 +16,45 @@ public class CourseController {
         this.courseService = courseService;
     }
 
-    // 原有接口
-    @PostMapping("/getCourseList")
+    @PostMapping("/course/getCourseList")
     public DataResponse getCourseList(@Valid @RequestBody DataRequest dataRequest) {
         return courseService.getCourseList(dataRequest);
     }
 
-    @PostMapping("/courseSave")
+    @PostMapping("/course/courseSave")
     public DataResponse courseSave(@Valid @RequestBody DataRequest dataRequest) {
         return courseService.courseSave(dataRequest);
     }
 
-    @PostMapping("/courseDelete")
+    @PostMapping("/course/courseDelete")
     public DataResponse courseDelete(@Valid @RequestBody DataRequest dataRequest) {
         return courseService.courseDelete(dataRequest);
     }
 
-    @PostMapping("/teacher/openCourse")
+    @PostMapping("/course/teacher/openCourse")
     public DataResponse openCourse(@Valid @RequestBody DataRequest dataRequest) {
         return courseService.openCourse(dataRequest);
     }
 
-    // ✅ 新增：更新课程状态接口
-    @PostMapping("/updateCourseStatus")
+    @PostMapping("/course/updateCourseStatus")
     public DataResponse updateCourseStatus(@Valid @RequestBody DataRequest dataRequest) {
         return courseService.updateCourseStatus(dataRequest);
     }
 
-    // 学生选课相关接口
+    @PostMapping("/student/selectCourse")
+    public DataResponse selectCourse(@Valid @RequestBody DataRequest dataRequest) {
+        return courseService.applyForCourse(dataRequest);
+    }
+
+    @PostMapping("/student/submitSelections")
+    public DataResponse submitSelections(@Valid @RequestBody DataRequest dataRequest) {
+        // 这里应该处理批量选课提交
+        return courseService.submitSelections(dataRequest);
+    }
+
     @PostMapping("/student/availableCourses")
     public DataResponse getAvailableCourses(@Valid @RequestBody DataRequest dataRequest) {
         return courseService.getAvailableCourses(dataRequest);
-    }
-
-    @PostMapping("/student/apply")
-    public DataResponse applyForCourse(@Valid @RequestBody DataRequest dataRequest) {
-        return courseService.applyForCourse(dataRequest);
     }
 
     @PostMapping("/student/mySelections")
@@ -59,7 +62,16 @@ public class CourseController {
         return courseService.getMySelections(dataRequest);
     }
 
-    // 管理员审核相关接口
+    @PostMapping("/student/getMySelections")
+    public DataResponse getMySelectionsLegacy(@Valid @RequestBody DataRequest dataRequest) {
+        return courseService.getMySelections(dataRequest);
+    }
+
+    @PostMapping("/student/getCourses")
+    public DataResponse getCourses(@Valid @RequestBody DataRequest dataRequest) {
+        return courseService.getAvailableCourses(dataRequest);
+    }
+
     @PostMapping("/admin/pendingSelections")
     public DataResponse getPendingSelections(@Valid @RequestBody DataRequest dataRequest) {
         return courseService.getPendingSelections(dataRequest);
@@ -73,5 +85,20 @@ public class CourseController {
     @PostMapping("/admin/reject")
     public DataResponse rejectSelection(@Valid @RequestBody DataRequest dataRequest) {
         return courseService.rejectSelection(dataRequest);
+    }
+
+    @PostMapping("/student/drop")
+    public DataResponse dropCourse(@Valid @RequestBody DataRequest dataRequest) {
+        return courseService.dropCourse(dataRequest);
+    }
+
+    @PostMapping("/student/cancelCourse")
+    public DataResponse cancelCourse(@Valid @RequestBody DataRequest dataRequest) {
+        return courseService.cancelCourse(dataRequest);
+    }
+
+    @PostMapping("/course/detail")
+    public DataResponse getCourseDetail(@Valid @RequestBody DataRequest dataRequest) {
+        return courseService.getCourseDetail(dataRequest);
     }
 }
