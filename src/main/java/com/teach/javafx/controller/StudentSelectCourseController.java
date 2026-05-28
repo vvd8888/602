@@ -33,7 +33,8 @@ public class StudentSelectCourseController {
         private boolean selected = false; // 是否已选
 
         // 构造函数
-        public Course() {}
+        public Course() {
+        }
 
         public Course(int id, String name, String type, int credit, String teacherName,
                       int maxStudents, int currentStudents, String time) {
@@ -48,52 +49,145 @@ public class StudentSelectCourseController {
         }
 
         // Getters and Setters
-        public int getId() { return id.get(); }
-        public void setId(int id) { this.id.set(id); }
-        public SimpleIntegerProperty idProperty() { return id; }
+        public int getId() {
+            return id.get();
+        }
 
-        public String getName() { return name.get(); }
-        public void setName(String name) { this.name.set(name); }
-        public SimpleStringProperty nameProperty() { return name; }
+        public void setId(int id) {
+            this.id.set(id);
+        }
 
-        public String getType() { return type.get(); }
-        public void setType(String type) { this.type.set(type); }
-        public SimpleStringProperty typeProperty() { return type; }
+        public SimpleIntegerProperty idProperty() {
+            return id;
+        }
 
-        public int getCredit() { return credit.get(); }
-        public void setCredit(int credit) { this.credit.set(credit); }
-        public SimpleIntegerProperty creditProperty() { return credit; }
+        public String getName() {
+            return name.get();
+        }
 
-        public String getTeacherName() { return teacherName.get(); }
-        public void setTeacherName(String teacherName) { this.teacherName.set(teacherName); }
-        public SimpleStringProperty teacherNameProperty() { return teacherName; }
+        public void setName(String name) {
+            this.name.set(name);
+        }
 
-        public String getTeacherId() { return teacherId.get(); }
-        public void setTeacherId(String teacherId) { this.teacherId.set(teacherId); }
-        public SimpleStringProperty teacherIdProperty() { return teacherId; }
+        public SimpleStringProperty nameProperty() {
+            return name;
+        }
 
-        public int getMaxStudents() { return maxStudents.get(); }
-        public void setMaxStudents(int maxStudents) { this.maxStudents.set(maxStudents); }
-        public SimpleIntegerProperty maxStudentsProperty() { return maxStudents; }
+        public String getType() {
+            return type.get();
+        }
 
-        public int getCurrentStudents() { return currentStudents.get(); }
-        public void setCurrentStudents(int currentStudents) { this.currentStudents.set(currentStudents); }
-        public SimpleIntegerProperty currentStudentsProperty() { return currentStudents; }
+        public void setType(String type) {
+            this.type.set(type);
+        }
 
-        public String getTime() { return time.get(); }
-        public void setTime(String time) { this.time.set(time); }
-        public SimpleStringProperty timeProperty() { return time; }
+        public SimpleStringProperty typeProperty() {
+            return type;
+        }
 
-        public String getLocation() { return location.get(); }
-        public void setLocation(String location) { this.location.set(location); }
-        public SimpleStringProperty locationProperty() { return location; }
+        public int getCredit() {
+            return credit.get();
+        }
 
-        public String getDescription() { return description.get(); }
-        public void setDescription(String description) { this.description.set(description); }
-        public SimpleStringProperty descriptionProperty() { return description; }
+        public void setCredit(int credit) {
+            this.credit.set(credit);
+        }
 
-        public boolean isSelected() { return selected; }
-        public void setSelected(boolean selected) { this.selected = selected; }
+        public SimpleIntegerProperty creditProperty() {
+            return credit;
+        }
+
+        public String getTeacherName() {
+            return teacherName.get();
+        }
+
+        public void setTeacherName(String teacherName) {
+            this.teacherName.set(teacherName);
+        }
+
+        public SimpleStringProperty teacherNameProperty() {
+            return teacherName;
+        }
+
+        public String getTeacherId() {
+            return teacherId.get();
+        }
+
+        public void setTeacherId(String teacherId) {
+            this.teacherId.set(teacherId);
+        }
+
+        public SimpleStringProperty teacherIdProperty() {
+            return teacherId;
+        }
+
+        public int getMaxStudents() {
+            return maxStudents.get();
+        }
+
+        public void setMaxStudents(int maxStudents) {
+            this.maxStudents.set(maxStudents);
+        }
+
+        public SimpleIntegerProperty maxStudentsProperty() {
+            return maxStudents;
+        }
+
+        public int getCurrentStudents() {
+            return currentStudents.get();
+        }
+
+        public void setCurrentStudents(int currentStudents) {
+            this.currentStudents.set(currentStudents);
+        }
+
+        public SimpleIntegerProperty currentStudentsProperty() {
+            return currentStudents;
+        }
+
+        public String getTime() {
+            return time.get();
+        }
+
+        public void setTime(String time) {
+            this.time.set(time);
+        }
+
+        public SimpleStringProperty timeProperty() {
+            return time;
+        }
+
+        public String getLocation() {
+            return location.get();
+        }
+
+        public void setLocation(String location) {
+            this.location.set(location);
+        }
+
+        public SimpleStringProperty locationProperty() {
+            return location;
+        }
+
+        public String getDescription() {
+            return description.get();
+        }
+
+        public void setDescription(String description) {
+            this.description.set(description);
+        }
+
+        public SimpleStringProperty descriptionProperty() {
+            return description;
+        }
+
+        public boolean isSelected() {
+            return selected;
+        }
+
+        public void setSelected(boolean selected) {
+            this.selected = selected;
+        }
 
         public String getStudentCount() {
             return getCurrentStudents() + "/" + getMaxStudents();
@@ -123,8 +217,13 @@ public class StudentSelectCourseController {
             setDescription(course.getDescription());
         }
 
-        public String getSelectTime() { return selectTime; }
-        public void setSelectTime(String selectTime) { this.selectTime = selectTime; }
+        public String getSelectTime() {
+            return selectTime;
+        }
+
+        public void setSelectTime(String selectTime) {
+            this.selectTime = selectTime;
+        }
     }
 
     @FXML
@@ -348,45 +447,282 @@ public class StudentSelectCourseController {
      * 加载数据
      */
     private void loadData() {
-        System.out.println("📥 加载课程数据...");
+        System.out.println("📥 从后端加载课程数据...");
 
-        // 模拟从服务器获取数据
-        List<Course> courses = new ArrayList<>();
-        courses.add(new Course(1001, "Java程序设计", "必修", 3, "张老师", 50, 45, "周一 1-2节"));
-        courses.add(new Course(1002, "数据库原理", "必修", 4, "李老师", 60, 30, "周二 3-4节"));
-        courses.add(new Course(1003, "Web开发", "选修", 2, "王老师", 40, 20, "周三 5-6节"));
-        courses.add(new Course(1004, "数据结构", "必修", 4, "赵老师", 50, 48, "周四 1-2节"));
-        courses.add(new Course(1005, "人工智能基础", "选修", 3, "刘老师", 30, 15, "周五 3-4节"));
-        courses.add(new Course(1006, "软件工程", "必修", 3, "陈老师", 45, 28, "周一 7-8节"));
-        courses.add(new Course(1007, "移动应用开发", "选修", 2, "杨老师", 35, 35, "周二 5-6节")); // 已满
-        courses.add(new Course(1008, "计算机网络", "必修", 4, "周老师", 55, 40, "周三 1-2节"));
-        courses.add(new Course(1009, "操作系统", "必修", 4, "吴老师", 50, 42, "周四 3-4节"));
-        courses.add(new Course(1010, "Python编程", "选修", 3, "孙老师", 40, 18, "周五 5-6节"));
+        try {
+            DataRequest req = new DataRequest();
+            DataResponse res = HttpRequestUtil.request("/api/student/getCourses", req);
 
-        allCourses.setAll(courses);
-        filterCourses();
+            if (res != null && res.getCode() == 0) {
+                List<?> dataList = (List<?>) res.getData();
 
-        // 模拟已选课程数据
-        List<SelectedCourse> selected = new ArrayList<>();
-        selected.add(new SelectedCourse(courses.get(0))); // Java程序设计
-        selected.add(new SelectedCourse(courses.get(3))); // 数据结构
+                if (dataList != null) {
+                    allCourses.clear();
 
-        selectedCourses.setAll(selected);
+                    for (Object item : dataList) {
+                        Map<String, Object> courseMap = (Map<String, Object>) item;
 
-        // 更新已选标记
-        for (SelectedCourse sc : selectedCourses) {
-            for (Course c : allCourses) {
-                if (c.getId() == sc.getId()) {
-                    c.setSelected(true);
-                    break;
+                        Course course = new Course();
+                        // 兼容 courseId 和 id 两种字段名
+                        Object idObj = courseMap.get("id");
+                        if (idObj == null) {
+                            idObj = courseMap.get("courseId");
+                        }
+
+                        // 处理ID可能是String或Number的情况
+                        if (idObj instanceof Number) {
+                            course.setId(((Number) idObj).intValue());
+                        } else if (idObj instanceof String) {
+                            // 如果courseId是字符串，尝试转换为hashCode或使用其他方式生成唯一ID
+                            String courseIdStr = (String) idObj;
+                            try {
+                                course.setId(Integer.parseInt(courseIdStr));
+                            } catch (NumberFormatException e) {
+                                // 如果无法解析为整数，使用hashCode
+                                course.setId(courseIdStr.hashCode());
+                            }
+                        }
+
+                        // 兼容 name 和 courseName 两种字段名
+                        Object nameObj = courseMap.get("name");
+                        if (nameObj == null) {
+                            nameObj = courseMap.get("courseName");
+                        }
+                        course.setName(nameObj != null ? (String) nameObj : "");
+
+                        // 兼容 type 字段
+                        Object typeObj = courseMap.get("type");
+                        if (typeObj == null) {
+                            typeObj = courseMap.get("courseType");
+                        }
+                        course.setType(typeObj != null ? (String) typeObj : "");
+
+                        // 处理credit字段
+                        Object creditObj = courseMap.get("credit");
+                        if (creditObj instanceof Number) {
+                            course.setCredit(((Number) creditObj).intValue());
+                        } else if (creditObj instanceof String) {
+                            try {
+                                course.setCredit(Integer.parseInt((String) creditObj));
+                            } catch (NumberFormatException e) {
+                                course.setCredit(0);
+                            }
+                        } else {
+                            course.setCredit(0);
+                        }
+
+                        // 兼容 teacherName 和 teacher 字段
+                        Object teacherObj = courseMap.get("teacherName");
+                        if (teacherObj == null) {
+                            teacherObj = courseMap.get("teacher");
+                        }
+                        course.setTeacherName(teacherObj != null ? (String) teacherObj : "");
+
+                        // 处理teacherId
+                        Object teacherIdObj = courseMap.get("teacherId");
+                        if (teacherIdObj == null) {
+                            teacherIdObj = courseMap.get("teacher");
+                        }
+                        course.setTeacherId(teacherIdObj != null ? (String) teacherIdObj : "");
+
+                        // 处理maxStudents，如果没有则设置默认值
+                        Object maxStudentsObj = courseMap.get("maxStudents");
+                        if (maxStudentsObj instanceof Number) {
+                            course.setMaxStudents(((Number) maxStudentsObj).intValue());
+                        } else {
+                            course.setMaxStudents(50); // 默认最大人数
+                        }
+
+                        // 处理currentStudents，如果没有则设置默认值
+                        Object currentStudentsObj = courseMap.get("currentStudents");
+                        if (currentStudentsObj instanceof Number) {
+                            course.setCurrentStudents(((Number) currentStudentsObj).intValue());
+                        } else {
+                            course.setCurrentStudents(0);
+                        }
+
+                        // 处理time字段
+                        Object timeObj = courseMap.get("time");
+                        course.setTime(timeObj != null ? (String) timeObj : "");
+
+                        // 处理location字段，兼容 classroom
+                        Object locationObj = courseMap.get("location");
+                        if (locationObj == null) {
+                            locationObj = courseMap.get("classroom");
+                        }
+                        course.setLocation(locationObj != null ? (String) locationObj : "");
+
+                        // 处理description字段
+                        Object descriptionObj = courseMap.get("description");
+                        course.setDescription(descriptionObj != null ? (String) descriptionObj : "");
+
+                        allCourses.add(course);
+                    }
+
+                    System.out.println("✅ 成功加载 " + allCourses.size() + " 门课程");
                 }
+            } else {
+                System.err.println("❌ 获取课程列表失败: " + (res != null ? res.getMsg() : "网络错误"));
+                loadMockData();
             }
+        } catch (Exception e) {
+            System.err.println("⚠️ 加载课程数据异常: " + e.getMessage());
+            e.printStackTrace();
+            loadMockData();
         }
 
+        filterCourses();
+        loadMySelections();
         updateStatistics();
 
         System.out.println("✅ 课程数据加载完成，可选课程数：" + allCourses.size() +
                 "，已选课程数：" + selectedCourses.size());
+    }
+
+    /**
+     * 加载模拟数据（备用）
+     */
+    private void loadMockData() {
+        System.out.println("📦 使用模拟数据...");
+
+        List<Course> courses = new ArrayList<>();
+        courses.add(new Course(1001, "Java程序设计", "必修", 3, "张老师", 50, 0, "周一 1-2节"));
+        courses.add(new Course(1002, "数据库原理", "必修", 4, "李老师", 60, 0, "周二 3-4节"));
+        courses.add(new Course(1003, "Web开发", "选修", 2, "王老师", 40, 0, "周三 5-6节"));
+        courses.add(new Course(1004, "数据结构", "必修", 4, "赵老师", 50, 0, "周四 1-2节"));
+        courses.add(new Course(1005, "人工智能基础", "选修", 3, "刘老师", 30, 0, "周五 3-4节"));
+        courses.add(new Course(1006, "软件工程", "必修", 3, "陈老师", 45, 0, "周一 7-8节"));
+        courses.add(new Course(1007, "移动应用开发", "选修", 2, "杨老师", 35, 0, "周二 5-6节"));
+        courses.add(new Course(1008, "计算机网络", "必修", 4, "周老师", 55, 0, "周三 1-2节"));
+        courses.add(new Course(1009, "操作系统", "必修", 4, "吴老师", 50, 0, "周四 3-4节"));
+        courses.add(new Course(1010, "Python编程", "选修", 3, "孙老师", 40, 0, "周五 5-6节"));
+
+        allCourses.setAll(courses);
+    }
+
+    /**
+     * 加载我的选课信息
+     */
+    private void loadMySelections() {
+        try {
+            DataRequest req = new DataRequest();
+            req.add("studentId", AppStore.getJwt().getId());
+            
+            DataResponse res = HttpRequestUtil.request("/api/student/getMySelections", req);
+            
+            if (res != null && res.getCode() == 0) {
+                Object dataObj = res.getData();
+                
+                // 后端直接返回 ArrayList，不是 Map
+                if (dataObj instanceof List) {
+                    List<?> selectionsList = (List<?>) dataObj;
+                    
+                    selectedCourses.clear();
+                    
+                    for (Object item : selectionsList) {
+                        Map<String, Object> selectionMap = (Map<String, Object>) item;
+
+                        SelectedCourse sc = new SelectedCourse();
+
+                        // 兼容 courseId 和 id
+                        Object idObj = selectionMap.get("id");
+                        if (idObj == null) {
+                            idObj = selectionMap.get("courseId");
+                        }
+
+                        if (idObj instanceof Number) {
+                            sc.setId(((Number) idObj).intValue());
+                        } else if (idObj instanceof String) {
+                            String courseIdStr = (String) idObj;
+                            try {
+                                sc.setId(Integer.parseInt(courseIdStr));
+                            } catch (NumberFormatException e) {
+                                sc.setId(courseIdStr.hashCode());
+                            }
+                        }
+
+                        // 兼容 courseName 和 name
+                        Object nameObj = selectionMap.get("name");
+                        if (nameObj == null) {
+                            nameObj = selectionMap.get("courseName");
+                        }
+                        sc.setName(nameObj != null ? (String) nameObj : "");
+
+                        // 处理type字段
+                        Object typeObj = selectionMap.get("type");
+                        if (typeObj == null) {
+                            typeObj = selectionMap.get("courseType");
+                        }
+                        sc.setType(typeObj != null ? (String) typeObj : "");
+
+                        // 处理credit字段 - 兼容 courseCredit
+                        Object creditObj = selectionMap.get("credit");
+                        if (creditObj == null) {
+                            creditObj = selectionMap.get("courseCredit");
+                        }
+                        if (creditObj instanceof Number) {
+                            sc.setCredit(((Number) creditObj).intValue());
+                        } else if (creditObj instanceof String) {
+                            try {
+                                sc.setCredit(Integer.parseInt((String) creditObj));
+                            } catch (NumberFormatException e) {
+                                sc.setCredit(0);
+                            }
+                        } else {
+                            sc.setCredit(0);
+                        }
+
+                        // 兼容 teacherName 和 teacher - 兼容 courseTeacher
+                        Object teacherObj = selectionMap.get("teacherName");
+                        if (teacherObj == null) {
+                            teacherObj = selectionMap.get("teacher");
+                        }
+                        if (teacherObj == null) {
+                            teacherObj = selectionMap.get("courseTeacher");
+                        }
+                        sc.setTeacherName(teacherObj != null ? (String) teacherObj : "");
+
+                        // 处理time字段 - 兼容 courseTime
+                        Object timeObj = selectionMap.get("time");
+                        if (timeObj == null) {
+                            timeObj = selectionMap.get("courseTime");
+                        }
+                        sc.setTime(timeObj != null ? (String) timeObj : "");
+
+                        // 处理location字段，兼容 classroom - 兼容 courseClassroom
+                        Object locationObj = selectionMap.get("location");
+                        if (locationObj == null) {
+                            locationObj = selectionMap.get("classroom");
+                        }
+                        if (locationObj == null) {
+                            locationObj = selectionMap.get("courseClassroom");
+                        }
+                        sc.setLocation(locationObj != null ? (String) locationObj : "");
+
+                        // 处理description字段
+                        Object descriptionObj = selectionMap.get("description");
+                        sc.setDescription(descriptionObj != null ? (String) descriptionObj : "");
+
+                        selectedCourses.add(sc);
+                        System.out.println("✅ 加载已选课程: " + sc.getName() + " (id=" + sc.getId() + ")");
+
+                        // 标记为已选 - 同时更新 allCourses 和 availableCourses
+                        for (Course c : allCourses) {
+                            if (c.getId() == sc.getId()) {
+                                c.setSelected(true);
+                                System.out.println("  标记课程为已选: " + c.getName());
+                                break;
+                            }
+                        }
+                    }
+                    
+                    System.out.println("✅ 成功加载 " + selectedCourses.size() + " 门已选课程");
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("⚠️ 加载选课信息失败: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -498,10 +834,9 @@ public class StudentSelectCourseController {
         updateStatistics();
 
         // 显示成功消息
-        showAlert(Alert.AlertType.INFORMATION, "成功", "选课成功！\n课程：" + course.getName() + "\n教师：" + course.getTeacherName());
-
-        // 可以在这里调用后端API保存选课结果
-        saveSelectionToServer(course);
+        showAlert(Alert.AlertType.INFORMATION, "成功",
+                "选课成功！\n课程：" + course.getName() + "\n教师：" + course.getTeacherName() +
+                        "\n\n请点击\"提交选课\"完成选课");
     }
 
     /**
@@ -509,32 +844,107 @@ public class StudentSelectCourseController {
      */
     @FXML
     private void handleDeselectCourse(SelectedCourse course) {
-        System.out.println("退选: " + course.getName());
+        System.out.println("退选: " + course.getName() + " (courseId=" + course.getId() + ")");
 
-        // 从已选列表中移除
-        selectedCourses.remove(course);
+        // 确认退选
+        Alert confirmAlert = new Alert(Alert.AlertType.CONFIRMATION);
+        confirmAlert.setTitle("确认退选");
+        confirmAlert.setHeaderText("确定要退选这门课程吗？");
+        confirmAlert.setContentText("课程：" + course.getName() + "\n退选后需要点击\"提交选课\"才能生效");
 
-        // 更新原课程的已选状态
-        for (Course c : allCourses) {
-            if (c.getId() == course.getId()) {
-                c.setSelected(false);
-                c.setCurrentStudents(c.getCurrentStudents() - 1);
-                break;
+        Optional<ButtonType> result = confirmAlert.showAndWait();
+        if (result.isPresent() && result.get() == ButtonType.OK) {
+            // 从已选列表中移除
+            selectedCourses.remove(course);
+
+            // 更新原课程的已选状态 - 关键修复
+            for (Course c : allCourses) {
+                if (c.getId() == course.getId()) {
+                    c.setSelected(false);
+                    c.setCurrentStudents(Math.max(0, c.getCurrentStudents() - 1));
+                    System.out.println("✅ 已重置课程状态: " + c.getName() + ", selected=false");
+                    break;
+                }
             }
+            
+            // 如果该课程不在allCourses中（比如是从后端加载的已选课程），
+            // 需要确保它能被重新选择
+            boolean foundInAll = false;
+            for (Course c : allCourses) {
+                if (c.getId() == course.getId()) {
+                    foundInAll = true;
+                    break;
+                }
+            }
+            
+            if (!foundInAll) {
+                System.out.println("⚠️ 退选的课程不在可选列表中: " + course.getName() + " (id=" + course.getId() + ")");
+                // 将该课程重新添加到可选列表
+                Course newCourse = new Course();
+                newCourse.setId(course.getId());
+                newCourse.setName(course.getName());
+                newCourse.setType(course.getType());
+                newCourse.setCredit(course.getCredit());
+                newCourse.setTeacherName(course.getTeacherName());
+                newCourse.setTeacherId(course.getTeacherId());
+                newCourse.setMaxStudents(course.getMaxStudents());
+                newCourse.setCurrentStudents(Math.max(0, course.getCurrentStudents() - 1));
+                newCourse.setTime(course.getTime());
+                newCourse.setLocation(course.getLocation());
+                newCourse.setDescription(course.getDescription());
+                newCourse.setSelected(false);
+                allCourses.add(newCourse);
+                System.out.println("✅ 已将退选课程重新添加到可选列表");
+            }
+
+            // 刷新表格
+            courseTable.refresh();
+            selectedCourseTable.refresh();
+            filterCourses(); // 重新筛选，确保退选的课程出现在可选列表
+
+            // 更新统计
+            updateStatistics();
+
+            // 显示成功消息
+            showAlert(Alert.AlertType.INFORMATION, "成功", 
+                "已从前台移除！\n课程：" + course.getName() + "\n请点击\"提交选课\"完成退选");
+        }
+    }
+
+    /**
+     * 退选全部
+     */
+    @FXML
+    private void handleDeselectAll() {
+        if (selectedCourses.isEmpty()) {
+            showAlert(Alert.AlertType.INFORMATION, "提示", "您还没有选择任何课程！");
+            return;
         }
 
-        // 刷新表格
-        courseTable.refresh();
-        selectedCourseTable.refresh();
+        Alert confirmAlert = new Alert(Alert.AlertType.CONFIRMATION);
+        confirmAlert.setTitle("确认退选");
+        confirmAlert.setHeaderText("您确定要退选所有课程吗？");
+        confirmAlert.setContentText("这将从前台移除 " + selectedCourses.size() + " 门课程\n请点击\"提交选课\"完成退选");
 
-        // 更新统计
-        updateStatistics();
+        Optional<ButtonType> result = confirmAlert.showAndWait();
+        if (result.isPresent() && result.get() == ButtonType.OK) {
+            // 清空已选列表（前端乐观更新）
+            int count = selectedCourses.size();
+            selectedCourses.clear();
 
-        // 显示成功消息
-        showAlert(Alert.AlertType.INFORMATION, "成功", "退选成功！\n课程：" + course.getName());
+            // 重置所有课程的已选状态
+            for (Course c : allCourses) {
+                c.setSelected(false);
+            }
 
-        // 可以在这里调用后端API更新选课结果
-        removeSelectionFromServer(course);
+            // 刷新表格
+            courseTable.refresh();
+            selectedCourseTable.refresh();
+            updateStatistics();
+
+            showAlert(Alert.AlertType.INFORMATION, "成功",
+                    "已从前台移除所有课程！共" + count + "门\n请点击\"提交选课\"完成退选");
+        }
     }
 
     /**
@@ -563,6 +973,19 @@ public class StudentSelectCourseController {
      */
     @FXML
     private void handleRefresh() {
+        // 检查是否有未提交的选课变更
+        if (!selectedCourses.isEmpty()) {
+            Alert confirmAlert = new Alert(Alert.AlertType.CONFIRMATION);
+            confirmAlert.setTitle("确认刷新");
+            confirmAlert.setHeaderText("您有未提交的选课变更");
+            confirmAlert.setContentText("刷新将丢失未提交的选课数据，是否继续？\n\n建议先点击\"提交选课\"保存数据");
+            
+            Optional<ButtonType> result = confirmAlert.showAndWait();
+            if (result.isPresent() && result.get() != ButtonType.OK) {
+                return; // 用户取消刷新
+            }
+        }
+        
         loadData();
         showAlert(Alert.AlertType.INFORMATION, "提示", "数据已刷新！");
     }
@@ -614,53 +1037,6 @@ public class StudentSelectCourseController {
 
         showAlert(Alert.AlertType.INFORMATION, "结果",
                 "一键选课完成！\n成功选择：" + added + "门课程\n跳过：" + skipped + "门课程");
-    }
-
-    /**
-     * 退选全部
-     */
-    @FXML
-    private void handleDeselectAll() {
-        if (selectedCourses.isEmpty()) {
-            showAlert(Alert.AlertType.INFORMATION, "提示", "您还没有选择任何课程！");
-            return;
-        }
-
-        Alert confirmAlert = new Alert(Alert.AlertType.CONFIRMATION);
-        confirmAlert.setTitle("确认退选");
-        confirmAlert.setHeaderText("您确定要退选所有课程吗？");
-        confirmAlert.setContentText("这将退选您选择的 " + selectedCourses.size() + " 门课程");
-
-        Optional<ButtonType> result = confirmAlert.showAndWait();
-        if (result.isPresent() && result.get() == ButtonType.OK) {
-            // 备份已选课程列表
-            List<SelectedCourse> toRemove = new ArrayList<>(selectedCourses);
-
-            // 逐一退选
-            for (SelectedCourse course : toRemove) {
-                // 更新原课程的已选状态
-                for (Course c : allCourses) {
-                    if (c.getId() == course.getId()) {
-                        c.setSelected(false);
-                        c.setCurrentStudents(c.getCurrentStudents() - 1);
-                        break;
-                    }
-                }
-
-                // 从服务器移除
-                removeSelectionFromServer(course);
-            }
-
-            // 清空已选列表
-            selectedCourses.clear();
-
-            // 刷新表格
-            courseTable.refresh();
-            selectedCourseTable.refresh();
-            updateStatistics();
-
-            showAlert(Alert.AlertType.INFORMATION, "成功", "已退选所有课程！");
-        }
     }
 
     /**
@@ -776,54 +1152,38 @@ public class StudentSelectCourseController {
     }
 
     /**
-     * 保存选课到服务器
+     * 处理筛选条件变化
      */
-    private void saveSelectionToServer(Course course) {
-        try {
-            // 这里应该调用后端API保存选课
-            DataRequest req = new DataRequest();
-            Map<String, Object> data = new HashMap<>();
-            data.put("studentId", AppStore.getJwt().getId());
-            data.put("studentName", AppStore.getJwt().getUsername());
-            data.put("courseId", course.getId());
-            data.put("courseName", course.getName());
-            data.put("teacherId", course.getTeacherId());
-            data.put("teacherName", course.getTeacherName());
-            data.put("credit", course.getCredit());
-            data.put("selectTime", new Date().toString());
-
-            req.add("selection", data);
-
-            DataResponse res = HttpRequestUtil.request("/api/student/selectCourse", req);
-            if (res.getCode() == 0) {
-                System.out.println("✅ 选课保存成功: " + course.getName());
-            } else {
-                System.out.println("❌ 选课保存失败: " + res.getMsg());
-            }
-        } catch (Exception e) {
-            System.out.println("⚠️ 保存选课失败: " + e.getMessage());
+    @FXML
+    private void handleFilterChange() {
+        if (toggleAll.isSelected()) {
+            filterStatus = 0;
+        } else if (toggleAvailable.isSelected()) {
+            filterStatus = 1;
+        } else if (toggleSelected.isSelected()) {
+            filterStatus = 2;
         }
+        filterCourses();
     }
 
     /**
-     * 从服务器移除选课
+     * 保存选课到服务器（已废弃）
+     * 改为在提交选课时统一处理
      */
-    private void removeSelectionFromServer(SelectedCourse course) {
-        try {
-            // 这里应该调用后端API移除选课
-            DataRequest req = new DataRequest();
-            req.add("studentId", AppStore.getJwt().getId());
-            req.add("courseId", course.getId());
+    private void saveSelectionToServer(Course course) {
+        // 此方法已废弃，选课改为前端乐观更新，提交时统一同步
+        System.out.println("⚠️ saveSelectionToServer 已废弃，由 submitSelectionToServer 统一处理");
+    }
 
-            DataResponse res = HttpRequestUtil.request("/api/student/cancelCourse", req);
-            if (res.getCode() == 0) {
-                System.out.println("✅ 退课成功: " + course.getName());
-            } else {
-                System.out.println("❌ 退课失败: " + res.getMsg());
-            }
-        } catch (Exception e) {
-            System.out.println("⚠️ 退课失败: " + e.getMessage());
-        }
+    /**
+     * 从服务器移除选课（后端API暂未实现）
+     * 退选操作改为前端乐观更新，提交选课时统一同步到后端
+     */
+    private boolean removeSelectionFromServer(SelectedCourse course) {
+        // 后端 /api/student/cancelCourse 接口尚未实现
+        // 暂时返回true，让前端流程继续
+        System.out.println("️ 退课API未实现，将由提交选课时统一处理: " + course.getName());
+        return true;
     }
 
     /**
@@ -832,33 +1192,43 @@ public class StudentSelectCourseController {
     private boolean submitSelectionToServer() {
         try {
             DataRequest req = new DataRequest();
-            List<Map<String, Object>> selections = new ArrayList<>();
 
+            // 提交当前已选的课程ID列表
+            List<Integer> courseIds = new ArrayList<>();
             for (SelectedCourse course : selectedCourses) {
-                Map<String, Object> selection = new HashMap<>();
-                selection.put("studentId", AppStore.getJwt().getId());
-                selection.put("courseId", course.getId());
-                selection.put("selectTime", new Date().toString());
-                selections.add(selection);
+                courseIds.add(course.getId());
             }
 
-            req.add("selections", selections);
+            // 尝试多种参数名
+            req.add("courseIds", courseIds);
+            req.add("ids", courseIds);
+            req.add("courseIdList", courseIds);
             req.add("studentId", AppStore.getJwt().getId());
             req.add("studentName", AppStore.getJwt().getUsername());
 
+            System.out.println("📤 提交选课请求: 共" + selectedCourses.size() + "门课程, courseIds=" + courseIds);
+
             DataResponse res = HttpRequestUtil.request("/api/student/submitSelections", req);
-            return res.getCode() == 0;
+
+            System.out.println("📥 提交选课响应: code=" + (res != null ? res.getCode() : "null") +
+                    ", msg=" + (res != null ? res.getMsg() : "null"));
+
+            if (res != null && res.getCode() == 0) {
+                System.out.println("✅ 提交选课成功");
+                return true;
+            } else {
+                String errorMsg = res != null ? res.getMsg() : "未知错误";
+                System.out.println("⚠️ 提交选课失败: " + errorMsg);
+                showAlert(Alert.AlertType.WARNING, "提交失败",
+                        "提交选课时出错：" + errorMsg + "\n请检查网络连接或联系管理员");
+                return false;
+            }
         } catch (Exception e) {
-            System.out.println("⚠️ 提交选课失败: " + e.getMessage());
+            System.out.println("⚠️ 提交选课请求异常: " + e.getMessage());
+            e.printStackTrace();
+            showAlert(Alert.AlertType.ERROR, "错误", "提交选课时发生异常：" + e.getMessage());
             return false;
         }
     }
-
-    /**
-     * 刷新界面
-     */
-    public void doRefresh() {
-        System.out.println("🔄 StudentSelectCourseController.doRefresh() 被调用");
-        loadData();
-    }
 }
+

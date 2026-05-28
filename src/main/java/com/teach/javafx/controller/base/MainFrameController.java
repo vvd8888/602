@@ -262,34 +262,12 @@ public class MainFrameController {
             selectCourseItem.setOnAction(this::changeContent);
             studentMenu.getItems().add(selectCourseItem);
 
-            MenuItem myCourseItem = new MenuItem("我的课程");
-            myCourseItem.setId("student-my-course");
-            myCourseItem.setOnAction(this::changeContent);
-            studentMenu.getItems().add(myCourseItem);
-
             System.out.println("✅ 学生功能菜单已添加到菜单栏");
         }
 
         // 添加校车功能菜单（已移至MySQL数据库，从数据库加载）
         // 注释掉硬编码菜单，避免与数据库菜单重复
 
-        // 添加测试功能菜单
-        Menu testMenu = new Menu("测试功能");
-        menuBar.getMenus().add(testMenu);
-
-        MenuItem teacherTestItem = new MenuItem("老师课程测试");
-        teacherTestItem.setId("teacher-open-course");
-        teacherTestItem.setOnAction(this::changeContent);
-        testMenu.getItems().add(teacherTestItem);
-
-        if (isStudent(role) || isAdmin(role)) {
-            MenuItem studentTestItem = new MenuItem("学生选课测试");
-            studentTestItem.setId("student-select-course");
-            studentTestItem.setOnAction(this::changeContent);
-            testMenu.getItems().add(studentTestItem);
-        }
-
-        System.out.println("✅ 测试功能菜单已添加到菜单栏");
     }
 
     /**
@@ -330,35 +308,12 @@ public class MainFrameController {
             );
             studentMenuItem.getChildren().add(selectCourseTreeItem);
 
-            TreeItem<MyTreeNode> myCourseTreeItem = new TreeItem<>(
-                    new MyTreeNode(null, "student-my-course", "我的课程", 0)
-            );
-            studentMenuItem.getChildren().add(myCourseTreeItem);
-
             root.getChildren().add(studentMenuItem);
             studentMenuItem.setExpanded(true);
         }
 
         // 添加校车功能菜单（已移至MySQL数据库，从数据库加载）
         // 注释掉硬编码菜单，避免与数据库菜单重复
-
-        // 添加测试功能菜单
-        TreeItem<MyTreeNode> testMenuItem = new TreeItem<>(new MyTreeNode(null, "test-menu", "测试功能", 0));
-
-        TreeItem<MyTreeNode> teacherTestTreeItem = new TreeItem<>(
-                new MyTreeNode(null, "teacher-open-course", "老师课程测试", 0)
-        );
-        testMenuItem.getChildren().add(teacherTestTreeItem);
-
-        if (isStudent(role) || isAdmin(role)) {
-            TreeItem<MyTreeNode> studentTestTreeItem = new TreeItem<>(
-                    new MyTreeNode(null, "student-select-course", "学生选课测试", 0)
-            );
-            testMenuItem.getChildren().add(studentTestTreeItem);
-        }
-
-        root.getChildren().add(testMenuItem);
-        testMenuItem.setExpanded(true);
 
         System.out.println("✅ 自定义菜单已添加到菜单树");
     }
@@ -429,7 +384,7 @@ public class MainFrameController {
         }
 
         // 检查学生选课权限
-        if ("student-select-course".equals(name) || "student-my-course".equals(name)) {
+        if ("student-select-course".equals(name)) {
             if (!isStudent(role) && !isAdmin(role)) {
                 System.out.println("❌ 权限不足：只有学生和管理员可以访问学生功能");
                 Alert alert = new Alert(Alert.AlertType.WARNING);

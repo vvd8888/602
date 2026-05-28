@@ -40,9 +40,13 @@
         <Button text="搜索" onAction="#handleSearch" />
         <Button text="重置" onAction="#handleReset" />
         <Label text="状态筛选：" />
-        <ToggleButton text="全部" fx:id="toggleAll" toggleGroup="$statusGroup" selected="true" />
-        <ToggleButton text="可选" fx:id="toggleAvailable" toggleGroup="$statusGroup" />
-        <ToggleButton text="已选" fx:id="toggleSelected" toggleGroup="$statusGroup" />
+        <ToggleButton text="全部" fx:id="toggleAll" selected="true" onAction="#handleFilterChange">
+            <toggleGroup>
+                <ToggleGroup fx:id="statusGroup" />
+            </toggleGroup>
+        </ToggleButton>
+        <ToggleButton text="可选" fx:id="toggleAvailable" toggleGroup="$statusGroup" onAction="#handleFilterChange" />
+        <ToggleButton text="已选" fx:id="toggleSelected" toggleGroup="$statusGroup" onAction="#handleFilterChange" />
     </HBox>
 
     <!-- 课程列表区域 -->
