@@ -81,4 +81,10 @@ public interface ScoreRepository extends JpaRepository<Score, Integer> {
     @Query("SELECT s FROM Score s WHERE s.student.personId = :personId AND s.selectionStatus = 'APPROVED' AND s.course.time LIKE :timePattern")
     List<Score> findApprovedCoursesByTime(@Param("personId") Integer personId, 
                                           @Param("timePattern") String timePattern);
+
+    /**
+     * 查询所有选课记录（按申请时间倒序）
+     */
+    @Query("SELECT s FROM Score s ORDER BY s.applyTime DESC")
+    List<Score> findAllSelections();
 }

@@ -508,11 +508,6 @@ public class CourseService {
     /**
      * 学生批量提交选课申请
      */
-    // ... existing code ...
-
-    /**
-     * 学生批量提交选课申请
-     */
     public DataResponse submitSelections(DataRequest dataRequest) {
         try {
             System.out.println(" submitSelections 被调用");
@@ -724,8 +719,6 @@ public class CourseService {
         }
     }
 
-// ... existing code ...
-
     public DataResponse getMySelections(DataRequest dataRequest) {
         try {
             // 1. 获取当前登录用户
@@ -776,6 +769,114 @@ public class CourseService {
         } catch (Exception e) {
             e.printStackTrace();
             return CommonMethod.getReturnMessageError("获取选课记录失败：" + e.getMessage());
+        }
+    }
+
+    /**
+     * 获取所有学生的选课记录（用于教师统计课程人数）
+     */
+    public DataResponse getAllSelections(DataRequest dataRequest) {
+        try {
+            // 1. 查询所有选课记录
+            List<Score> scores = scoreRepository.findAllSelections();
+
+            // 2. 转换为前端需要的格式
+            List<Map<String, Object>> dataList = new ArrayList<>();
+            for (Score score : scores) {
+                Map<String, Object> m = new HashMap<>();
+                m.put("selectionId", score.getScoreId());
+                m.put("selectionStatus", score.getSelectionStatus());
+                m.put("applyTime", score.getApplyTime());
+                m.put("approveTime", score.getApproveTime());
+                m.put("rejectReason", score.getRejectReason());
+                m.put("mark", score.getMark());
+                m.put("ranking", score.getRanking());
+
+                // 学生信息
+                Student student = score.getStudent();
+                if (student != null) {
+                    m.put("personId", student.getPersonId());
+
+                    // 从 Person 表获取学生姓名和学号
+                    Optional<Person> personOpt = personRepository.findById(student.getPersonId());
+                    if (personOpt.isPresent()) {
+                        Person person = personOpt.get();
+                        m.put("studentNum", person.getNum());
+                        m.put("studentName", person.getName());
+                    }
+                }
+
+                // 课程信息
+                Course course = score.getCourse();
+                if (course != null) {
+                    m.put("courseId", course.getCourseId());
+                    m.put("courseNum", course.getNum());
+                    m.put("courseName", course.getName());
+                    m.put("courseCredit", course.getCredit());
+                    m.put("courseTeacher", course.getTeacher());
+                    m.put("courseTime", course.getTime());
+                    m.put("courseClassroom", course.getClassroom());
+                }
+
+                dataList.add(m);
+            }
+
+            return CommonMethod.getReturnData(dataList);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return CommonMethod.getReturnMessageError("获取所有选课记录失败：" + e.getMessage());
+        }
+    }
+
+    /**
+     * 教师更新学生成绩
+     */
+    public DataResponse updateSelectionMark(DataRequest dataRequest) {
+        try {
+            // 1. 获取当前登录用户
+            String currentUsername = getCurrentUsername();
+            if (currentUsername == null) {
+                return CommonMethod.getReturnMessageError("用户未登录");
+            }
+
+            // 2. 获取请求参数
+            Integer selectionId = dataRequest.getInteger("selectionId");
+            Integer mark = dataRequest.getInteger("mark");
+
+            // 3. 验证参数
+            if (selectionId == null) {
+                return CommonMethod.getReturnMessageError("选课记录ID不能为空");
+            }
+            if (mark == null) {
+                return CommonMethod.getReturnMessageError("成绩不能为空");
+            }
+            if (mark < 0 || mark > 100) {
+                return CommonMethod.getReturnMessageError("成绩范围必须在0-100之间");
+            }
+
+            // 4. 查询选课记录
+            Optional<Score> scoreOpt = scoreRepository.findById(selectionId);
+            if (!scoreOpt.isPresent()) {
+                return CommonMethod.getReturnMessageError("选课记录不存在");
+            }
+            Score score = scoreOpt.get();
+
+            // 5. 更新成绩（移除状态限制，允许为任何状态的选课记录打分）
+            score.setMark(mark);
+            scoreRepository.save(score);
+
+            // 6. 返回成功消息
+            Map<String, Object> result = new HashMap<>();
+            result.put("selectionId", selectionId);
+            result.put("mark", mark);
+            result.put("message", "成绩更新成功");
+
+            return CommonMethod.getReturnData(result);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return CommonMethod.getReturnMessageError("成绩更新失败：" + e.getMessage());
         }
     }
 

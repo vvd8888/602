@@ -67,6 +67,16 @@ public class CourseController {
         return courseService.getMySelections(dataRequest);
     }
 
+    @PostMapping("/student/getAllSelections")
+    public DataResponse getAllSelections(@Valid @RequestBody DataRequest dataRequest) {
+        return courseService.getAllSelections(dataRequest);
+    }
+
+    @PostMapping("/student/updateSelectionMark")
+    public DataResponse updateSelectionMark(@Valid @RequestBody DataRequest dataRequest) {
+        return courseService.updateSelectionMark(dataRequest);
+    }
+
     @PostMapping("/student/getCourses")
     public DataResponse getCourses(@Valid @RequestBody DataRequest dataRequest) {
         return courseService.getAvailableCourses(dataRequest);
