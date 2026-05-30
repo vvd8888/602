@@ -11,6 +11,7 @@ import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.util.Callback;
@@ -25,8 +26,6 @@ public class TeacherOpenCourseController {
     private Label openCoursesLabel;
     @FXML
     private Label closedCoursesLabel;
-    @FXML
-    private Label totalStudentsLabel;
 
     // 搜索和筛选
     @FXML
@@ -66,6 +65,9 @@ public class TeacherOpenCourseController {
         setupSearchComponents();
         setupMyCoursesTable();
         loadData();
+
+        // 检查当前用户角色，如果是管理员则隐藏打分按钮
+        checkRoleAndHideGradeButton();
     }
 
     private void setupSearchComponents() {
@@ -197,11 +199,13 @@ public class TeacherOpenCourseController {
                     private final Button editButton = new Button("编辑");
                     private final Button deleteButton = new Button("删除");
                     private final Button toggleButton = new Button("");
+                    private final Button gradeButton = new Button("打分");
 
                     {
                         editButton.setStyle("-fx-background-color: #2196F3; -fx-text-fill: white; -fx-font-size: 12px;");
                         deleteButton.setStyle("-fx-background-color: #f44336; -fx-text-fill: white; -fx-font-size: 12px;");
                         toggleButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-size: 12px;");
+                        gradeButton.setStyle("-fx-background-color: #FF9800; -fx-text-fill: white; -fx-font-size: 12px;");
 
                         editButton.setOnAction(event -> {
                             Map<String, Object> data = getTableView().getItems().get(getIndex());
@@ -218,8 +222,13 @@ public class TeacherOpenCourseController {
                             handleToggleStatus(data);
                         });
 
+                        gradeButton.setOnAction(event -> {
+                            Map<String, Object> data = getTableView().getItems().get(getIndex());
+                            handleGradeStudents(data);
+                        });
+
                         hbox.setAlignment(Pos.CENTER);
-                        hbox.getChildren().addAll(editButton, deleteButton, toggleButton);
+                        hbox.getChildren().addAll(editButton, deleteButton, toggleButton, gradeButton);
                     }
 
                     @Override
@@ -237,6 +246,28 @@ public class TeacherOpenCourseController {
                             } else {
                                 toggleButton.setText("开放");
                                 toggleButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-size: 12px;");
+                            }
+
+                            // 如果是管理员，隐藏打分按钮
+                            String role = com.teach.javafx.AppStore.getJwt() != null
+                                ? com.teach.javafx.AppStore.getJwt().getRole() : "";
+                            if ("ROLE_ADMIN".equals(role)) {
+                                hbox.getChildren().remove(gradeButton);
+                            } else {
+                                // 教师角色：根据是否有学生选课来控制打分按钮
+                                Object studentCountObj = rowData.get("studentCount");
+                                int studentCount = 0;
+                                if (studentCountObj instanceof Number) {
+                                    studentCount = ((Number) studentCountObj).intValue();
+                                }
+
+                                if (studentCount > 0) {
+                                    gradeButton.setDisable(false);
+                                    gradeButton.setStyle("-fx-background-color: #FF9800; -fx-text-fill: white; -fx-font-size: 12px;");
+                                } else {
+                                    gradeButton.setDisable(true);
+                                    gradeButton.setStyle("-fx-background-color: #cccccc; -fx-text-fill: #666666; -fx-font-size: 12px;");
+                                }
                             }
 
                             setGraphic(hbox);
@@ -261,8 +292,13 @@ public class TeacherOpenCourseController {
                 List<Map<String, Object>> data = (List<Map<String, Object>>) res.getData();
                 allCourses.clear();
                 allCourses.addAll(data);
+
+                // 加载每门课程的学生数量
+                updateCourseStudentCounts();
+
                 myCoursesList.clear();
-                myCoursesList.addAll(data);
+                myCoursesList.addAll(allCourses);
+
                 updateStatistics();
                 System.out.println("✅ 成功加载 " + myCoursesList.size() + " 门课程");
             } else {
@@ -556,7 +592,6 @@ public class TeacherOpenCourseController {
         int total = myCoursesList.size();
         int open = 0;
         int closed = 0;
-        int totalStudents = 0;
 
         for (Map<String, Object> course : myCoursesList) {
             String status = (String) course.get("status");
@@ -564,16 +599,6 @@ public class TeacherOpenCourseController {
                 open++;
             } else if ("CLOSED".equals(status) || "REJECTED".equals(status)) {
                 closed++;
-            }
-
-            Object studentCountObj = course.get("studentCount");
-            if (studentCountObj instanceof Number) {
-                totalStudents += ((Number) studentCountObj).intValue();
-            } else if (studentCountObj instanceof String) {
-                try {
-                    totalStudents += Integer.parseInt((String) studentCountObj);
-                } catch (NumberFormatException e) {
-                }
             }
         }
 
@@ -586,9 +611,9 @@ public class TeacherOpenCourseController {
         if (closedCoursesLabel != null) {
             closedCoursesLabel.setText("关闭课程: " + closed);
         }
-        if (totalStudentsLabel != null) {
-            totalStudentsLabel.setText("总学生数: " + totalStudents);
-        }
+
+        // 打印调试信息
+        System.out.println(" 统计信息 - 总课程: " + total + ", 开放: " + open + ", 关闭: " + closed);
     }
 
     private void showSuccessAlert(String title, String content) {
@@ -613,5 +638,374 @@ public class TeacherOpenCourseController {
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.show();
+    }
+
+    /**
+     * 处理学生打分
+     */
+    private void handleGradeStudents(Map<String, Object> course) {
+        System.out.println("📝 打开课程打分对话框: " + course.get("name"));
+
+        // 获取该课程的选课学生列表
+        List<Map<String, Object>> studentSelections = getCourseStudents(course);
+
+        if (studentSelections.isEmpty()) {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("提示");
+            alert.setHeaderText(null);
+            alert.setContentText("该课程暂无选课学生");
+            alert.show();
+            return;
+        }
+
+        // 创建打分对话框
+        Dialog<Boolean> dialog = new Dialog<>();
+        dialog.setTitle("课程打分 - " + course.get("name"));
+        dialog.setHeaderText("课程: " + course.get("name") + " (编号: " + course.get("num") + ")");
+
+        ButtonType saveButtonType = new ButtonType("保存成绩", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(saveButtonType, ButtonType.CANCEL);
+
+        // 创建表格显示学生列表
+        TableView<Map<String, Object>> studentTable = new TableView<>();
+        studentTable.setPrefHeight(400);
+
+        // 学号列
+        TableColumn<Map<String, Object>, String> studentNumCol = new TableColumn<>("学号");
+        studentNumCol.setCellValueFactory(cellData -> {
+            Object val = cellData.getValue().get("courseNum");
+            return new SimpleStringProperty(val != null ? val.toString() : "");
+        });
+        studentNumCol.setPrefWidth(100);
+
+        // 姓名列
+        TableColumn<Map<String, Object>, String> studentNameCol = new TableColumn<>("学生姓名");
+        studentNameCol.setCellValueFactory(cellData -> {
+            Object val = cellData.getValue().get("studentName");
+            return new SimpleStringProperty(val != null ? val.toString() : "");
+        });
+        studentNameCol.setPrefWidth(150);
+
+        // 成绩列 - 使用自定义Cell Factory实现可编辑
+        TableColumn<Map<String, Object>, String> scoreCol = new TableColumn<>("成绩");
+        scoreCol.setCellValueFactory(cellData -> {
+            Object mark = cellData.getValue().get("mark");
+            return new SimpleStringProperty(mark != null ? mark.toString() : "");
+        });
+        
+        // 使用自定义Cell实现可编辑功能
+        scoreCol.setCellFactory(column -> new TableCell<Map<String, Object>, String>() {
+            private final TextField textField = new TextField();
+            
+            {
+                textField.setOnAction(e -> {
+                    Map<String, Object> student = getTableView().getItems().get(getIndex());
+                    String newValue = textField.getText().trim();
+                    
+                    System.out.println("📝 编辑成绩 - 学生: " + student.get("studentName") + ", 新值: " + newValue);
+                    
+                    try {
+                        int score = Integer.parseInt(newValue);
+                        if (score < 0 || score > 100) {
+                            showErrorAlert("成绩错误", "成绩必须在 0-100 之间");
+                            textField.setText(student.get("mark") != null ? student.get("mark").toString() : "");
+                            return;
+                        }
+                        
+                        // 更新数据模型
+                        student.put("mark", score);
+                        System.out.println("✅ 成绩已更新: " + student.get("studentName") + " = " + score);
+                        
+                        // 刷新表格显示
+                        ((TableView<Map<String, Object>>) getTableView()).refresh();
+                    } catch (NumberFormatException e2) {
+                        showErrorAlert("成绩错误", "请输入有效的数字");
+                        textField.setText(student.get("mark") != null ? student.get("mark").toString() : "");
+                    }
+                });
+            }
+            
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                
+                if (empty) {
+                    setGraphic(null);
+                } else {
+                    Map<String, Object> student = getTableView().getItems().get(getIndex());
+                    textField.setText(item != null ? item : "");
+                    setGraphic(textField);
+                }
+            }
+        });
+        scoreCol.setEditable(true);
+        scoreCol.setPrefWidth(100);
+
+        // 状态列
+        TableColumn<Map<String, Object>, String> statusCol = new TableColumn<>("选课状态");
+        statusCol.setCellValueFactory(cellData -> {
+            Object val = cellData.getValue().get("selectionStatus");
+            String status = val != null ? val.toString() : "";
+            switch (status) {
+                case "PENDING": return new SimpleStringProperty("待审核");
+                case "APPROVED": return new SimpleStringProperty("已通过");
+                case "REJECTED": return new SimpleStringProperty("已拒绝");
+                default: return new SimpleStringProperty(status);
+            }
+        });
+        statusCol.setPrefWidth(100);
+
+        studentTable.getColumns().addAll(studentNumCol, studentNameCol, scoreCol, statusCol);
+        studentTable.setItems(FXCollections.observableArrayList(studentSelections));
+        studentTable.setEditable(true);
+
+        dialog.getDialogPane().setContent(studentTable);
+
+        dialog.setResultConverter(dialogButton -> {
+            if (dialogButton == saveButtonType) {
+                return true;
+            }
+            return false;
+        });
+
+        Optional<Boolean> result = dialog.showAndWait();
+        result.ifPresent(saved -> {
+            if (saved) {
+                saveStudentScores(course, studentSelections);
+            }
+        });
+    }
+
+    /**
+     * 获取课程的选课学生列表
+     */
+    private List<Map<String, Object>> getCourseStudents(Map<String, Object> course) {
+        List<Map<String, Object>> students = new ArrayList<>();
+
+        try {
+            Object courseIdObj = course.get("courseId");
+            if (courseIdObj == null) {
+                System.out.println("⚠️ 课程ID为空");
+                return students;
+            }
+
+            // 统一转换为整数字符串格式
+            String courseIdStr;
+            if (courseIdObj instanceof Number) {
+                courseIdStr = String.valueOf(((Number) courseIdObj).intValue());
+            } else {
+                courseIdStr = courseIdObj.toString();
+            }
+
+            System.out.println("🔍 查询课程ID: " + courseIdStr);
+
+            // 使用getAllSelections接口获取所有学生的选课记录
+            DataRequest req = new DataRequest();
+            DataResponse res = HttpRequestUtil.request("/api/student/getAllSelections", req);
+
+            if (res != null && res.getCode() == 0) {
+                Object dataObj = res.getData();
+                if (dataObj instanceof List) {
+                    List<Map<String, Object>> selections = (List<Map<String, Object>>) dataObj;
+
+                    System.out.println(" 总选课记录数: " + selections.size());
+
+                    for (Map<String, Object> selection : selections) {
+                        Object selectionCourseIdObj = selection.get("courseId");
+                        if (selectionCourseIdObj == null) {
+                            continue;
+                        }
+
+                        // 统一转换为整数字符串格式进行比较
+                        String selectionCourseId;
+                        if (selectionCourseIdObj instanceof Number) {
+                            selectionCourseId = String.valueOf(((Number) selectionCourseIdObj).intValue());
+                        } else {
+                            selectionCourseId = selectionCourseIdObj.toString();
+                        }
+
+                        // 匹配课程ID
+                        if (courseIdStr.equals(selectionCourseId)) {
+                            students.add(selection);
+                            System.out.println("✅ 找到学生: " + selection.get("studentName") + " - " + selection.get("courseName"));
+                        }
+                    }
+
+                    System.out.println("✅ 共找到 " + students.size() + " 个选课学生");
+                }
+            } else {
+                System.out.println("️ 获取选课记录失败: " + (res != null ? res.getMsg() : "未知错误"));
+            }
+        } catch (Exception e) {
+            System.out.println("❌ 获取选课学生列表失败: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return students;
+    }
+
+    /**
+     * 保存学生成绩
+     */
+    private void saveStudentScores(Map<String, Object> course, List<Map<String, Object>> students) {
+        System.out.println(" 开始保存学生成绩...");
+        System.out.println(" 学生总数: " + students.size());
+        
+        int successCount = 0;
+        int failCount = 0;
+        
+        for (Map<String, Object> student : students) {
+            Object markObj = student.get("mark");
+            Object selectionIdObj = student.get("selectionId");
+            Object studentName = student.get("studentName");
+            
+            System.out.println(" 处理学生: " + studentName + ", mark=" + markObj + ", selectionId=" + selectionIdObj);
+            
+            if (markObj != null && !markObj.toString().isEmpty() && selectionIdObj != null) {
+                try {
+                    // 尝试使用更新选课记录的接口
+                    DataRequest req = new DataRequest();
+                    req.add("selectionId", selectionIdObj);
+                    req.add("mark", markObj);
+                    
+                    System.out.println(" 发送请求: /api/student/updateSelectionMark, selectionId=" + selectionIdObj + ", mark=" + markObj);
+                    
+                    // 尝试调用后端的成绩更新接口
+                    DataResponse res = HttpRequestUtil.request("/api/student/updateSelectionMark", req);
+                    
+                    if (res != null && res.getCode() == 0) {
+                        successCount++;
+                        System.out.println("✅ 成绩保存成功: " + studentName + ", mark=" + markObj);
+                    } else {
+                        failCount++;
+                        System.out.println("❌ 成绩保存失败: " + studentName + ", msg=" + (res != null ? res.getMsg() : "未知错误"));
+                    }
+                } catch (Exception e) {
+                    failCount++;
+                    System.out.println("❌ 成绩保存异常: " + studentName + ", " + e.getMessage());
+                    e.printStackTrace();
+                }
+            } else {
+                System.out.println("⚠️ 跳过学生: " + studentName + " (mark=" + markObj + ", selectionId=" + selectionIdObj + ")");
+            }
+        }
+        
+        // 显示保存结果
+        String message = String.format("成绩保存完成！\n成功: %d 个\n失败: %d 个", successCount, failCount);
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("保存结果");
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.show();
+        
+        System.out.println(message);
+    }
+
+    /**
+     * 更新每门课程的学生数量（有学生选则为1，否则为0）
+     */
+    private void updateCourseStudentCounts() {
+        try {
+            System.out.println("📊 开始更新课程学生数量...");
+            System.out.println(" 当前课程总数: " + allCourses.size());
+
+            // 使用新接口获取所有选课记录
+            DataRequest req = new DataRequest();
+            DataResponse res = HttpRequestUtil.request("/api/student/getAllSelections", req);
+
+            System.out.println("📊 选课接口响应 - code: " + (res != null ? res.getCode() : "null"));
+
+            List<Map<String, Object>> selections = new ArrayList<>();
+
+            if (res != null && res.getCode() == 0) {
+                Object dataObj = res.getData();
+                System.out.println(" 数据类型: " + (dataObj != null ? dataObj.getClass().getName() : "null"));
+
+                if (dataObj instanceof List) {
+                    selections = (List<Map<String, Object>>) dataObj;
+                    System.out.println("📊 选课记录总数: " + selections.size());
+
+                    if (!selections.isEmpty()) {
+                        System.out.println("📊 第一条选课记录: " + selections.get(0));
+                    }
+                } else {
+                    System.out.println("⚠️ data不是List类型");
+                }
+            } else {
+                System.out.println("⚠️ 获取选课记录失败: " + (res != null ? res.getMsg() : "未知错误"));
+            }
+
+            // 统计每门课程的学生数量（统计所有选课记录，包括待审核的）
+            Map<String, Integer> courseStudentCountMap = new HashMap<>();
+            for (Map<String, Object> selection : selections) {
+                // 统计所有选课记录（包括PENDING、APPROVED等所有状态）
+                Object courseIdObj = selection.get("courseId");
+                if (courseIdObj != null) {
+                    String courseIdStr;
+                    if (courseIdObj instanceof Number) {
+                        courseIdStr = String.valueOf(((Number) courseIdObj).intValue());
+                    } else {
+                        courseIdStr = courseIdObj.toString();
+                    }
+
+                    // 统计该课程的学生数量
+                    courseStudentCountMap.put(courseIdStr,
+                        courseStudentCountMap.getOrDefault(courseIdStr, 0) + 1);
+
+                    System.out.println("📊 添加选课 - 课程ID: " + courseIdStr + ", 学生: " + selection.get("studentName") + ", 状态: " + selection.get("selectionStatus"));
+                }
+            }
+
+            System.out.println("📊 课程学生数量统计结果: " + courseStudentCountMap);
+
+            // 更新课程数据中的学生数量
+            int updatedCount = 0;
+            for (Map<String, Object> course : allCourses) {
+                Object courseIdObj = course.get("courseId");
+                if (courseIdObj != null) {
+                    String courseIdStr;
+                    if (courseIdObj instanceof Number) {
+                        courseIdStr = String.valueOf(((Number) courseIdObj).intValue());
+                    } else {
+                        courseIdStr = courseIdObj.toString();
+                    }
+
+                    // 从统计结果中获取学生数量，如果没有则为0
+                    int studentCount = courseStudentCountMap.getOrDefault(courseIdStr, 0);
+                    course.put("studentCount", studentCount);
+
+                    if (studentCount > 0) {
+                        updatedCount++;
+                    }
+
+                    System.out.println("✅ 课程 " + course.get("name") + " (ID:" + courseIdStr + ") 学生数: " + studentCount);
+                } else {
+                    System.out.println("️ 课程 " + course.get("name") + " 的courseId为null");
+                }
+            }
+
+            System.out.println("✅ 成功更新课程学生数量，共 " + updatedCount + " 门课程有学生");
+        } catch (Exception e) {
+            System.out.println(" 更新课程学生数量时出错: " + e.getMessage());
+            e.printStackTrace();
+            // 出错时全部设为0
+            for (Map<String, Object> course : allCourses) {
+                course.put("studentCount", 0);
+            }
+        }
+    }
+
+    /**
+     * 检查角色并隐藏打分按钮（管理员不能打分）
+     */
+    private void checkRoleAndHideGradeButton() {
+        String role = com.teach.javafx.AppStore.getJwt() != null
+            ? com.teach.javafx.AppStore.getJwt().getRole() : "";
+
+        if ("ROLE_ADMIN".equals(role)) {
+            System.out.println("🔒 管理员模式：打分功能已禁用");
+        } else if ("ROLE_TEACHER".equals(role)) {
+            System.out.println("👨‍🏫 教师模式：打分功能可用");
+        }
     }
 }

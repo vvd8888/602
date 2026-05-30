@@ -244,11 +244,6 @@ public class MainFrameController {
             openCourseItem.setOnAction(this::changeContent);
             teacherMenu.getItems().add(openCourseItem);
 
-            MenuItem courseManageItem = new MenuItem("课程管理");
-            courseManageItem.setId("teacher-course-manage");
-            courseManageItem.setOnAction(this::changeContent);
-            teacherMenu.getItems().add(courseManageItem);
-
             System.out.println("✅ 老师功能菜单已添加到菜单栏");
         }
 
@@ -289,11 +284,6 @@ public class MainFrameController {
                     new MyTreeNode(null, "teacher-open-course", "开设课程", 0)
             );
             teacherMenuItem.getChildren().add(openCourseTreeItem);
-
-            TreeItem<MyTreeNode> courseManageTreeItem = new TreeItem<>(
-                    new MyTreeNode(null, "teacher-course-manage", "课程管理", 0)
-            );
-            teacherMenuItem.getChildren().add(courseManageTreeItem);
 
             root.getChildren().add(teacherMenuItem);
             teacherMenuItem.setExpanded(true);
