@@ -13,7 +13,7 @@
 <?import javafx.scene.control.TreeView?>
 <BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.teach.javafx.controller.base.MainFrameController">
   <top>
-    <MenuBar fx:id="menuBar" />
+    <MenuBar fx:id="menuBar" visible="false" managed="false" />
   </top>
   <left>
     <TreeView fx:id="menuTree" prefWidth="200"/>

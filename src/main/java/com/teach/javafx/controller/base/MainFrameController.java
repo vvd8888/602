@@ -385,7 +385,59 @@ public class MainFrameController {
             }
         }
 
-        // 检查校车功能权限
+        // 检查请假管理权限
+        if ("student-leave-panel".equals(name)) {
+            // 学生请假申请：学生和管理员
+            if (!isStudent(role) && !isAdmin(role)) {
+                System.out.println("❌ 权限不足：只有学生和管理员可以访问请假申请");
+                Alert alert = new Alert(Alert.AlertType.WARNING);
+                alert.setTitle("权限不足");
+                alert.setHeaderText(null);
+                alert.setContentText("您没有权限访问请假申请功能");
+                alert.showAndWait();
+                return;
+            }
+        }
+        
+        if ("admin-leave-approve".equals(name)) {
+            // 管理员审批：仅管理员
+            if (!isAdmin(role)) {
+                System.out.println(" 权限不足：只有管理员可以访问管理员审批");
+                Alert alert = new Alert(Alert.AlertType.WARNING);
+                alert.setTitle("权限不足");
+                alert.setHeaderText(null);
+                alert.setContentText("您没有权限访问管理员审批功能");
+                alert.showAndWait();
+                return;
+            }
+        }
+        
+        if ("teacher-leave-approve".equals(name)) {
+            // 老师审批：老师和管理员
+            if (!isTeacher(role) && !isAdmin(role)) {
+                System.out.println("❌ 权限不足：只有老师和管理员可以访问老师审批");
+                Alert alert = new Alert(Alert.AlertType.WARNING);
+                alert.setTitle("权限不足");
+                alert.setHeaderText(null);
+                alert.setContentText("您没有权限访问老师审批功能");
+                alert.showAndWait();
+                return;
+            }
+        }
+        
+        // 检查课件管理权限
+        if ("courseware-panel".equals(name)) {
+            // 课件管理：所有人
+            if (!isStudent(role) && !isTeacher(role) && !isAdmin(role)) {
+                System.out.println("❌ 权限不足：您没有权限访问课件管理");
+                Alert alert = new Alert(Alert.AlertType.WARNING);
+                alert.setTitle("权限不足");
+                alert.setHeaderText(null);
+                alert.setContentText("您没有权限访问课件管理功能");
+                alert.showAndWait();
+                return;
+            }
+        }
         if ("shuttle-bus".equals(name)) {
             // 班次管理：仅管理员
             if (!isAdmin(role)) {
