@@ -1,0 +1,698 @@
+/*
+ * JavaFX 现代化主题样式
+ * 统一的颜色方案和UI组件样式
+ * 不破坏现有功能，仅做视觉美化
+ */
+
+/* ==================== 全局变量定义 ==================== */
+.root {
+    /* 主色调 - 蓝色系 */
+    -primary-color: #2196F3;
+    -primary-dark: #1976D2;
+    -primary-light: #BBDEFB;
+    
+    /* 辅助色 */
+    -success-color: #4CAF50;
+    -success-dark: #388E3C;
+    -warning-color: #FF9800;
+    -danger-color: #f44336;
+    -danger-dark: #d32f2f;
+    -info-color: #00BCD4;
+    
+    /* 中性色 */
+    -background-color: #f5f5f5;
+    -surface-color: #ffffff;
+    -border-color: #e0e0e0;
+    
+    /* 文字颜色 */
+    -text-primary: #333333;
+    -text-secondary: #757575;
+    -text-hint: #999999;
+    -text-on-primary: #ffffff;
+    
+    /* 圆角 */
+    -border-radius-small: 4px;
+    -border-radius-medium: 8px;
+    -border-radius-large: 12px;
+    -button-radius: 6px;
+    
+    /* 阴影 */
+    -shadow-light: rgba(0, 0, 0, 0.05);
+    -shadow-medium: rgba(0, 0, 0, 0.1);
+    -shadow-heavy: rgba(0, 0, 0, 0.15);
+}
+
+/* ==================== 通用按钮样式 ==================== */
+.button {
+    -fx-background-color: -primary-color;
+    -fx-text-fill: -text-on-primary;
+    -fx-font-size: 13px;
+    -fx-font-weight: normal;
+    -fx-padding: 8 16;
+    -fx-background-radius: -button-radius;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, -shadow-medium, 3, 0, 0, 2);
+    -fx-min-width: 60px;
+}
+
+.button:hover {
+    -fx-background-color: derive(-primary-color, -10%);
+    -fx-effect: dropshadow(gaussian, -shadow-heavy, 5, 0, 0, 3);
+    -fx-scale-x: 1.02;
+    -fx-scale-y: 1.02;
+}
+
+.button:pressed {
+    -fx-background-color: derive(-primary-color, -20%);
+    -fx-effect: dropshadow(gaussian, -shadow-light, 2, 0, 0, 1);
+    -fx-scale-x: 0.98;
+    -fx-scale-y: 0.98;
+}
+
+.button:focused {
+    -fx-background-insets: -2, 0, 2;
+}
+
+/* 主要按钮 */
+.button-primary {
+    -fx-background-color: -primary-color;
+    -fx-text-fill: -text-on-primary;
+    -fx-font-weight: bold;
+}
+
+.button-primary:hover {
+    -fx-background-color: -primary-dark;
+}
+
+/* 成功按钮 - 用于添加、保存等操作 */
+.button-success {
+    -fx-background-color: -success-color;
+    -fx-text-fill: -text-on-primary;
+    -fx-font-weight: bold;
+}
+
+.button-success:hover {
+    -fx-background-color: -success-dark;
+}
+
+/* 危险按钮 - 用于删除等危险操作 */
+.button-danger {
+    -fx-background-color: -danger-color;
+    -fx-text-fill: -text-on-primary;
+    -fx-font-weight: bold;
+}
+
+.button-danger:hover {
+    -fx-background-color: -danger-dark;
+}
+
+/* 警告按钮 */
+.button-warning {
+    -fx-background-color: -warning-color;
+    -fx-text-fill: -text-on-primary;
+    -fx-font-weight: bold;
+}
+
+/* 次要按钮 */
+.button-secondary {
+    -fx-background-color: #9E9E9E;
+    -fx-text-fill: -text-on-primary;
+}
+
+.button-secondary:hover {
+    -fx-background-color: #757575;
+}
+
+/* 轮廓按钮 */
+.button-outline {
+    -fx-background-color: transparent;
+    -fx-border-color: -primary-color;
+    -fx-border-width: 2;
+    -fx-border-radius: -button-radius;
+    -fx-text-fill: -primary-color;
+    -fx-font-weight: bold;
+}
+
+.button-outline:hover {
+    -fx-background-color: -primary-light;
+}
+
+/* ==================== 输入框样式 ==================== */
+.text-field, .password-field, .text-area {
+    -fx-background-color: -surface-color;
+    -fx-border-color: -border-color;
+    -fx-border-width: 1.5;
+    -fx-border-radius: -border-radius-small;
+    -fx-background-radius: -border-radius-small;
+    -fx-padding: 10 12;
+    -fx-font-size: 13px;
+    -fx-text-fill: -text-primary;
+}
+
+.text-field:focused, .password-field:focused, .text-area:focused {
+    -fx-border-color: -primary-color;
+    -fx-border-width: 2;
+    -fx-background-color: -surface-color;
+    -fx-effect: dropshadow(gaussian, -primary-color, 5, 0.3, 0, 0);
+}
+
+.text-field:hover, .password-field:hover, .text-area:hover {
+    -fx-border-color: derive(-border-color, -20%);
+}
+
+/* ==================== 下拉框样式 ==================== */
+.combo-box {
+    -fx-background-color: -surface-color;
+    -fx-border-color: -border-color;
+    -fx-border-width: 1.5;
+    -fx-border-radius: -border-radius-small;
+    -fx-background-radius: -border-radius-small;
+    -fx-padding: 4 8;
+}
+
+.combo-box:hover {
+    -fx-border-color: derive(-border-color, -20%);
+}
+
+.combo-box:focused {
+    -fx-border-color: -primary-color;
+    -fx-border-width: 2;
+}
+
+.combo-box-popup .list-view {
+    -fx-background-color: -surface-color;
+    -fx-border-color: -border-color;
+    -fx-effect: dropshadow(gaussian, -shadow-medium, 10, 0, 0, 5);
+}
+
+.combo-box-popup .list-cell {
+    -fx-padding: 8 12;
+    -fx-font-size: 13px;
+}
+
+.combo-box-popup .list-cell:hover {
+    -fx-background-color: -primary-light;
+}
+
+.combo-box-popup .list-cell:selected {
+    -fx-background-color: -primary-color;
+    -fx-text-fill: -text-on-primary;
+}
+
+/* ==================== 日期选择器样式 ==================== */
+.date-picker {
+    -fx-background-color: -surface-color;
+    -fx-border-color: -border-color;
+    -fx-border-width: 1.5;
+    -fx-border-radius: -border-radius-small;
+    -fx-background-radius: -border-radius-small;
+}
+
+.date-picker:focused {
+    -fx-border-color: -primary-color;
+    -fx-border-width: 2;
+}
+
+/* ==================== 表格样式 ==================== */
+.table-view {
+    -fx-background-color: -surface-color;
+    -fx-border-color: -border-color;
+    -fx-border-radius: -border-radius-medium;
+    -fx-background-radius: -border-radius-medium;
+    -fx-effect: dropshadow(gaussian, -shadow-light, 10, 0, 0, 2);
+}
+
+.table-view .column-header-background {
+    -fx-background-color: linear-gradient(to bottom, #fafafa, #f5f5f5);
+    -fx-background-insets: 0;
+    -fx-background-radius: -border-radius-medium -border-radius-medium 0 0;
+}
+
+.table-view .column-header {
+    -fx-background-color: transparent;
+    -fx-border-color: -border-color;
+    -fx-border-width: 0 1 1 0;
+    -fx-size: 40px;
+}
+
+.table-view .column-header .label {
+    -fx-text-fill: -text-primary;
+    -fx-font-weight: bold;
+    -fx-font-size: 13px;
+    -fx-padding: 12 8;
+    -fx-alignment: center-left;
+}
+
+.table-row-cell {
+    -fx-background-color: -surface-color;
+    -fx-border-color: transparent;
+    -fx-table-cell-border-color: transparent;
+    -fx-padding: 4 0;
+}
+
+.table-row-cell:odd {
+    -fx-background-color: #fafafa;
+}
+
+.table-row-cell:hover {
+    -fx-background-color: -primary-light;
+    -fx-cursor: hand;
+}
+
+.table-row-cell:selected {
+    -fx-background-color: derive(-primary-light, -10%);
+    -fx-text-fill: -text-primary;
+}
+
+.table-cell {
+    -fx-padding: 10 12;
+    -fx-font-size: 13px;
+    -fx-text-fill: -text-primary;
+    -fx-alignment: center-left;
+}
+
+.table-view .filler {
+    -fx-background-color: transparent;
+}
+
+.table-view .corner {
+    -fx-background-color: transparent;
+}
+
+/* ==================== 树形菜单样式 ==================== */
+.tree-view {
+    -fx-background-color: -surface-color;
+    -fx-border-color: -border-color;
+    -fx-border-width: 0 1 0 0;
+    -fx-font-size: 14px;
+}
+
+.tree-cell {
+    -fx-padding: 12 16;
+    -fx-font-size: 14px;
+    -fx-text-fill: -text-secondary;
+    -fx-background-color: transparent;
+}
+
+.tree-cell:hover {
+    -fx-background-color: #f5f5f5;
+    -fx-text-fill: -text-primary;
+}
+
+.tree-cell:selected {
+    -fx-background-color: -primary-light;
+    -fx-text-fill: -primary-dark;
+    -fx-font-weight: bold;
+    -fx-font-size: 15px;
+}
+
+.tree-cell > .tree-disclosure-node > .arrow {
+    -fx-background-color: -text-hint;
+    -fx-scale-x: 1.3;
+    -fx-scale-y: 1.3;
+}
+
+.tree-cell:expanded > .tree-disclosure-node > .arrow {
+    -fx-background-color: -primary-color;
+    -fx-scale-x: 1.3;
+    -fx-scale-y: 1.3;
+}
+
+.tree-cell:hover > .tree-disclosure-node > .arrow {
+    -fx-background-color: -primary-color;
+    -fx-scale-x: 1.3;
+    -fx-scale-y: 1.3;
+}
+
+/* 一级菜单不同颜色样式 - 从红到紫 */
+/* 1. 红色 - 个人信息 */
+.tree-cell.menu-color-red:selected {
+    -fx-background-color: #ffebee;
+    -fx-text-fill: #c62828;
+}
+.tree-cell.menu-color-red:selected > .tree-disclosure-node > .arrow {
+    -fx-background-color: #c62828;
+}
+
+/* 2. 橙色 - 系统管理 */
+.tree-cell.menu-color-orange:selected {
+    -fx-background-color: #fff3e0;
+    -fx-text-fill: #e65100;
+}
+.tree-cell.menu-color-orange:selected > .tree-disclosure-node > .arrow {
+    -fx-background-color: #e65100;
+}
+
+/* 3. 黄色 - 人员管理 */
+.tree-cell.menu-color-yellow:selected {
+    -fx-background-color: #fffde7;
+    -fx-text-fill: #f9a825;
+}
+.tree-cell.menu-color-yellow:selected > .tree-disclosure-node > .arrow {
+    -fx-background-color: #f9a825;
+}
+
+/* 4. 绿色 - 教务管理 */
+.tree-cell.menu-color-green:selected {
+    -fx-background-color: #e8f5e9;
+    -fx-text-fill: #2e7d32;
+}
+.tree-cell.menu-color-green:selected > .tree-disclosure-node > .arrow {
+    -fx-background-color: #2e7d32;
+}
+
+/* 5. 青色 - 示例程序 */
+.tree-cell.menu-color-cyan:selected {
+    -fx-background-color: #e0f7fa;
+    -fx-text-fill: #00838f;
+}
+.tree-cell.menu-color-cyan:selected > .tree-disclosure-node > .arrow {
+    -fx-background-color: #00838f;
+}
+
+/* 6. 蓝色 - 通知问卷 */
+.tree-cell.menu-color-blue:selected {
+    -fx-background-color: #e3f2fd;
+    -fx-text-fill: #1565c0;
+}
+.tree-cell.menu-color-blue:selected > .tree-disclosure-node > .arrow {
+    -fx-background-color: #1565c0;
+}
+
+/* 7. 靛蓝色 - 社会实践 */
+.tree-cell.menu-color-indigo:selected {
+    -fx-background-color: #e8eaf6;
+    -fx-text-fill: #283593;
+}
+.tree-cell.menu-color-indigo:selected > .tree-disclosure-node > .arrow {
+    -fx-background-color: #283593;
+}
+
+/* 8. 紫色 - 请假管理 */
+.tree-cell.menu-color-purple:selected {
+    -fx-background-color: #f3e5f5;
+    -fx-text-fill: #6a1b9a;
+}
+.tree-cell.menu-color-purple:selected > .tree-disclosure-node > .arrow {
+    -fx-background-color: #6a1b9a;
+}
+
+/* 9. 粉色 - 课件管理 */
+.tree-cell.menu-color-pink:selected {
+    -fx-background-color: #fce4ec;
+    -fx-text-fill: #c2185b;
+}
+.tree-cell.menu-color-pink:selected > .tree-disclosure-node > .arrow {
+    -fx-background-color: #c2185b;
+}
+
+/* 10. 青绿色 - 校车功能 */
+.tree-cell.menu-color-teal:selected {
+    -fx-background-color: #e0f2f1;
+    -fx-text-fill: #00695c;
+}
+.tree-cell.menu-color-teal:selected > .tree-disclosure-node > .arrow {
+    -fx-background-color: #00695c;
+}
+
+/* 11. 深紫色 - 课程管理 */
+.tree-cell.menu-color-deep-purple:selected {
+    -fx-background-color: #ede7f6;
+    -fx-text-fill: #4527a0;
+}
+.tree-cell.menu-color-deep-purple:selected > .tree-disclosure-node > .arrow {
+    -fx-background-color: #4527a0;
+}
+
+/* ==================== 标签页样式 ==================== */
+.tab-pane {
+    -fx-tab-min-width: 120px;
+    -fx-tab-max-width: 200px;
+    -fx-tab-height: 35px;
+}
+
+.tab-pane .tab-header-area .tab-header-background {
+    -fx-background-color: -surface-color;
+    -fx-border-color: -border-color;
+    -fx-border-width: 0 0 1 0;
+}
+
+.tab-pane .tab {
+    -fx-background-color: #f5f5f5;
+    -fx-background-insets: 0;
+    -fx-background-radius: -border-radius-medium -border-radius-medium 0 0;
+    -fx-padding: 8 16;
+}
+
+.tab-pane .tab:selected {
+    -fx-background-color: -primary-light;
+    -fx-font-weight: bold;
+}
+
+.tab-pane .tab .tab-label {
+    -fx-text-fill: -text-secondary;
+    -fx-font-size: 13px;
+}
+
+.tab-pane .tab:selected .tab-label {
+    -fx-text-fill: -primary-dark;
+}
+
+.tab-pane .tab:hover {
+    -fx-background-color: derive(-primary-light, 20%);
+}
+
+/* ==================== 卡片容器样式 ==================== */
+.card {
+    -fx-background-color: -surface-color;
+    -fx-background-radius: -border-radius-large;
+    -fx-border-radius: -border-radius-large;
+    -fx-padding: 20;
+    -fx-spacing: 15;
+    -fx-effect: dropshadow(gaussian, -shadow-medium, 10, 0, 0, 3);
+    -fx-border-color: -border-color;
+    -fx-border-width: 1;
+}
+
+.card-header {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -text-primary;
+    -fx-padding: 0 0 10 0;
+}
+
+.card-body {
+    -fx-spacing: 10;
+}
+
+/* ==================== 表单布局样式 ==================== */
+.form-container {
+    -fx-background-color: -surface-color;
+    -fx-padding: 20;
+    -fx-spacing: 15;
+    -fx-border-radius: -border-radius-medium;
+    -fx-background-radius: -border-radius-medium;
+    -fx-effect: dropshadow(gaussian, -shadow-light, 8, 0, 0, 2);
+}
+
+.form-label {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -text-secondary;
+    -fx-min-width: 100px;
+}
+
+/* ==================== 分隔线样式 ==================== */
+.separator {
+    -fx-padding: 5 0;
+}
+
+.separator .line {
+    -fx-border-color: -border-color;
+    -fx-border-width: 1 0 0 0;
+}
+
+/* ==================== 滚动条样式 ==================== */
+.scroll-bar {
+    -fx-background-color: derive(-background-color, 10%);
+}
+
+.scroll-bar .thumb {
+    -fx-background-color: #bdbdbd;
+    -fx-background-radius: 5;
+}
+
+.scroll-bar .thumb:hover {
+    -fx-background-color: #9e9e9e;
+}
+
+.scroll-bar .increment-button,
+.scroll-bar .decrement-button {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+/* ==================== 提示框样式 ==================== */
+.dialog-pane {
+    -fx-background-color: -surface-color;
+    -fx-border-radius: -border-radius-large;
+    -fx-background-radius: -border-radius-large;
+}
+
+.dialog-pane .header-panel {
+    -fx-background-color: -primary-color;
+}
+
+.dialog-pane .header-panel .label {
+    -fx-text-fill: -text-on-primary;
+    -fx-font-weight: bold;
+}
+
+/* ==================== 工具栏和状态栏样式 ==================== */
+.tool-bar {
+    -fx-background-color: -surface-color;
+    -fx-border-color: -border-color;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 8 12;
+}
+
+.status-bar {
+    -fx-background-color: linear-gradient(to bottom, #fafafa, #f5f5f5);
+    -fx-border-color: -border-color;
+    -fx-border-width: 1 0 0 0;
+    -fx-padding: 8 12;
+}
+
+.status-label {
+    -fx-font-size: 12px;
+    -fx-text-fill: -text-secondary;
+}
+
+/* ==================== 菜单样式 ==================== */
+.menu-bar {
+    -fx-background-color: -surface-color;
+    -fx-border-color: -border-color;
+    -fx-border-width: 0 0 1 0;
+}
+
+.menu-bar .menu {
+    -fx-padding: 8 12;
+}
+
+.menu-bar .menu:hover {
+    -fx-background-color: #f5f5f5;
+}
+
+.menu-bar .menu:showing {
+    -fx-background-color: -primary-light;
+}
+
+.context-menu {
+    -fx-background-color: -surface-color;
+    -fx-border-color: -border-color;
+    -fx-effect: dropshadow(gaussian, -shadow-medium, 10, 0, 0, 5);
+}
+
+.menu-item {
+    -fx-padding: 8 16;
+}
+
+.menu-item:hover {
+    -fx-background-color: -primary-light;
+}
+
+.menu-item:focused {
+    -fx-background-color: -primary-light;
+}
+
+/* ==================== 标题面板样式 ==================== */
+.titled-pane {
+    -fx-background-color: transparent;
+}
+
+.titled-pane > .title {
+    -fx-background-color: linear-gradient(to bottom, #fafafa, #f5f5f5);
+    -fx-border-color: -border-color;
+    -fx-border-width: 1;
+    -fx-background-radius: -border-radius-medium;
+    -fx-padding: 10 15;
+}
+
+.titled-pane > .title:hover {
+    -fx-background-color: derive(-primary-light, 30%);
+}
+
+.titled-pane > .title > .arrow-button {
+    -fx-background-color: transparent;
+}
+
+.titled-pane > .title > .arrow-button .arrow {
+    -fx-background-color: -text-secondary;
+}
+
+.titled-pane > .content {
+    -fx-background-color: -surface-color;
+    -fx-border-color: -border-color;
+    -fx-border-width: 0 1 1 1;
+    -fx-background-radius: 0 0 -border-radius-medium -border-radius-medium;
+    -fx-padding: 15;
+}
+
+/* ==================== 超链接样式 ==================== */
+.hyperlink {
+    -fx-text-fill: -primary-color;
+    -fx-underline: true;
+}
+
+.hyperlink:hover {
+    -fx-text-fill: -primary-dark;
+}
+
+.hyperlink:visited {
+    -fx-text-fill: #9C27B0;
+}
+
+/* ==================== 进度条样式 ==================== */
+.progress-bar .bar {
+    -fx-background-color: -primary-color;
+    -fx-background-insets: 0;
+    -fx-background-radius: 3;
+}
+
+.progress-bar .track {
+    -fx-background-color: #e0e0e0;
+    -fx-background-insets: 0;
+    -fx-background-radius: 3;
+}
+
+/* ==================== 复选框和单选按钮样式 ==================== */
+.check-box, .radio-button {
+    -fx-font-size: 13px;
+    -fx-text-fill: -text-primary;
+}
+
+.check-box:hover, .radio-button:hover {
+    -fx-cursor: hand;
+}
+
+.check-box > .box,
+.radio-button > .radio {
+    -fx-background-color: -surface-color;
+    -fx-border-color: -border-color;
+    -fx-border-width: 2;
+}
+
+.check-box:selected > .box,
+.radio-button:selected > .radio {
+    -fx-background-color: -primary-color;
+    -fx-border-color: -primary-color;
+}
+
+/* ==================== 工具提示样式 ==================== */
+.tooltip {
+    -fx-background-color: rgba(51, 51, 51, 0.9);
+    -fx-text-fill: white;
+    -fx-font-size: 12px;
+    -fx-padding: 8 12;
+    -fx-background-radius: -border-radius-small;
+}
