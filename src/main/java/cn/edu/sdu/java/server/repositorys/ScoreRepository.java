@@ -69,4 +69,22 @@ public interface ScoreRepository extends JpaRepository<Score, Integer> {
     @Query("SELECT s FROM Score s WHERE s.student.personId = :personId AND s.course.courseId = :courseId AND s.selectionStatus = 'APPROVED'")
     Optional<Score> findApprovedByPersonIdAndCourseId(@Param("personId") Integer personId,
                                                       @Param("courseId") Integer courseId);
+
+    /**
+     * 删除学生的选课记录（用于退课）
+     */
+    void deleteByScoreIdAndStudentPersonId(Integer scoreId, Integer personId);
+
+    /**
+     * 查询学生在特定时间段已批准的课程（用于时间冲突检测）
+     */
+    @Query("SELECT s FROM Score s WHERE s.student.personId = :personId AND s.selectionStatus = 'APPROVED' AND s.course.time LIKE :timePattern")
+    List<Score> findApprovedCoursesByTime(@Param("personId") Integer personId, 
+                                          @Param("timePattern") String timePattern);
+
+    /**
+     * 查询所有选课记录（按申请时间倒序）
+     */
+    @Query("SELECT s FROM Score s ORDER BY s.applyTime DESC")
+    List<Score> findAllSelections();
 }

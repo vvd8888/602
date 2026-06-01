@@ -2,8 +2,11 @@ package cn.edu.sdu.java.server.controllers;
 
 import cn.edu.sdu.java.server.payload.request.DataRequest;
 import cn.edu.sdu.java.server.payload.response.DataResponse;
+import cn.edu.sdu.java.server.services.StudentResumeService;
 import cn.edu.sdu.java.server.services.StudentService;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -24,8 +27,11 @@ import java.util.Map;
 
 public class StudentController {
     private final StudentService studentService;
-    public StudentController(StudentService studentService) {
+    private final StudentResumeService studentResumeService;
+    
+    public StudentController(StudentService studentService, StudentResumeService studentResumeService) {
         this.studentService = studentService;
+        this.studentResumeService = studentResumeService;
     }
 
     /**
@@ -160,6 +166,37 @@ public class StudentController {
     @PreAuthorize("hasRole('STUDENT') or hasRole('ADMIN')")
     public DataResponse getStudentIntroduceData(@Valid @RequestBody DataRequest dataRequest) {
         return studentService.getStudentIntroduceData(dataRequest);
+    }
+
+    /**
+     * exportResume 导出学生简历PDF
+     * 学生可以导出自己的简历，管理员可以导出任意学生的简历
+     *
+     * @param personId 从路径变量获取学生信息的主键 person_id
+     * @return PDF文件流
+     */
+    @GetMapping("/exportResume/{personId}")
+    @PreAuthorize("hasRole('STUDENT') or hasRole('ADMIN')")
+    public ResponseEntity<byte[]> exportResume(@PathVariable Integer personId) {
+        try {
+            byte[] pdfContent = studentResumeService.generateStudentResume(personId);
+            
+            String fileName = "个人简历.pdf";
+            String encodedFileName = java.net.URLEncoder.encode(fileName, java.nio.charset.StandardCharsets.UTF_8)
+                    .replaceAll("\\+", "%20");
+            
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_PDF);
+            headers.setContentDispositionFormData("attachment", encodedFileName);
+            headers.setContentLength(pdfContent.length);
+            
+            return ResponseEntity.ok()
+                    .headers(headers)
+                    .body(pdfContent);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
+        }
     }
 }
 //

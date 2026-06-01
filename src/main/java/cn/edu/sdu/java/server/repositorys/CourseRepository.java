@@ -250,4 +250,22 @@ public interface CourseRepository extends JpaRepository<Course, Integer> {
      * 检查课程名称是否存在
      */
     boolean existsByName(String name);
+
+    /**
+     * 查询已满的课程
+     */
+    @Query("SELECT c FROM Course c WHERE c.currentEnrolled >= c.maxCapacity")
+    List<Course> findFullCourses();
+
+    /**
+     * 查询未满的开放课程
+     */
+    @Query("SELECT c FROM Course c WHERE c.status = 'OPEN' AND c.currentEnrolled < c.maxCapacity")
+    List<Course> findAvailableOpenCourses();
+
+    /**
+     * 统计课程的选课人数
+     */
+    @Query("SELECT c.courseId, COUNT(s.scoreId) FROM Course c LEFT JOIN Score s ON c.courseId = s.course.courseId WHERE c.courseId = :courseId GROUP BY c.courseId")
+    Object[] countStudentsByCourse(@Param("courseId") Integer courseId);
 }
