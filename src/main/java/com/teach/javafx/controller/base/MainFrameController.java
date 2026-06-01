@@ -177,8 +177,8 @@ public class MainFrameController {
             menuTree.setRoot(root);
         }
 
-        // 添加自定义菜单
-        addCustomMenus();
+        // 注释掉硬编码菜单，所有菜单都从数据库加载
+        // addCustomMenus();
 
         contentTabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.ALL_TABS);
         contentTabPane.setStyle("-fx-background-image: url('shanda1.jpg'); -fx-background-repeat: no-repeat; -fx-background-size: cover;");
@@ -190,20 +190,21 @@ public class MainFrameController {
     }
 
     /**
-     * 添加自定义菜单
+     * 添加自定义菜单（已禁用，所有菜单从数据库加载）
+     * 如需添加新菜单，请在MySQL的menu表中配置
      */
     private void addCustomMenus() {
-        System.out.println("=== 添加自定义菜单 ===");
+        System.out.println("=== 添加自定义菜单（已禁用，使用数据库菜单） ===");
 
         // 获取当前用户角色
         String role = AppStore.getJwt() != null ? AppStore.getJwt().getRole() : "unknown";
         System.out.println("当前用户角色: " + role);
 
         // 1. 在菜单栏添加自定义菜单
-        addCustomMenusToMenuBar(role);
+        // addCustomMenusToMenuBar(role);
 
         // 2. 在菜单树添加自定义菜单
-        addCustomMenusToTree(role);
+        // addCustomMenusToTree(role);
     }
 
     /**
@@ -234,35 +235,27 @@ public class MainFrameController {
      * 在菜单栏添加自定义菜单
      */
     private void addCustomMenusToMenuBar(String role) {
-        // 添加老师功能菜单
-        if (isTeacher(role) || isAdmin(role)) {
-            Menu teacherMenu = new Menu("老师功能");
-            menuBar.getMenus().add(teacherMenu);
+        // 添加课程管理菜单（统一入口）
+        Menu courseManageMenu = new Menu("课程管理");
+        menuBar.getMenus().add(courseManageMenu);
 
+        // 学生选课（给学生和管理员）
+        if (isStudent(role) || isAdmin(role)) {
+            MenuItem selectCourseItem = new MenuItem("学生选课");
+            selectCourseItem.setId("student-select-course");
+            selectCourseItem.setOnAction(this::changeContent);
+            courseManageMenu.getItems().add(selectCourseItem);
+        }
+
+        // 开设课程（给老师和管理员）
+        if (isTeacher(role) || isAdmin(role)) {
             MenuItem openCourseItem = new MenuItem("开设课程");
             openCourseItem.setId("teacher-open-course");
             openCourseItem.setOnAction(this::changeContent);
-            teacherMenu.getItems().add(openCourseItem);
-
-            System.out.println("✅ 老师功能菜单已添加到菜单栏");
+            courseManageMenu.getItems().add(openCourseItem);
         }
 
-        // 添加学生功能菜单
-        if (isStudent(role) || isAdmin(role)) {
-            Menu studentMenu = new Menu("学生功能");
-            menuBar.getMenus().add(studentMenu);
-
-            MenuItem selectCourseItem = new MenuItem("选课");
-            selectCourseItem.setId("student-select-course");
-            selectCourseItem.setOnAction(this::changeContent);
-            studentMenu.getItems().add(selectCourseItem);
-
-            System.out.println("✅ 学生功能菜单已添加到菜单栏");
-        }
-
-        // 添加校车功能菜单（已移至MySQL数据库，从数据库加载）
-        // 注释掉硬编码菜单，避免与数据库菜单重复
-
+        System.out.println("✅ 课程管理菜单已添加到菜单栏");
     }
 
     /**
@@ -276,36 +269,29 @@ public class MainFrameController {
             menuTree.setRoot(root);
         }
 
-        // 添加老师功能菜单
-        if (isTeacher(role) || isAdmin(role)) {
-            TreeItem<MyTreeNode> teacherMenuItem = new TreeItem<>(new MyTreeNode(null, "teacher-menu", "老师功能", 0));
+        // 添加课程管理菜单（统一入口）
+        TreeItem<MyTreeNode> courseManageMenuItem = new TreeItem<>(new MyTreeNode(null, "course-manage-menu", "课程管理", 0));
 
+        // 学生选课（给学生和管理员）
+        if (isStudent(role) || isAdmin(role)) {
+            TreeItem<MyTreeNode> selectCourseTreeItem = new TreeItem<>(
+                    new MyTreeNode(null, "student-select-course", "学生选课", 0)
+            );
+            courseManageMenuItem.getChildren().add(selectCourseTreeItem);
+        }
+
+        // 开设课程（给老师和管理员）
+        if (isTeacher(role) || isAdmin(role)) {
             TreeItem<MyTreeNode> openCourseTreeItem = new TreeItem<>(
                     new MyTreeNode(null, "teacher-open-course", "开设课程", 0)
             );
-            teacherMenuItem.getChildren().add(openCourseTreeItem);
-
-            root.getChildren().add(teacherMenuItem);
-            teacherMenuItem.setExpanded(true);
+            courseManageMenuItem.getChildren().add(openCourseTreeItem);
         }
 
-        // 添加学生功能菜单
-        if (isStudent(role) || isAdmin(role)) {
-            TreeItem<MyTreeNode> studentMenuItem = new TreeItem<>(new MyTreeNode(null, "student-menu", "学生功能", 0));
+        root.getChildren().add(courseManageMenuItem);
+        courseManageMenuItem.setExpanded(true);
 
-            TreeItem<MyTreeNode> selectCourseTreeItem = new TreeItem<>(
-                    new MyTreeNode(null, "student-select-course", "选课", 0)
-            );
-            studentMenuItem.getChildren().add(selectCourseTreeItem);
-
-            root.getChildren().add(studentMenuItem);
-            studentMenuItem.setExpanded(true);
-        }
-
-        // 添加校车功能菜单（已移至MySQL数据库，从数据库加载）
-        // 注释掉硬编码菜单，避免与数据库菜单重复
-
-        System.out.println("✅ 自定义菜单已添加到菜单树");
+        System.out.println("✅ 课程管理菜单已添加到菜单树");
     }
 
     /**
