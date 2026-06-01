@@ -404,6 +404,16 @@ public class StudentSelectController {
                     MainApplication.class.getResource("base/main-frame.fxml")
             );
             Scene scene = new Scene(fxmlLoader.load(), 1000, 700);
+            
+            // 加载CSS样式表 - 确保样式生效
+            String cssPath = "/com/teach/javafx/css/modern-theme.css";
+            java.net.URL cssUrl = MainApplication.class.getResource(cssPath);
+            if (cssUrl != null) {
+                scene.getStylesheets().add(cssUrl.toExternalForm());
+                System.out.println("✅ CSS样式表已加载: " + cssUrl);
+            } else {
+                System.out.println("❌ CSS样式表未找到: " + cssPath);
+            }
 
             // 更新标题
             String studentName = AppStore.getSelectedStudentName();
@@ -414,6 +424,7 @@ public class StudentSelectController {
 
             stage.setScene(scene);
             stage.setTitle(title);
+            System.out.println("✅ 主框架已加载（从学生选择界面），学生: " + studentName);
         } catch (Exception e) {
             e.printStackTrace();
             showAlert(Alert.AlertType.ERROR, "加载失败",

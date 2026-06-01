@@ -16,7 +16,7 @@
     <MenuBar fx:id="menuBar" visible="false" managed="false" />
   </top>
   <left>
-    <TreeView fx:id="menuTree" prefWidth="200"/>
+    <TreeView fx:id="menuTree" prefWidth="250" style="-fx-font-size: 14px;"/>
   </left>
   <center>
     <TabPane fx:id="contentTabPane"  tabClosingPolicy="UNAVAILABLE" BorderPane.alignment="CENTER">

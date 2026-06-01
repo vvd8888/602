@@ -110,10 +110,31 @@ public class MainFrameController {
         MyTreeNode node = new MyTreeNode(null, null, "菜单", 0);
         TreeItem<MyTreeNode> root = new TreeItem<>(node);
 
+        // 定义11种颜色，从红到紫
+        String[] menuColors = {
+            "menu-color-red",      // 1. 个人信息
+            "menu-color-orange",   // 2. 系统管理
+            "menu-color-yellow",   // 3. 人员管理
+            "menu-color-green",    // 4. 教务管理
+            "menu-color-cyan",     // 5. 示例程序
+            "menu-color-blue",     // 6. 通知问卷
+            "menu-color-indigo",   // 7. 社会实践
+            "menu-color-purple",   // 8. 请假管理
+            "menu-color-pink",     // 9. 课件管理
+            "menu-color-teal",     // 10. 校车功能
+            "menu-color-deep-purple" // 11. 课程管理
+        };
+        
+        System.out.println("=== 开始初始化菜单树，菜单数量: " + mList.size() + " ===");
+
         for(int i = 0; i < mList.size(); i++) {
             Map m = mList.get(i);
             List<Map> sList = (List<Map>)m.get("sList");
-            TreeItem<MyTreeNode> menu = new TreeItem<>(new MyTreeNode(null, (String)m.get("name"), (String)m.get("title"), (Integer)m.get("isLeft")));
+            String menuTitle = (String)m.get("title");
+            TreeItem<MyTreeNode> menu = new TreeItem<>(new MyTreeNode(null, (String)m.get("name"), menuTitle, (Integer)m.get("isLeft")));
+            
+            System.out.println("一级菜单[" + i + "]: " + menuTitle + " -> 颜色样式: " + (i < menuColors.length ? menuColors[i] : "无"));
+            
             if(sList != null && sList.size() > 0) {
                 addMenuItems(menu, sList);
             }
@@ -122,6 +143,49 @@ public class MainFrameController {
 
         menuTree.setRoot(root);
         menuTree.setShowRoot(false);
+        menuTree.setCellFactory(tv -> new TreeCell<MyTreeNode>() {
+            @Override
+            protected void updateItem(MyTreeNode item, boolean empty) {
+                super.updateItem(item, empty);
+                
+                // 清除之前的样式
+                getStyleClass().removeIf(style -> style.startsWith("menu-color-"));
+                
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText(item.getLabel());
+                    
+                    // 获取当前节点
+                    TreeItem<MyTreeNode> currentItem = this.getTreeItem();
+                    if (currentItem != null) {
+                        TreeItem<MyTreeNode> parent = currentItem.getParent();
+                        
+                        // 如果父节点是root，说明这是一级菜单
+                        if (parent != null && parent == root) {
+                            int index = root.getChildren().indexOf(currentItem);
+                            if (index >= 0 && index < menuColors.length) {
+                                getStyleClass().add(menuColors[index]);
+                                // System.out.println("设置一级菜单颜色: " + item.getLabel() + " -> " + menuColors[index]);
+                            }
+                        } else if (parent != null) {
+                            // 子菜单：获取父菜单的索引
+                            TreeItem<MyTreeNode> grandParent = parent.getParent();
+                            if (grandParent != null && grandParent == root) {
+                                int parentIndex = root.getChildren().indexOf(parent);
+                                if (parentIndex >= 0 && parentIndex < menuColors.length) {
+                                    getStyleClass().add(menuColors[parentIndex]);
+                                    // System.out.println("设置子菜单颜色: " + item.getLabel() + " -> " + menuColors[parentIndex]);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        
+        System.out.println("✅ 菜单树初始化完成 ===");
+        
         menuTree.addEventFilter(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>(){
             public void handle(MouseEvent event){
                 Node node = event.getPickResult().getIntersectedNode();

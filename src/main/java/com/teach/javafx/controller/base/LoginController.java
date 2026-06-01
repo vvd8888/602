@@ -89,6 +89,16 @@ public class LoginController {
                     getClass().getResource("/com/teach/javafx/base/main-frame.fxml")
             );
             Scene scene = new Scene(fxmlLoader.load(), 1000, 700);
+            
+            // 加载CSS样式表 - 确保样式生效
+            String cssPath = "/com/teach/javafx/css/modern-theme.css";
+            java.net.URL cssUrl = getClass().getResource(cssPath);
+            if (cssUrl != null) {
+                scene.getStylesheets().add(cssUrl.toExternalForm());
+                System.out.println("✅ CSS样式表已加载: " + cssUrl);
+            } else {
+                System.out.println("❌ CSS样式表未找到: " + cssPath);
+            }
 
             // 设置窗口标题
             String username = AppStore.getUsername();
@@ -104,6 +114,7 @@ public class LoginController {
             }
 
             MainApplication.resetStage(title, scene);
+            System.out.println("✅ 主框架已加载，用户: " + username);
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException(e);
