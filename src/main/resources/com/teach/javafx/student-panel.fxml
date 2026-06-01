@@ -154,6 +154,11 @@
                            <Insets right="5.0" top="5.0" />
                        </FlowPane.margin>
                    </Button>
+                   <Button onAction="#onExportResumeButtonClick" text="📄 导出简历" style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold;" >
+                       <FlowPane.margin>
+                           <Insets right="5.0" top="5.0" />
+                       </FlowPane.margin>
+                   </Button>
                </FlowPane>
             </VBox>
         </items>

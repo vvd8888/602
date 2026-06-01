@@ -32,6 +32,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.lowagie.text.*;
+import com.lowagie.text.pdf.BaseFont;
+import com.lowagie.text.pdf.PdfWriter;
+
 /**
  * StudentController 登录交互控制类 对应 student_panel.fxml  对应于学生管理的后台业务处理的控制器，主要获取数据和保存数据的方法不同
  *
@@ -515,6 +519,140 @@ public class StudentController extends ToolController {
         else {
             MessageDialog.showDialog(res.getMsg());
         }
+    }
+
+    /**
+     * 导出学生简历为PDF文件
+     */
+    @FXML
+    protected void onExportResumeButtonClick() {
+        if (personId == null) {
+            MessageDialog.showDialog("请先选择一个学生！");
+            return;
+        }
+
+        // 获取学生详细信息
+        DataRequest req = new DataRequest();
+        req.add("personId", personId);
+        DataResponse res = HttpRequestUtil.request("/api/student/getStudentInfo", req);
+        
+        if (res == null || res.getCode() != 0) {
+            MessageDialog.showDialog("获取学生信息失败：" + (res != null ? res.getMsg() : "网络错误"));
+            return;
+        }
+
+        Map<String, Object> studentInfo = (Map<String, Object>) res.getData();
+        
+        try {
+            // 创建文件选择对话框
+            FileChooser fileDialog = new FileChooser();
+            fileDialog.setTitle("保存简历PDF文件");
+            fileDialog.setInitialFileName(studentInfo.get("name") + "_简历.pdf");
+            fileDialog.getExtensionFilters().addAll(
+                    new FileChooser.ExtensionFilter("PDF 文件", "*.pdf"));
+            File file = fileDialog.showSaveDialog(null);
+            
+            if (file == null) {
+                return; // 用户取消
+            }
+
+            // 生成PDF
+            generateResumePDF(file, studentInfo);
+            MessageDialog.showDialog("简历导出成功！");
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            MessageDialog.showDialog("简历导出失败：" + e.getMessage());
+        }
+    }
+
+    /**
+     * 生成学生简历PDF
+     */
+    private void generateResumePDF(File file, Map<String, Object> studentInfo) throws Exception {
+        Document document = new Document(PageSize.A4);
+        PdfWriter.getInstance(document, new FileOutputStream(file));
+        document.open();
+
+        // 设置中文字体
+        BaseFont bfChinese = BaseFont.createFont("STSong-Light", "UniGB-UCS2-H", BaseFont.NOT_EMBEDDED);
+        Font titleFont = new Font(bfChinese, 18, Font.BOLD);
+        Font sectionFont = new Font(bfChinese, 14, Font.BOLD);
+        Font contentFont = new Font(bfChinese, 12, Font.NORMAL);
+        Font labelFont = new Font(bfChinese, 12, Font.BOLD);
+
+        // 标题
+        Paragraph title = new Paragraph("学生个人简历", titleFont);
+        title.setAlignment(Element.ALIGN_CENTER);
+        title.setSpacingAfter(20);
+        document.add(title);
+
+        // 基本信息
+        addSection(document, "基本信息", sectionFont);
+        addField(document, "学号", CommonMethod.getString(studentInfo, "num"), labelFont, contentFont);
+        addField(document, "姓名", CommonMethod.getString(studentInfo, "name"), labelFont, contentFont);
+        addField(document, "性别", CommonMethod.getString(studentInfo, "genderName"), labelFont, contentFont);
+        addField(document, "民族", CommonMethod.getString(studentInfo, "nation"), labelFont, contentFont);
+        addField(document, "出生日期", CommonMethod.getString(studentInfo, "birthday"), labelFont, contentFont);
+        addField(document, "证件号码", CommonMethod.getString(studentInfo, "card"), labelFont, contentFont);
+        
+        document.add(Chunk.NEWLINE);
+
+        // 教育信息
+        addSection(document, "教育信息", sectionFont);
+        addField(document, "院系", CommonMethod.getString(studentInfo, "dept"), labelFont, contentFont);
+        addField(document, "专业", CommonMethod.getString(studentInfo, "major"), labelFont, contentFont);
+        addField(document, "班级", CommonMethod.getString(studentInfo, "className"), labelFont, contentFont);
+        addField(document, "年级", CommonMethod.getString(studentInfo, "grade"), labelFont, contentFont);
+        
+        document.add(Chunk.NEWLINE);
+
+        // 联系方式
+        addSection(document, "联系方式", sectionFont);
+        addField(document, "电话", CommonMethod.getString(studentInfo, "phone"), labelFont, contentFont);
+        addField(document, "邮箱", CommonMethod.getString(studentInfo, "email"), labelFont, contentFont);
+        addField(document, "地址", CommonMethod.getString(studentInfo, "address"), labelFont, contentFont);
+
+        // 自我介绍（如果有）
+        String introduce = CommonMethod.getString(studentInfo, "introduce");
+        if (introduce != null && !introduce.isEmpty()) {
+            document.add(Chunk.NEWLINE);
+            addSection(document, "自我介绍", sectionFont);
+            Paragraph introPara = new Paragraph(introduce, contentFont);
+            introPara.setSpacingBefore(5);
+            introPara.setSpacingAfter(10);
+            document.add(introPara);
+        }
+
+        // 添加页脚
+        Paragraph footer = new Paragraph("\n生成时间：" + java.time.LocalDateTime.now().format(
+                java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")), 
+                new Font(bfChinese, 10, Font.NORMAL));
+        footer.setAlignment(Element.ALIGN_RIGHT);
+        document.add(footer);
+
+        document.close();
+    }
+
+    /**
+     * 添加章节标题
+     */
+    private void addSection(Document document, String title, Font font) throws DocumentException {
+        Paragraph section = new Paragraph(title, font);
+        section.setSpacingBefore(10);
+        section.setSpacingAfter(5);
+        document.add(section);
+    }
+
+    /**
+     * 添加字段行
+     */
+    private void addField(Document document, String label, String value, Font labelFont, Font contentFont) throws DocumentException {
+        Paragraph para = new Paragraph();
+        para.add(new Chunk(label + "：", labelFont));
+        para.add(new Chunk(value != null ? value : "", contentFont));
+        para.setSpacingAfter(3);
+        document.add(para);
     }
 
 }
