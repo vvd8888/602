@@ -113,6 +113,7 @@ public class BaseService {
         node.setUserTypeIds(d.getUserTypeIds());
         node.setParentTitle(parentTitle);
         node.setPid(pid);
+        node.setIcon(d.getIcon());
         List<MyTreeNode> childList = new ArrayList<MyTreeNode>();
         node.setChildren(childList);
         List<MenuInfo> sList = menuInfoRepository.findByUserTypeIds("",d.getId());
@@ -144,6 +145,7 @@ public class BaseService {
                 ms.put("name", name);
                 ms.put("path", path);
                 ms.put("title", info.getTitle());
+                ms.put("icon", info.getIcon());
                 ms.put("sList", getMenuList(userTypeId, info.getId()));
                 sList.add(ms);
             }
@@ -176,6 +178,7 @@ public class BaseService {
             m.put("path", path);
             m.put("name", name);
             m.put("title", info.getTitle());
+            m.put("icon", info.getIcon());
             sList = getMenuList(userTypeId, info.getId());
             m.put("sList", sList);
             dataList.add(m);
@@ -213,6 +216,7 @@ public class BaseService {
         String name = CommonMethod.getString(node,"value");
         String title = CommonMethod.getString(node,"title");
         String userTypeIds = CommonMethod.getString(node,"userTypeIds");
+        String icon = CommonMethod.getString(node,"icon");
         Optional<MenuInfo> op;
         MenuInfo m = null;
         if (id != null) {
@@ -230,6 +234,7 @@ public class BaseService {
         m.setName(name);
         m.setPid(pid);
         m.setUserTypeIds(userTypeIds);
+        m.setIcon(icon);
         menuInfoRepository.save(m);
         return CommonMethod.getReturnMessageOK();
     }

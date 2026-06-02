@@ -24,6 +24,7 @@ public class MyTreeNode {
     private Integer isLeaf;
     private String userTypeIds;
     private String parentTitle;
+    private String icon;
     private List<MyTreeNode> children;
     public MyTreeNode(){
 
