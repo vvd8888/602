@@ -17,7 +17,9 @@ import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.layout.HBox;
 import javafx.geometry.Pos;
+import javafx.geometry.Insets;
 import com.teach.javafx.request.DataRequest;
 import com.teach.javafx.request.DataResponse;
 
@@ -263,6 +265,9 @@ public class MainFrameController {
 
         contentTabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.ALL_TABS);
         contentTabPane.setStyle("-fx-background-image: url('shanda1.jpg'); -fx-background-repeat: no-repeat; -fx-background-size: cover;");
+        
+        // 添加欢迎界面
+        addWelcomePanel();
 
         // 打印调试信息
         printUserInfo();
@@ -767,6 +772,20 @@ public class MainFrameController {
         
         return null;
     }
+    
+    /**
+     * 从菜单树中查找节点的图标
+     */
+    private String getMenuIcon(String nodeName) {
+        TreeItem<MyTreeNode> root = menuTree.getRoot();
+        if (root == null) return null;
+        
+        TreeItem<MyTreeNode> node = findTreeNode(root, nodeName);
+        if (node != null && node.getValue() != null) {
+            return node.getValue().getIcon();
+        }
+        return null;
+    }
 
     /**
      * 获取当前显示的面板的控制对象
@@ -947,5 +966,99 @@ public class MainFrameController {
                 }
             }
         });
+    }
+
+    /**
+     * 添加欢迎界面
+     */
+    private void addWelcomePanel() {
+        try {
+            // 创建主容器
+            VBox mainContainer = new VBox(20);
+            mainContainer.setAlignment(Pos.CENTER);
+            mainContainer.setPadding(new Insets(40));
+            
+            // 添加半透明背景
+            mainContainer.setStyle(
+                "-fx-background-color: rgba(255, 255, 255, 0.85);" +
+                "-fx-background-radius: 20;" +
+                "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 20, 0, 0, 5);"
+            );
+            
+            // 获取用户信息
+            String username = AppStore.getJwt() != null ? AppStore.getJwt().getUsername() : "用户";
+            
+            // 欢迎标题
+            Label welcomeTitle = new Label("👋 欢迎回来，" + username);
+            welcomeTitle.setStyle(
+                "-fx-font-size: 32px;" +
+                "-fx-font-weight: bold;" +
+                "-fx-text-fill: #2196F3;"
+            );
+            
+            // 当前时间
+            Label timeLabel = new Label();
+            timeLabel.setStyle(
+                "-fx-font-size: 16px;" +
+                "-fx-text-fill: #888;"
+            );
+            
+            // 更新日期时间
+            java.time.LocalDateTime now = java.time.LocalDateTime.now();
+            java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("yyyy年MM月dd日 HH:mm:ss");
+            timeLabel.setText("当前时间：" + now.format(formatter));
+            
+            // 快捷操作提示
+            Label tipLabel = new Label(" 请从左侧菜单选择功能模块开始使用");
+            tipLabel.setStyle(
+                "-fx-font-size: 16px;" +
+                "-fx-text-fill: #999;" +
+                "-fx-font-style: italic;"
+            );
+            
+            // 添加到主容器
+            mainContainer.getChildren().addAll(welcomeTitle, timeLabel, tipLabel);
+            
+            // 创建 Tab 并添加到 TabPane
+            Tab welcomeTab = new Tab("欢迎");
+            welcomeTab.setClosable(false);
+            welcomeTab.setContent(mainContainer);
+            contentTabPane.getTabs().add(welcomeTab);
+            contentTabPane.getSelectionModel().select(welcomeTab);
+            
+            // 2秒后自动关闭欢迎界面
+            javafx.animation.PauseTransition pause = new javafx.animation.PauseTransition(javafx.util.Duration.seconds(2));
+            pause.setOnFinished(event -> {
+                // 只有当欢迎Tab仍然是当前选中的Tab时才关闭
+                if (contentTabPane.getSelectionModel().getSelectedItem() == welcomeTab) {
+                    // 添加淡出动画效果
+                    javafx.animation.FadeTransition fadeOut = new javafx.animation.FadeTransition(
+                        javafx.util.Duration.millis(500), 
+                        mainContainer
+                    );
+                    fadeOut.setFromValue(1.0);
+                    fadeOut.setToValue(0.0);
+                    fadeOut.setOnFinished(e -> {
+                        contentTabPane.getTabs().remove(welcomeTab);
+                        System.out.println("✅ 欢迎界面已淡出关闭");
+                    });
+                    fadeOut.play();
+                }
+            });
+            pause.play();
+            
+            // 监听Tab切换，如果用户点击了其他Tab，立即关闭欢迎Tab
+            contentTabPane.getSelectionModel().selectedItemProperty().addListener((obs, oldTab, newTab) -> {
+                if (newTab != welcomeTab && contentTabPane.getTabs().contains(welcomeTab)) {
+                    contentTabPane.getTabs().remove(welcomeTab);
+                    System.out.println("✅ 用户选择了其他功能，欢迎界面已关闭");
+                }
+            });
+            
+            System.out.println("✅ 欢迎界面已添加，将在3秒后自动关闭");
+        } catch (Exception e) {
+            System.err.println("❌ 添加欢迎界面失败: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 }
