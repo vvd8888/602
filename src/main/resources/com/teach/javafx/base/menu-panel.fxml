@@ -68,12 +68,18 @@
                                 </GridPane.margin>
                            </Label>
                            <TextField fx:id="nodeTitleField" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-                           <Label text="角色" GridPane.columnIndex="0" GridPane.rowIndex="4">
+                           <Label text="菜单图标" GridPane.columnIndex="0" GridPane.rowIndex="4">
+                                <GridPane.margin>
+                                   <Insets right="10.0" />
+                                </GridPane.margin>
+                           </Label>
+                           <TextField fx:id="nodeIconField" GridPane.columnIndex="1" GridPane.rowIndex="4" promptText="例如: 📋 ⚙️ 👥（Emoji或Unicode字符）" />
+                           <Label text="角色" GridPane.columnIndex="0" GridPane.rowIndex="5">
                                <GridPane.margin>
                                    <Insets right="10.0" />
                                </GridPane.margin>
                            </Label>
-                             <HBox GridPane.columnIndex="1" GridPane.rowIndex="4">
+                             <HBox GridPane.columnIndex="1" GridPane.rowIndex="5">
                                  <GridPane.margin>
                                      <Insets top="3.0" />
                                  </GridPane.margin>

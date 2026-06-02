@@ -131,9 +131,12 @@ public class MainFrameController {
             Map m = mList.get(i);
             List<Map> sList = (List<Map>)m.get("sList");
             String menuTitle = (String)m.get("title");
-            TreeItem<MyTreeNode> menu = new TreeItem<>(new MyTreeNode(null, (String)m.get("name"), menuTitle, (Integer)m.get("isLeft")));
+            String icon = (String)m.get("icon");  // 获取图标字段
+            MyTreeNode menuNode = new MyTreeNode(null, (String)m.get("name"), menuTitle, (Integer)m.get("isLeft"));
+            menuNode.setIcon(icon);  // 设置图标
+            TreeItem<MyTreeNode> menu = new TreeItem<>(menuNode);
             
-            System.out.println("一级菜单[" + i + "]: " + menuTitle + " -> 颜色样式: " + (i < menuColors.length ? menuColors[i] : "无"));
+            System.out.println("一级菜单[" + i + "]: " + menuTitle + " -> 图标: " + icon + " -> 颜色样式: " + (i < menuColors.length ? menuColors[i] : "无"));
             
             if(sList != null && sList.size() > 0) {
                 addMenuItems(menu, sList);
@@ -154,7 +157,12 @@ public class MainFrameController {
                 if (empty || item == null) {
                     setText(null);
                 } else {
-                    setText(item.getLabel());
+                    // 如果有图标，则显示 "图标 + 文字"
+                    String displayText = item.getLabel();
+                    if (item.getIcon() != null && !item.getIcon().isEmpty()) {
+                        displayText = item.getIcon() + "  " + item.getLabel();
+                    }
+                    setText(displayText);
                     
                     // 获取当前节点
                     TreeItem<MyTreeNode> currentItem = this.getTreeItem();

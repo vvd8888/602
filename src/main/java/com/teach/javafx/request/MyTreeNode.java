@@ -23,6 +23,7 @@ public class MyTreeNode {
     private String title;
     private String userTypeIds;
     private String parentTitle;
+    private String icon;  // 菜单图标（Emoji或Unicode字符）
     private List<MyTreeNode> children;
     public MyTreeNode(){
         this.children= new ArrayList<MyTreeNode>();
@@ -112,6 +113,14 @@ public class MyTreeNode {
         this.children = children;
     }
 
+    public String getIcon() {
+        return icon;
+    }
+
+    public void setIcon(String icon) {
+        this.icon = icon;
+    }
+
     public MyTreeNode(Map<String,Object> map){
         this.id  = CommonMethod.getInteger(map,"id");
         this.value = CommonMethod.getString(map,"value");
@@ -121,6 +130,7 @@ public class MyTreeNode {
         this.pid = CommonMethod.getInteger(map,"pid");
         this.userTypeIds = CommonMethod.getString(map,"userTypeIds");
         this.parentTitle = CommonMethod.getString(map,"parentTitle");
+        this.icon = CommonMethod.getString(map,"icon");
         this.children= new ArrayList<MyTreeNode>();
         List<?> children = CommonMethod.getList(map,"children");
         if(!children.isEmpty()) {

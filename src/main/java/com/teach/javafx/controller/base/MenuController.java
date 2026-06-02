@@ -28,6 +28,8 @@ public class MenuController {
     private TextField nodeNameField;
     @FXML
     private TextField nodeTitleField;
+    @FXML
+    private TextField nodeIconField;  // 图标字段
 
     private TreeItem<MyTreeNode> treeItem;
     private MyTreeNode editNode= null;
@@ -120,6 +122,7 @@ public class MenuController {
             nodeIdField.setText("");
             nodeNameField.setText("");
             nodeTitleField.setText("");
+            nodeIconField.setText("");
         }else {
             if(editNode.getId() == null)
                 nodeIdField.setText("");
@@ -127,6 +130,7 @@ public class MenuController {
                 nodeIdField.setText(editNode.getId().toString());
             nodeNameField.setText(editNode.getValue());
             nodeTitleField.setText(editNode.getTitle());
+            nodeIconField.setText(editNode.getIcon() != null ? editNode.getIcon() : "");
         }
         setRoleCheckBox();
     }
@@ -194,6 +198,7 @@ public class MenuController {
         editNode.setId(Integer.parseInt(nodeIdField.getText()));
         editNode.setValue(nodeNameField.getText());
         editNode.setTitle(nodeTitleField.getText());
+        editNode.setIcon(nodeIconField.getText());
         String str = null;
         if(nodeAdminCheckBox.isSelected()) {
             if(str == null)
