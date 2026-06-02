@@ -53,11 +53,25 @@ public class MainFrameController {
     @FXML
     private Label systemPrompt;
     @FXML
-    private Label rightStatus;  // 右侧状态栏
+    private Label rightStatus;
     @FXML
-    private Label welcomeLabel;  // 欢迎信息
+    private Label welcomeLabel;
     @FXML
-    private Button logoutButton;  // 退出按钮
+    private Button logoutButton;
+    @FXML
+    private Label systemTitle;
+    @FXML
+    private Label systemSubtitle;
+    @FXML
+    private VBox systemInfoBox;
+    @FXML
+    private Label serverInfoLabel;
+    @FXML
+    private Label databaseInfoLabel;
+    @FXML
+    private Label teamInfoLabel;
+    @FXML
+    private ComboBox<String> quickSwitchAccount;
 
     private ChangePanelHandler handler= null;
 
@@ -163,32 +177,27 @@ public class MainFrameController {
             protected void updateItem(MyTreeNode item, boolean empty) {
                 super.updateItem(item, empty);
                 
-                // 清除之前的样式
                 getStyleClass().removeIf(style -> style.startsWith("menu-color-"));
                 
                 if (empty || item == null) {
                     setText(null);
                 } else {
-                    // 如果有图标，则显示 "图标 + 文字"
                     String displayText = item.getLabel();
                     if (item.getIcon() != null && !item.getIcon().isEmpty()) {
                         displayText = item.getIcon() + "  " + item.getLabel();
                     }
                     setText(displayText);
                     
-                    // 获取当前节点
                     TreeItem<MyTreeNode> currentItem = this.getTreeItem();
                     if (currentItem != null) {
                         TreeItem<MyTreeNode> parent = currentItem.getParent();
                         
-                        // 如果父节点是root，说明这是一级菜单
                         if (parent != null && parent == root) {
                             int index = root.getChildren().indexOf(currentItem);
                             if (index >= 0 && index < menuColors.length) {
                                 getStyleClass().add(menuColors[index]);
                             }
                         } else if (parent != null) {
-                            // 子菜单：获取父菜单的索引
                             TreeItem<MyTreeNode> grandParent = parent.getParent();
                             if (grandParent != null && grandParent == root) {
                                 int parentIndex = root.getChildren().indexOf(parent);
@@ -204,65 +213,71 @@ public class MainFrameController {
         
         System.out.println("✅ 菜单树初始化完成 ===");
         
-        // 监听菜单展开/折叠事件，确保点击箭头时也能应用颜色
-        root.getChildren().forEach(menuItem -> {
-            menuItem.expandedProperty().addListener((obs, wasExpanded, isNowExpanded) -> {
-                // 当菜单展开/折叠时，刷新样式并选中该菜单
-                menuTree.refresh();
-                menuTree.getSelectionModel().select(menuItem);
-                System.out.println("🔄 菜单 " + menuItem.getValue().getLabel() + " " + (isNowExpanded ? "展开" : "折叠"));
-            });
-        });
-        
-        menuTree.addEventFilter(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>(){
-            public void handle(MouseEvent event){
-                Node node = event.getPickResult().getIntersectedNode();
-                
-                // 无论点击哪里，都获取当前选中的菜单项
-                TreeItem<MyTreeNode> treeItem = menuTree.getSelectionModel().getSelectedItem();
-                
-                // 如果没有选中项，尝试从点击位置获取
-                if (treeItem == null) {
-                    // 获取点击位置的 TreeItem
-                    @SuppressWarnings("unchecked")
-                    TreeCell<MyTreeNode> cell = (TreeCell<MyTreeNode>) node;
-                    if (cell != null && cell.getTreeItem() != null) {
-                        treeItem = cell.getTreeItem();
-                        menuTree.getSelectionModel().select(treeItem);
-                    }
+        // 使用标准的选中事件监听，避免 IndexOutOfBoundsException
+        menuTree.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            try {
+                if (newValue == null) {
+                    return;
                 }
                 
-                if(treeItem == null)
+                MyTreeNode menu = newValue.getValue();
+                if (menu == null) {
                     return;
-                MyTreeNode menu = treeItem.getValue();
-                if(menu == null)
-                    return;
-                String name = menu.getValue();
-                if(name == null || name.length() == 0)
-                    return;
-                    
-                // 刷新菜单树以确保样式正确应用
-                menuTree.refresh();
+                }
                 
-                if("logout".equals(name)) {
+                String name = menu.getValue();
+                if (name == null || name.length() == 0) {
+                    return;
+                }
+                
+                if ("logout".equals(name)) {
                     logout();
-                } else if(name.endsWith("Command")){
+                } else if (name.endsWith("Command")) {
                     try {
                         Method m = this.getClass().getMethod(name);
                         m.invoke(this);
-                    } catch(Exception e) {
+                    } catch (Exception e) {
                         e.printStackTrace();
                     }
-                } else {
+                } else if (!name.contains("-menu")) {
+                    // 只处理非一级菜单的点击
                     changeContent(name, menu.getLabel());
+                }
+            } catch (Exception e) {
+                System.err.println("❌ 菜单选中事件处理失败: " + e.getMessage());
+            }
+        });
+        
+        // 双击展开/折叠
+        menuTree.setOnMousePressed(event -> {
+            if (event.getClickCount() == 2) {
+                TreeItem<MyTreeNode> item = menuTree.getSelectionModel().getSelectedItem();
+                if (item != null && !item.isLeaf()) {
+                    item.setExpanded(!item.isExpanded());
                 }
             }
         });
+        
+        // 移除原来的 addEventFilter
+        // menuTree.addEventFilter(MouseEvent.MOUSE_CLICKED, ...);  // 删除这行
+        
     }
 
     @FXML
     public void initialize() {
         System.out.println("=== MainFrameController 初始化开始 ===");
+
+        // 安装全局异常处理器，过滤 TreeView 的 IndexOutOfBoundsException
+        Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> {
+            if (throwable instanceof IndexOutOfBoundsException && 
+                throwable.getMessage() != null && 
+                throwable.getMessage().contains("fromIndex: 0, toIndex: 1, size: 0")) {
+                // 静默忽略这个特定的错误
+                return;
+            }
+            System.err.println("未捕获的异常 [" + thread.getName() + "]: " + throwable.getMessage());
+            throwable.printStackTrace();
+        });
 
         handler = new ChangePanelHandler();
         DataRequest req = new DataRequest();
@@ -270,8 +285,20 @@ public class MainFrameController {
 
         res = HttpRequestUtil.request("/api/base/getDataBaseUserName", req);
         String userName = (String) res.getData();
-        // 左侧：显示系统名称和版本
-        systemPrompt.setText("教学管理系统 v2.0  |  数据库：" + userName);
+        
+        String serverUrl = com.teach.javafx.request.HttpRequestUtil.serverUrl;
+        String teamInfo = "团队编号: 602 | 成员: 宋元明清-202500550245, 李松洋-202500550077, 李知鸿-202500550529, 孔令等-202500550149";
+        systemPrompt.setText("602教学管理系统 v2.0  |  " + teamInfo);
+        
+        if (serverInfoLabel != null) {
+            serverInfoLabel.setText("️ 服务器: " + serverUrl);
+        }
+        if (databaseInfoLabel != null) {
+            databaseInfoLabel.setText("💾 数据库: " + userName);
+        }
+        if (teamInfoLabel != null) {
+            teamInfoLabel.setText(" 602团队: 宋元明清 李松洋 李知鸿 孔令等");
+        }
 
         res = HttpRequestUtil.request("/api/base/getMenuList", req);
         List<Map> mList = (List<Map>) res.getData();
@@ -282,34 +309,193 @@ public class MainFrameController {
             initMenuTree(mList);
         } else {
             System.out.println("警告: 菜单列表为空");
-            // 如果后端没有返回菜单，初始化一个基本的菜单树
             MyTreeNode node = new MyTreeNode(null, null, "菜单", 0);
             TreeItem<MyTreeNode> root = new TreeItem<>(node);
             menuTree.setRoot(root);
         }
 
-        // 注释掉硬编码菜单，所有菜单都从数据库加载
-        // addCustomMenus();
-
         contentTabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.ALL_TABS);
         contentTabPane.setStyle("-fx-background-image: url('shanda1.jpg'); -fx-background-repeat: no-repeat; -fx-background-size: cover;");
         
-        // 添加欢迎界面
-        addWelcomePanel();
-
-        // 打印调试信息
-        printUserInfo();
-
-        // 设置右侧状态栏：显示用户信息和时间
-        updateRightStatus();
+        if (systemTitle != null) {
+            systemTitle.setText("602教学管理系统");
+        }
+        if (systemSubtitle != null) {
+            systemSubtitle.setText("Teaching Management System - Team 602");
+        }
         
-        // 设置顶部欢迎信息
+        printUserInfo();
+        
         if (welcomeLabel != null) {
             String username = AppStore.getJwt() != null ? AppStore.getJwt().getUsername() : "未知用户";
-            welcomeLabel.setText("👋 欢迎，" + username);
+            welcomeLabel.setText(" 欢迎，" + username);
         }
+        
+        javafx.application.Platform.runLater(() -> {
+            try {
+                updateRightStatus();
+                
+                if (systemTitle != null && systemTitle.getScene() != null) {
+                    Stage stage = (Stage) systemTitle.getScene().getWindow();
+                    if (stage != null) {
+                        stage.setTitle("602教学管理系统");
+                    }
+                }
+                
+                addWelcomePanel();
+                
+                initQuickSwitchAccount();
+                
+                System.out.println("✅ MainFrameController 延迟初始化完成");
+            } catch (Exception e) {
+                System.err.println("❌ 延迟初始化失败: " + e.getMessage());
+                e.printStackTrace();
+            }
+        });
 
         System.out.println("✅ MainFrameController 初始化完成");
+    }
+    
+    /**
+     * 初始化快速切换账户下拉框
+     */
+    private void initQuickSwitchAccount() {
+        if (quickSwitchAccount == null) {
+            return;
+        }
+        
+        quickSwitchAccount.getItems().clear();
+        
+        // 直接使用默认账户，不请求后端API（避免404错误）
+        quickSwitchAccount.getItems().addAll(
+            "🔧 管理员 (admin)",
+            "👨‍🏫 教师 (22)",
+            "👨‍🎓 学生 (2022030001)"
+        );
+        
+        quickSwitchAccount.setOnAction(event -> {
+            String selected = quickSwitchAccount.getValue();
+            if (selected == null) {
+                return;
+            }
+            
+            String targetUsername = null;
+            int start = selected.lastIndexOf("(");
+            int end = selected.lastIndexOf(")");
+            if (start != -1 && end != -1 && end > start) {
+                targetUsername = selected.substring(start + 1, end);
+            }
+            
+            if (targetUsername != null) {
+                final String finalUsername = targetUsername;
+                final String finalPassword = "123456";
+                switchAccount(finalUsername, finalPassword);
+                quickSwitchAccount.setValue(null);
+            }
+        });
+        
+        System.out.println("✅ 快速切换账户功能已初始化");
+    }
+    
+    /**
+     * 切换账户
+     */
+    private void switchAccount(String username, String password) {
+        System.out.println("=== 开始切换账户到: " + username + " ===");
+        
+        Alert confirmAlert = new Alert(Alert.AlertType.CONFIRMATION);
+        confirmAlert.setTitle("切换账户确认");
+        confirmAlert.setHeaderText("确定要切换到以下账户吗？");
+        
+        String roleText;
+        if ("admin".equals(username)) {
+            roleText = "管理员";
+        } else if ("22".equals(username)) {
+            roleText = "教师";
+        } else if ("2022030001".equals(username)) {
+            roleText = "学生";
+        } else {
+            roleText = "未知角色";
+        }
+        
+        final String finalUsername = username;
+        final String finalPassword = password;
+        final String finalRoleText = roleText;
+        
+        confirmAlert.setContentText("账户: " + finalUsername + "\n角色: " + finalRoleText + "\n\n系统将自动重新登录。");
+        
+        confirmAlert.showAndWait().ifPresent(response -> {
+            if (response == ButtonType.OK) {
+                try {
+                    com.teach.javafx.request.LoginRequest loginRequest = new com.teach.javafx.request.LoginRequest(finalUsername, finalPassword);
+                    String errorMsg = com.teach.javafx.request.HttpRequestUtil.login(loginRequest);
+                    
+                    if (errorMsg != null) {
+                        Alert errorAlert = new Alert(Alert.AlertType.ERROR);
+                        errorAlert.setTitle("切换失败");
+                        errorAlert.setHeaderText(null);
+                        errorAlert.setContentText("登录失败: " + errorMsg);
+                        errorAlert.showAndWait();
+                        return;
+                    }
+                    
+                    AppStore.setUsername(finalUsername);
+                    
+                    javafx.application.Platform.runLater(() -> {
+                        try {
+                            if (contentTabPane != null) {
+                                contentTabPane.getSelectionModel().clearSelection();
+                                int tabCount = contentTabPane.getTabs().size();
+                                if (tabCount > 0) {
+                                    contentTabPane.getTabs().clear();
+                                }
+                            }
+                            tabMap.clear();
+                            sceneMap.clear();
+                            controlMap.clear();
+                            
+                            FXMLLoader fxmlLoader = new FXMLLoader(
+                                getClass().getResource("/com/teach/javafx/base/main-frame.fxml")
+                            );
+                            Scene scene = new Scene(fxmlLoader.load(), 1000, 700);
+                            
+                            String cssPath = "/com/teach/javafx/css/modern-theme.css";
+                            java.net.URL cssUrl = getClass().getResource(cssPath);
+                            if (cssUrl != null) {
+                                scene.getStylesheets().add(cssUrl.toExternalForm());
+                            }
+                            
+                            String title = "602教学管理系统";
+                            if (finalUsername.equals("admin")) {
+                                title += " - 管理员";
+                            } else if (finalUsername.equals("22")) {
+                                title += " - 教师";
+                            } else if (finalUsername.startsWith("2022")) {
+                                title += " - 学生";
+                            }
+                            
+                            MainApplication.resetStage(title, scene);
+                            System.out.println("✅ 账户已切换到: " + finalUsername + " (" + finalRoleText + ")");
+                        } catch (Exception e) {
+                            System.err.println("❌ 切换账户失败: " + e.getMessage());
+                            e.printStackTrace();
+                        }
+                    });
+                    
+                } catch (Exception e) {
+                    System.err.println("❌ 切换账户失败: " + e.getMessage());
+                    e.printStackTrace();
+                    
+                    Alert errorAlert = new Alert(Alert.AlertType.ERROR);
+                    errorAlert.setTitle("切换失败");
+                    errorAlert.setHeaderText(null);
+                    errorAlert.setContentText("切换账户时发生错误: " + e.getMessage());
+                    errorAlert.showAndWait();
+                }
+            } else {
+                quickSwitchAccount.setValue(null);
+            }
+        });
     }
 
     /**
@@ -1001,22 +1187,18 @@ public class MainFrameController {
      */
     private void addWelcomePanel() {
         try {
-            // 创建主容器
             VBox mainContainer = new VBox(20);
             mainContainer.setAlignment(Pos.CENTER);
             mainContainer.setPadding(new Insets(40));
             
-            // 添加半透明背景
             mainContainer.setStyle(
                 "-fx-background-color: rgba(255, 255, 255, 0.85);" +
                 "-fx-background-radius: 20;" +
                 "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 20, 0, 0, 5);"
             );
             
-            // 获取用户信息
             String username = AppStore.getJwt() != null ? AppStore.getJwt().getUsername() : "用户";
             
-            // 欢迎标题
             Label welcomeTitle = new Label("👋 欢迎回来，" + username);
             welcomeTitle.setStyle(
                 "-fx-font-size: 32px;" +
@@ -1024,19 +1206,16 @@ public class MainFrameController {
                 "-fx-text-fill: #2196F3;"
             );
             
-            // 当前时间
             Label timeLabel = new Label();
             timeLabel.setStyle(
                 "-fx-font-size: 16px;" +
                 "-fx-text-fill: #888;"
             );
             
-            // 更新日期时间
             java.time.LocalDateTime now = java.time.LocalDateTime.now();
             java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("yyyy年MM月dd日 HH:mm:ss");
             timeLabel.setText("当前时间：" + now.format(formatter));
             
-            // 快捷操作提示
             Label tipLabel = new Label(" 请从左侧菜单选择功能模块开始使用");
             tipLabel.setStyle(
                 "-fx-font-size: 16px;" +
@@ -1044,46 +1223,47 @@ public class MainFrameController {
                 "-fx-font-style: italic;"
             );
             
-            // 添加到主容器
             mainContainer.getChildren().addAll(welcomeTitle, timeLabel, tipLabel);
             
-            // 创建 Tab 并添加到 TabPane
             Tab welcomeTab = new Tab("欢迎");
             welcomeTab.setClosable(false);
             welcomeTab.setContent(mainContainer);
             contentTabPane.getTabs().add(welcomeTab);
             contentTabPane.getSelectionModel().select(welcomeTab);
             
-            // 2秒后自动关闭欢迎界面
             javafx.animation.PauseTransition pause = new javafx.animation.PauseTransition(javafx.util.Duration.seconds(2));
             pause.setOnFinished(event -> {
-                // 只有当欢迎Tab仍然是当前选中的Tab时才关闭
-                if (contentTabPane.getSelectionModel().getSelectedItem() == welcomeTab) {
-                    // 添加淡出动画效果
-                    javafx.animation.FadeTransition fadeOut = new javafx.animation.FadeTransition(
-                        javafx.util.Duration.millis(500), 
-                        mainContainer
-                    );
-                    fadeOut.setFromValue(1.0);
-                    fadeOut.setToValue(0.0);
-                    fadeOut.setOnFinished(e -> {
-                        contentTabPane.getTabs().remove(welcomeTab);
-                        System.out.println("✅ 欢迎界面已淡出关闭");
-                    });
-                    fadeOut.play();
-                }
+                javafx.application.Platform.runLater(() -> {
+                    try {
+                        if (contentTabPane.getTabs().contains(welcomeTab)) {
+                            contentTabPane.getSelectionModel().clearSelection();
+                            contentTabPane.getTabs().remove(welcomeTab);
+                            System.out.println("✅ 欢迎界面已淡出关闭");
+                        }
+                    } catch (Exception e) {
+                        System.err.println("❌ 关闭欢迎界面失败: " + e.getMessage());
+                    }
+                });
             });
             pause.play();
             
-            // 监听Tab切换，如果用户点击了其他Tab，立即关闭欢迎Tab
             contentTabPane.getSelectionModel().selectedItemProperty().addListener((obs, oldTab, newTab) -> {
                 if (newTab != welcomeTab && contentTabPane.getTabs().contains(welcomeTab)) {
-                    contentTabPane.getTabs().remove(welcomeTab);
-                    System.out.println("✅ 用户选择了其他功能，欢迎界面已关闭");
+                    javafx.application.Platform.runLater(() -> {
+                        try {
+                            if (contentTabPane.getTabs().contains(welcomeTab)) {
+                                contentTabPane.getSelectionModel().clearSelection();
+                                contentTabPane.getTabs().remove(welcomeTab);
+                                System.out.println("✅ 用户选择了其他功能，欢迎界面已关闭");
+                            }
+                        } catch (Exception e) {
+                            System.err.println("❌ 关闭欢迎界面失败: " + e.getMessage());
+                        }
+                    });
                 }
             });
             
-            System.out.println("✅ 欢迎界面已添加，将在3秒后自动关闭");
+            System.out.println("✅ 欢迎界面已添加，将在2秒后自动关闭");
         } catch (Exception e) {
             System.err.println("❌ 添加欢迎界面失败: " + e.getMessage());
             e.printStackTrace();

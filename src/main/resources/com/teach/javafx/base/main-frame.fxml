@@ -13,6 +13,7 @@
 <!-- 前端应用主框架FXML配置文件 对应页面交互控制类 com.teach.javafx.controller.base.MainFrameController -->
 <?import javafx.scene.control.TreeView?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
 <BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.teach.javafx.controller.base.MainFrameController">
   <top>
     <VBox>
@@ -24,13 +25,23 @@
           
           <!-- 系统标题 -->
           <VBox spacing="2">
-            <Label fx:id="systemTitle" text="教学管理系统" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: white;" />
-            <Label fx:id="systemSubtitle" text="Teaching Management System v2.0" style="-fx-font-size: 11px; -fx-text-fill: rgba(255,255,255,0.85);" />
+            <Label fx:id="systemTitle" text="602教学管理系统" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: white;" />
+            <Label fx:id="systemSubtitle" text="Teaching Management System - Team 602" style="-fx-font-size: 11px; -fx-text-fill: rgba(255,255,255,0.85);" />
           </VBox>
           
           <!-- 弹簧 -->
           <Pane HBox.hgrow="ALWAYS" />
           
+          <!-- 系统信息标签 -->
+          <VBox fx:id="systemInfoBox" spacing="2" alignment="CENTER_RIGHT">
+            <Label fx:id="serverInfoLabel" text="服务器: http://localhost:22222" style="-fx-font-size: 11px; -fx-text-fill: rgba(255,255,255,0.9);" />
+            <Label fx:id="databaseInfoLabel" text="数据库: java_server" style="-fx-font-size: 11px; -fx-text-fill: rgba(255,255,255,0.9);" />
+            <Label fx:id="teamInfoLabel" text="团队: 宋元明清 李松洋 李知鸿 孔令等" style="-fx-font-size: 11px; -fx-text-fill: rgba(255,255,255,0.9);" />
+          </VBox>
+
+          <!-- 快速切换账户下拉框 -->
+          <ComboBox fx:id="quickSwitchAccount" promptText="🔄 切换账户" prefWidth="160" style="-fx-background-color: rgba(255,255,255,0.25); -fx-mark-color: white;" />
+
           <!-- 欢迎信息 -->
           <Label fx:id="welcomeLabel" text="欢迎使用" style="-fx-font-size: 14px; -fx-text-fill: rgba(255,255,255,0.95); -fx-padding: 0 10 0 0;" />
           

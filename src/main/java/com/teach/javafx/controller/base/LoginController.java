@@ -15,31 +15,39 @@ public class LoginController {
     @FXML
     private TextField usernameField;
     @FXML
-    private TextField passwordField;
+    private PasswordField passwordField;
     @FXML
     private VBox vbox;
+    @FXML
+    private Button loginBtn;
 
     @FXML
     public void initialize() {
         vbox.setStyle("-fx-background-image: url('shanda1.jpg'); -fx-background-repeat: no-repeat; -fx-background-size: cover;");
+        
+        // 设置默认值为管理员账号
+        usernameField.setText("admin");
+        passwordField.setText("123456");
+        
+        System.out.println("=== 登录界面初始化完成 ===");
+        System.out.println("服务器地址: " + com.teach.javafx.request.HttpRequestUtil.serverUrl);
+        System.out.println("默认账号: admin (管理员)");
     }
 
     @FXML
-    protected void onAdminLoginButtonClick() {
-        onLoginButtonClick("admin", "123456");
-    }
-
-    @FXML
-    protected void onStudentLoginButtonClick() {
-        onLoginButtonClick("2022030001", "123456");
-    }
-
-    @FXML
-    protected void onTeacherLoginButtonClick() {
-        onLoginButtonClick("22", "123456");
-    }
-
-    protected void onLoginButtonClick(String username, String password) {
+    protected void onLoginButtonClick() {
+        String username = usernameField.getText().trim();
+        String password = passwordField.getText().trim();
+        
+        if (username.isEmpty() || password.isEmpty()) {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("输入错误");
+            alert.setHeaderText(null);
+            alert.setContentText("请输入用户名和密码！");
+            alert.showAndWait();
+            return;
+        }
+        
         LoginRequest loginRequest = new LoginRequest(username, password);
         String msg = HttpRequestUtil.login(loginRequest);
 
@@ -54,7 +62,7 @@ public class LoginController {
 
         // 保存当前登录用户名
         AppStore.setUsername(username);
-        System.out.println("用户登录: " + username);
+        System.out.println("✅ 用户登录成功: " + username);
 
         // 所有角色统一进入主框架
         loadMainFrame();
@@ -129,4 +137,3 @@ public class LoginController {
         alert.showAndWait();
     }
 }
-//////

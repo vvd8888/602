@@ -18,6 +18,11 @@
     <padding>
         <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
     </padding>
+
+    <!-- 项目名称标题 -->
+    <Label text="602教学管理系统" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #2196F3;" />
+    <Label text="Teaching Management System - Team 602" style="-fx-font-size: 12px; -fx-text-fill: #888;" />
+
     <HBox>
         <ImageView fx:id="imageView" fitHeight="75.0" fitWidth="100.0" pickOnBounds="true" preserveRatio="true">
          <image>
@@ -37,19 +42,17 @@
                <GridPane.margin>
                   <Insets right="5.0" />
                </GridPane.margin></Label>
-             <TextField fx:id="usernameField" GridPane.columnIndex="1" />
+             <TextField fx:id="usernameField" text="admin" GridPane.columnIndex="1" />
              <Label text="密码" GridPane.rowIndex="1">
                <GridPane.margin>
                   <Insets right="5.0" />
                </GridPane.margin>
              </Label>
-             <PasswordField fx:id="passwordField" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+             <PasswordField fx:id="passwordField" text="123456" GridPane.columnIndex="1" GridPane.rowIndex="1" />
           </children>
        </GridPane>
     </HBox>
     <FlowPane alignment="center">
-        <Button  onAction="#onAdminLoginButtonClick" text="管理员登录" />
-        <Button  onAction="#onStudentLoginButtonClick" text="学生登录" />
-        <Button  onAction="#onTeacherLoginButtonClick" text="教师登录" />
+        <Button fx:id="loginBtn" onAction="#onLoginButtonClick" text="🚀 登录" style="-fx-pref-width: 150; -fx-background-color: #2196F3; -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 10 20;" />
     </FlowPane>
 </VBox>
