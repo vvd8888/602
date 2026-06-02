@@ -33,4 +33,7 @@ public class MenuInfo {
     @Size(max = 40)
     private String title;
 
+    @Size(max = 50)
+    private String icon;
+
 }
