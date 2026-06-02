@@ -156,6 +156,8 @@ public class MainFrameController {
 
         menuTree.setRoot(root);
         menuTree.setShowRoot(false);
+        
+        // 设置单元格工厂
         menuTree.setCellFactory(tv -> new TreeCell<MyTreeNode>() {
             @Override
             protected void updateItem(MyTreeNode item, boolean empty) {
@@ -184,7 +186,6 @@ public class MainFrameController {
                             int index = root.getChildren().indexOf(currentItem);
                             if (index >= 0 && index < menuColors.length) {
                                 getStyleClass().add(menuColors[index]);
-                                // System.out.println("设置一级菜单颜色: " + item.getLabel() + " -> " + menuColors[index]);
                             }
                         } else if (parent != null) {
                             // 子菜单：获取父菜单的索引
@@ -193,7 +194,6 @@ public class MainFrameController {
                                 int parentIndex = root.getChildren().indexOf(parent);
                                 if (parentIndex >= 0 && parentIndex < menuColors.length) {
                                     getStyleClass().add(menuColors[parentIndex]);
-                                    // System.out.println("设置子菜单颜色: " + item.getLabel() + " -> " + menuColors[parentIndex]);
                                 }
                             }
                         }
@@ -204,10 +204,34 @@ public class MainFrameController {
         
         System.out.println("✅ 菜单树初始化完成 ===");
         
+        // 监听菜单展开/折叠事件，确保点击箭头时也能应用颜色
+        root.getChildren().forEach(menuItem -> {
+            menuItem.expandedProperty().addListener((obs, wasExpanded, isNowExpanded) -> {
+                // 当菜单展开/折叠时，刷新样式并选中该菜单
+                menuTree.refresh();
+                menuTree.getSelectionModel().select(menuItem);
+                System.out.println("🔄 菜单 " + menuItem.getValue().getLabel() + " " + (isNowExpanded ? "展开" : "折叠"));
+            });
+        });
+        
         menuTree.addEventFilter(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>(){
             public void handle(MouseEvent event){
                 Node node = event.getPickResult().getIntersectedNode();
+                
+                // 无论点击哪里，都获取当前选中的菜单项
                 TreeItem<MyTreeNode> treeItem = menuTree.getSelectionModel().getSelectedItem();
+                
+                // 如果没有选中项，尝试从点击位置获取
+                if (treeItem == null) {
+                    // 获取点击位置的 TreeItem
+                    @SuppressWarnings("unchecked")
+                    TreeCell<MyTreeNode> cell = (TreeCell<MyTreeNode>) node;
+                    if (cell != null && cell.getTreeItem() != null) {
+                        treeItem = cell.getTreeItem();
+                        menuTree.getSelectionModel().select(treeItem);
+                    }
+                }
+                
                 if(treeItem == null)
                     return;
                 MyTreeNode menu = treeItem.getValue();
@@ -216,6 +240,10 @@ public class MainFrameController {
                 String name = menu.getValue();
                 if(name == null || name.length() == 0)
                     return;
+                    
+                // 刷新菜单树以确保样式正确应用
+                menuTree.refresh();
+                
                 if("logout".equals(name)) {
                     logout();
                 } else if(name.endsWith("Command")){
