@@ -10,7 +10,9 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.stage.Stage;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.StackPane;
@@ -48,6 +50,12 @@ public class MainFrameController {
     protected TabPane contentTabPane;
     @FXML
     private Label systemPrompt;
+    @FXML
+    private Label rightStatus;  // 右侧状态栏
+    @FXML
+    private Label welcomeLabel;  // 欢迎信息
+    @FXML
+    private Button logoutButton;  // 退出按钮
 
     private ChangePanelHandler handler= null;
 
@@ -232,7 +240,8 @@ public class MainFrameController {
 
         res = HttpRequestUtil.request("/api/base/getDataBaseUserName", req);
         String userName = (String) res.getData();
-        systemPrompt.setText("服务器：" + HttpRequestUtil.serverUrl + " 数据库：" + userName);
+        // 左侧：显示系统名称和版本
+        systemPrompt.setText("教学管理系统 v2.0  |  数据库：" + userName);
 
         res = HttpRequestUtil.request("/api/base/getMenuList", req);
         List<Map> mList = (List<Map>) res.getData();
@@ -257,6 +266,15 @@ public class MainFrameController {
 
         // 打印调试信息
         printUserInfo();
+
+        // 设置右侧状态栏：显示用户信息和时间
+        updateRightStatus();
+        
+        // 设置顶部欢迎信息
+        if (welcomeLabel != null) {
+            String username = AppStore.getJwt() != null ? AppStore.getJwt().getUsername() : "未知用户";
+            welcomeLabel.setText("👋 欢迎，" + username);
+        }
 
         System.out.println("✅ MainFrameController 初始化完成");
     }
@@ -381,6 +399,42 @@ public class MainFrameController {
             System.out.println("是否是管理员: " + isAdmin(role));
         } catch (Exception e) {
             System.out.println("获取用户信息失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 更新右侧状态栏（用户信息 + 时间）
+     */
+    private void updateRightStatus() {
+        try {
+            String username = AppStore.getJwt() != null ? AppStore.getJwt().getUsername() : "未知用户";
+            String role = AppStore.getJwt() != null ? AppStore.getJwt().getRole() : "未知角色";
+            
+            // 角色中文转换
+            String roleText = "";
+            if ("admin".equals(role) || "管理员".equals(role) || "0".equals(role)) {
+                roleText = "管理员";
+            } else if ("teacher".equals(role) || "教师".equals(role) || "2".equals(role)) {
+                roleText = "教师";
+            } else if ("student".equals(role) || "学生".equals(role) || "1".equals(role)) {
+                roleText = "学生";
+            } else {
+                roleText = role;
+            }
+            
+            // 获取当前时间
+            java.time.LocalDateTime now = java.time.LocalDateTime.now();
+            java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            String currentTime = now.format(formatter);
+            
+            // 设置右侧状态栏文本
+            if (rightStatus != null) {
+                rightStatus.setText("👤 " + username + " (" + roleText + ")  |  " + currentTime);
+            }
+        } catch (Exception e) {
+            if (rightStatus != null) {
+                rightStatus.setText("系统就绪");
+            }
         }
     }
 
@@ -854,5 +908,44 @@ public class MainFrameController {
 
     public Object getToolController(String name){
         return controlMap.get(name);
+    }
+
+    /**
+     * 退出登录按钮点击事件
+     */
+    @FXML
+    protected void onLogoutButtonClick() {
+        System.out.println("=== 用户退出登录 ===");
+        
+        // 显示确认对话框
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("退出确认");
+        alert.setHeaderText("确定要退出登录吗？");
+        alert.setContentText("退出后将返回登录界面。");
+        
+        alert.showAndWait().ifPresent(response -> {
+            if (response == ButtonType.OK) {
+                try {
+                    // 清除用户会话
+                    MainApplication.clearUserSession();
+                    AppStore.clearUserData();
+                    
+                    // 加载登录界面
+                    FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/teach/javafx/base/login-view.fxml"));
+                    Parent root = loader.load();
+                    
+                    // 创建 Scene
+                    Scene loginScene = new Scene(root, 320, 240);
+                    
+                    // 使用 MainApplication 的 loginStage 方法切换到登录界面
+                    MainApplication.loginStage("登录", loginScene);
+                    
+                    System.out.println("✅ 已退出登录，返回登录界面");
+                } catch (Exception e) {
+                    System.err.println("❌ 退出登录失败: " + e.getMessage());
+                    e.printStackTrace();
+                }
+            }
+        });
     }
 }
