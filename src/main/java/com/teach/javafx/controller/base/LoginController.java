@@ -114,7 +114,7 @@ public class LoginController {
             if (username != null) {
                 if (username.equals("admin")) {
                     title += " - 管理员";
-                } else if (username.equals("22")) {
+                } else if (username.equals("3")) {
                     title += " - 教师";
                 } else if (username.startsWith("2022")) {
                     title += " - 学生";

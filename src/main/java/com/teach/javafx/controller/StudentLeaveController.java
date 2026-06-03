@@ -81,8 +81,6 @@ public class StudentLeaveController extends ToolController {
     private TextField searchTextField;  //查询 姓名学号输入域
     @FXML
     private Label searchLabel;
-    @FXML
-    private Label stateLabel;
 
     @FXML
     private Button addButton;
@@ -99,7 +97,6 @@ public class StudentLeaveController extends ToolController {
     private List<OptionItem> teacherList;
 
     private ArrayList<Map> studentLeaveList = new ArrayList();  // 学生信息列表数据
-    private List<OptionItem> stateList;   //性别选择列表数据
     private ObservableList<Map> observableList = FXCollections.observableArrayList();  // TableView渲染列表
     private String roleName;
 
@@ -109,9 +106,34 @@ public class StudentLeaveController extends ToolController {
     private void setTableViewData() {
         observableList.clear();
         for (Map map : studentLeaveList) {
+            // 直接使用 state 字段计算状态名称
+            Integer state = CommonMethod.getInteger(map, "state");
+            String stateName = getStateName(state);
+            map.put("stateName", stateName);
+            
             observableList.addAll(FXCollections.observableArrayList(map));
         }
         dataTableView.setItems(observableList);
+    }
+    
+    /**
+     * 根据 state 字段获取状态名称
+     * 后端定义：0=未审核, 1=通过, 2=不通过
+     */
+    private String getStateName(Integer state) {
+        if (state == null) {
+            return "未审核";
+        }
+        switch (state) {
+            case 0:
+                return "未审核";
+            case 1:
+                return "已通过";
+            case 2:
+                return "不通过";
+            default:
+                return "未知(" + state + ")";
+        }
     }
 
     /**
@@ -137,18 +159,14 @@ public class StudentLeaveController extends ToolController {
         ObservableList<Integer> list = tsm.getSelectedIndices();
         list.addListener(this::onTableRowSelect);
         setTableViewData();
-        stateList = HttpRequestUtil.getDictionaryOptionItemList("SHZTM");
-        stateList.addFirst(new OptionItem(-1,"-1","请选择..."));
-        stateComboBox.getItems().addAll(stateList);
+        
         String roleName = AppStore.getJwt().getRole();
         //学号、姓名输入框可以输入
         studentNumField.setEditable(true);
         studentNameField.setEditable(true);
         switch(roleName) {
             case "ROLE_STUDENT" -> {
-                stateLabel.setVisible(false);
                 searchLabel.setVisible(false);
-                stateComboBox.setVisible(false);
                 searchTextField.setVisible(false);
                 addButton.setVisible(true);
                 saveButton.setVisible(true);
@@ -160,9 +178,7 @@ public class StudentLeaveController extends ToolController {
                 teacherCommentField.setDisable(true);
             }
             case "ROLE_TEACHER" -> {
-                stateLabel.setVisible(false);
                 searchLabel.setVisible(false);
-                stateComboBox.setVisible(false);
                 searchTextField.setVisible(false);
                 addButton.setVisible(false);
                 saveButton.setVisible(false);
@@ -174,9 +190,7 @@ public class StudentLeaveController extends ToolController {
                 teacherCommentField.setDisable(false);
             }
             case "ROLE_ADMIN" -> {
-                stateLabel.setVisible(true);
                 searchLabel.setVisible(true);
-                stateComboBox.setVisible(true);
                 searchTextField.setVisible(true);
                 addButton.setVisible(false);
                 saveButton.setVisible(false);
@@ -228,11 +242,7 @@ public class StudentLeaveController extends ToolController {
     protected void onQueryButtonClick() {
         String search = searchTextField.getText();
         DataRequest req = new DataRequest();
-        OptionItem op;
-        op = stateComboBox.getSelectionModel().getSelectedItem();
-        if(op != null) {
-            req.add("state",Integer.parseInt(op.getValue()));
-        }
+        // 删除了状态下拉框的查询条件
         req.add("search", search);
         DataResponse res = HttpRequestUtil.request("/api/studentLeave/getStudentLeaveList", req);
         if (res != null && res.getCode() == 0) {
@@ -254,19 +264,21 @@ public class StudentLeaveController extends ToolController {
     }//请假系统的添加功能实现
     @FXML
     protected void onSaveButtonClick() {
-        doSave(0);
+        doSave(0);  // 0=未审核（暂存）
     }
     @FXML
     protected void onSubmitButtonClick() {
-        doSave(1);
+        doSave(1);  // 1=待审核（提交）
     }
     @FXML
     protected void onPassButtonClick() {
-        doCheck(2);
+        doCheck(1);  // 后端：1=通过
     }
     @FXML
     protected void onNotPassButtonClick() {
-        doCheck(3);
+        System.out.println("DEBUG: onNotPassButtonClick called");
+        System.out.println("DEBUG: studentLeaveId = " + studentLeaveId);
+        doCheck(2);  // 后端：2=不通过
     }
     protected void doSave(Integer state){
         Map<String,Object> form = new HashMap<>();
@@ -298,18 +310,39 @@ public class StudentLeaveController extends ToolController {
         }
     }
     protected void doCheck(Integer state){
-        Map<String,Object> form = new HashMap<>();
+        System.out.println("DEBUG: doCheck called with state = " + state);
+        System.out.println("DEBUG: studentLeaveId = " + studentLeaveId);
+        if (studentLeaveId == null) {
+            MessageDialog.showDialog("请选择一条请假记录！");
+            return;
+        }
+        
         DataRequest req = new DataRequest();
-        req.add("studentLeaveId",studentLeaveId);
-        req.add("teacherComment", teacherCommentField.getText());
-        req.add("adminComment", adminCommentField.getText());
+        req.add("studentLeaveId", studentLeaveId);
+        
+        // 根据当前用户角色，传递不同的参数
+        String roleName = AppStore.getJwt().getRole();
+        System.out.println("DEBUG: roleName = " + roleName);
+        if ("ROLE_TEACHER".equals(roleName)) {
+            // 教师审核
+            req.add("teacherComment", teacherCommentField.getText());
+            req.add("userType", "teacher");
+            System.out.println("DEBUG: 教师审核，teacherComment = " + teacherCommentField.getText());
+        } else if ("ROLE_ADMIN".equals(roleName)) {
+            // 管理员审核
+            req.add("adminComment", adminCommentField.getText());
+            req.add("userType", "admin");
+            System.out.println("DEBUG: 管理员审核，adminComment = " + adminCommentField.getText());
+        }
+        
         req.add("state", state);
+        System.out.println("DEBUG: 发送请求到 /api/studentLeave/studentLeaveCheck");
         DataResponse res = HttpRequestUtil.request("/api/studentLeave/studentLeaveCheck", req);
-        if (res.getCode() == 0) {
+        if (res != null && res.getCode() == 0) {
             MessageDialog.showDialog("审核成功！");
             onQueryButtonClick();
         } else {
-            MessageDialog.showDialog(res.getMsg());
+            MessageDialog.showDialog(res != null ? res.getMsg() : "审核失败！");
         }
     }
 }

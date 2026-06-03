@@ -61,8 +61,6 @@ public class TeacherLeaveController extends ToolController {
     // ====================== 查询区域 ======================
     @FXML
     private TextField searchTextField;
-    @FXML
-    private ComboBox<OptionItem> stateComboBox;
 
     // ====================== 按钮 ======================
     @FXML
@@ -93,11 +91,6 @@ public class TeacherLeaveController extends ToolController {
         TableView.TableViewSelectionModel<Map> tsm = dataTableView.getSelectionModel();
         ObservableList<Integer> list = tsm.getSelectedIndices();
         list.addListener(this::onTableRowSelect);
-
-        // 状态下拉框
-        stateList = HttpRequestUtil.getDictionaryOptionItemList("SHZTM");
-        stateList.addFirst(new OptionItem(-1, "-1", "请选择..."));
-        stateComboBox.getItems().addAll(stateList);
 
         // 权限设置
         if (adminCommentField != null) {
@@ -152,10 +145,7 @@ public class TeacherLeaveController extends ToolController {
     protected void onQueryButtonClick() {
         String search = searchTextField.getText();
         DataRequest req = new DataRequest();
-        OptionItem op = stateComboBox.getSelectionModel().getSelectedItem();
-        if (op != null) {
-            req.add("state", Integer.parseInt(op.getValue()));
-        }
+        // 删除了状态下拉框的查询条件
         req.add("search", search);
         DataResponse res = HttpRequestUtil.request("/api/studentLeave/getStudentLeaveList", req);
         if (res != null && res.getCode() == 0) {
@@ -167,37 +157,72 @@ public class TeacherLeaveController extends ToolController {
     // 刷新表格
     private void setTableViewData() {
         observableList.clear();
+        // 直接使用 state 字段计算状态名称
+        for (Map item : studentLeaveList) {
+            Integer state = CommonMethod.getInteger(item, "state");
+            String stateName = getStateName(state);
+            item.put("stateName", stateName);
+        }
         observableList.addAll(studentLeaveList);
         dataTableView.setItems(observableList);
+    }
+    
+    /**
+     * 根据 state 字段获取状态名称
+     * 后端定义：0=未审核, 1=通过, 2=不通过
+     */
+    private String getStateName(Integer state) {
+        if (state == null) {
+            return "未审核";
+        }
+        switch (state) {
+            case 0:
+                return "未审核";
+            case 1:
+                return "已通过";
+            case 2:
+                return "不通过";
+            default:
+                return "未知(" + state + ")";
+        }
     }
 
     // ====================== 审核功能 ======================
     @FXML
     protected void onPassButtonClick() {
-        doCheck(2); // 2=审核通过
+        doCheck(1); // 后端：1=通过
     }
 
     @FXML
     protected void onNotPassButtonClick() {
-        doCheck(3); // 3=审核不通过
+        System.out.println("DEBUG[Teacher]: onNotPassButtonClick called");
+        System.out.println("DEBUG[Teacher]: studentLeaveId = " + studentLeaveId);
+        doCheck(2); // 后端：2=不通过
     }
 
     // 执行审核
     protected void doCheck(Integer state) {
+        System.out.println("DEBUG[Teacher]: doCheck called with state = " + state);
+        System.out.println("DEBUG[Teacher]: studentLeaveId = " + studentLeaveId);
         if (studentLeaveId == null) {
             com.teach.javafx.controller.base.MessageDialog.showDialog("请选择一条请假记录！");
             return;
         }
+        
         DataRequest req = new DataRequest();
         req.add("studentLeaveId", studentLeaveId);
         req.add("teacherComment", teacherCommentField.getText());
+        req.add("userType", "teacher");  // 教师端审核
         req.add("state", state);
+        
+        System.out.println("DEBUG[Teacher]: 发送请求到 /api/studentLeave/studentLeaveCheck");
         DataResponse res = HttpRequestUtil.request("/api/studentLeave/studentLeaveCheck", req);
-        if (res.getCode() == 0) {
+        System.out.println("DEBUG[Teacher]: 响应 code = " + (res != null ? res.getCode() : "null"));
+        if (res != null && res.getCode() == 0) {
             com.teach.javafx.controller.base.MessageDialog.showDialog("审核成功！");
             onQueryButtonClick();
         } else {
-            com.teach.javafx.controller.base.MessageDialog.showDialog(res.getMsg());
+            com.teach.javafx.controller.base.MessageDialog.showDialog(res != null ? res.getMsg() : "审核失败！");
         }
     }
 }

@@ -369,7 +369,7 @@ public class MainFrameController {
         // 直接使用默认账户，不请求后端API（避免404错误）
         quickSwitchAccount.getItems().addAll(
             "🔧 管理员 (admin)",
-            "👨‍🏫 教师 (22)",
+            "👨‍🏫 教师 (3)",
             "👨‍🎓 学生 (2022030001)"
         );
         
@@ -410,7 +410,7 @@ public class MainFrameController {
         String roleText;
         if ("admin".equals(username)) {
             roleText = "管理员";
-        } else if ("22".equals(username)) {
+        } else if ("3".equals(username)) {
             roleText = "教师";
         } else if ("2022030001".equals(username)) {
             roleText = "学生";
@@ -468,7 +468,7 @@ public class MainFrameController {
                             String title = "602教学管理系统";
                             if (finalUsername.equals("admin")) {
                                 title += " - 管理员";
-                            } else if (finalUsername.equals("22")) {
+                            } else if (finalUsername.equals("3")) {
                                 title += " - 教师";
                             } else if (finalUsername.startsWith("2022")) {
                                 title += " - 学生";
