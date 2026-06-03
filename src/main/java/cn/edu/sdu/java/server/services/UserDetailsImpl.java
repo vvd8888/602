@@ -38,13 +38,32 @@ public class UserDetailsImpl implements UserDetails {
 
     public static UserDetailsImpl build(User user) {
         List<GrantedAuthority> authorities = new ArrayList<>();
+        
+        // 检查 userType 是否为 null
+        if (user.getUserType() == null) {
+            throw new RuntimeException("用户 " + user.getUserName() + " 的 userType 为 null，请检查数据库 user 表的 user_type_id 字段");
+        }
+        
+        // 检查 userType.getName() 是否为 null
+        if (user.getUserType().getName() == null) {
+            throw new RuntimeException("用户 " + user.getUserName() + " 的 userType.name 为 null");
+        }
+        
         authorities.add(new SimpleGrantedAuthority(user.getUserType().getName()));
+        
+        // 检查 person 是否为 null
+        String perName = "";
+        if (user.getPerson() != null) {
+            perName = user.getPerson().getName() != null ? user.getPerson().getName() : "";
+        } else {
+            System.err.println("警告：用户 " + user.getUserName() + " 的 person 为 null");
+        }
 
         return new UserDetailsImpl(
                 user.getPersonId(),
                 user.getUserName(),
                 user.getPassword(),
-                user.getPerson().getName(),
+                perName,
                 authorities);
     }
 

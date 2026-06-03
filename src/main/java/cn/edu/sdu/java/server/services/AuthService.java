@@ -32,15 +32,17 @@ public class AuthService {
     private final UserRepository userRepository;
     private final UserTypeRepository userTypeRepository;
     private final StudentRepository studentRepository;
+    private final TeacherRepository teacherRepository;
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
     private final PasswordEncoder encoder;
 
-    public AuthService(PersonRepository personRepository, UserRepository userRepository, UserTypeRepository userTypeRepository, StudentRepository studentRepository,AuthenticationManager authenticationManager, JwtService jwtService, PasswordEncoder encoder, ResourceLoader resourceLoader) {
+    public AuthService(PersonRepository personRepository, UserRepository userRepository, UserTypeRepository userTypeRepository, StudentRepository studentRepository, TeacherRepository teacherRepository, AuthenticationManager authenticationManager, JwtService jwtService, PasswordEncoder encoder, ResourceLoader resourceLoader) {
         this.personRepository = personRepository;
         this.userRepository = userRepository;
         this.userTypeRepository = userTypeRepository;
         this.studentRepository = studentRepository;
+        this.teacherRepository = teacherRepository;
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
         this.encoder = encoder;
@@ -89,6 +91,74 @@ public class AuthService {
         if(!validateCode.equals(value))
             return CommonMethod.getReturnMessageError("验证码错位！");
         return CommonMethod.getReturnMessageOK();
+    }
+    
+    /**
+     * 注册教师用户(专用方法)
+     * 用于恢复被删除的教师用户(person_id=3, user_name="3")
+     * 
+     * @param dataRequest 包含 password 字段
+     * @return 注册结果
+     */
+    @PostMapping("/registerTeacher")
+    public DataResponse registerTeacher(@Valid @RequestBody DataRequest dataRequest) {
+        String password = dataRequest.getString("password");
+            
+        if (password == null || password.isEmpty()) {
+            return CommonMethod.getReturnMessageError("密码不能为空!");
+        }
+    
+        // 检查 person_id=3 是否已存在
+        Optional<Person> personOp = personRepository.findById(3);
+        if (personOp.isPresent()) {
+            return CommonMethod.getReturnMessageError("人员信息已存在(person_id=3),无法重复创建!");
+        }
+    
+        // 检查 user_name="3" 是否已存在
+        Optional<User> userOp = userRepository.findByUserName("3");
+        if (userOp.isPresent()) {
+            return CommonMethod.getReturnMessageError("用户名已存在(user_name=3),无法重复创建!");
+        }
+    
+        try {
+            // 1. 创建 Person 记录
+            Person person = new Person();
+            person.setPersonId(3);  // 手动设置 person_id=3
+            person.setNum("3");     // 编号也设置为 "3"
+            person.setName("教师3"); // 默认名称
+            person.setType("2");    // 类型:2 表示教师
+            personRepository.saveAndFlush(person);
+    
+            // 2. 获取教师用户类型
+            UserType userType = userTypeRepository.findByName(EUserType.ROLE_TEACHER.name());
+            if (userType == null) {
+                return CommonMethod.getReturnMessageError("教师用户类型不存在,请先创建用户类型!");
+            }
+    
+            // 3. 创建 User 记录(使用 BCrypt 加密密码)
+            User user = new User();
+            user.setPersonId(3);
+            user.setPerson(person);
+            user.setUserType(userType);
+            user.setUserName("3");
+            user.setPassword(encoder.encode(password));  // 使用 BCryptPasswordEncoder 加密
+            user.setCreateTime(DateTimeTool.parseDateTime(new Date()));
+            user.setCreatorId(1);  // 假设由管理员创建
+            user.setLoginCount(0);
+            userRepository.saveAndFlush(user);
+    
+            // 4. 创建 Teacher 记录
+            Teacher teacher = new Teacher();
+            teacher.setPersonId(3);
+            teacher.setPerson(person);
+            teacher.setTitle("教师");
+            teacher.setDegree("硕士");
+            teacherRepository.saveAndFlush(teacher);
+    
+            return CommonMethod.getReturnMessageOK("教师用户注册成功!person_id=3, user_name=3");
+        } catch (Exception e) {
+            return CommonMethod.getReturnMessageError("注册失败:" + e.getMessage());
+        }
     }
     /*
      *  注册用户示例，我们项目暂时不用， 所有用户通过管理员添加，这里注册，没有考虑关联人员信息的创建，使用时参加学生添加功能的实现

@@ -35,8 +35,11 @@ public class StudentLeave {
     @Size(max=100)
     private String teacherComment;
     private Date teacherTime;
+    private Integer teacherStatus;  // 0=未审核, 1=通过, 2=不通过
+    
     @Size(max=100)
     private String adminComment;
     private Date adminTime;
+    private Integer adminStatus;  // 0=未审核, 1=通过, 2=不通过
 }
 //测试代码后端

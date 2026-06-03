@@ -44,4 +44,15 @@ public class AuthController {
     public DataResponse registerUser(@Valid @RequestBody DataRequest dataRequest) {
         return authService.registerUser(dataRequest);
     }
+
+    /**
+     * 注册教师用户(专用API)
+     * 用于恢复被删除的教师用户(person_id=3, user_name="3")
+     * @param dataRequest 包含 password 字段
+     * @return 注册结果
+     */
+    @PostMapping("/registerTeacher")
+    public DataResponse registerTeacher(@Valid @RequestBody DataRequest dataRequest) {
+        return authService.registerTeacher(dataRequest);
+    }
 }

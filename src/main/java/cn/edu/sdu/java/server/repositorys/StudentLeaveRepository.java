@@ -1,6 +1,8 @@
 package cn.edu.sdu.java.server.repositorys;
 
+import cn.edu.sdu.java.server.models.Student;
 import cn.edu.sdu.java.server.models.StudentLeave;
+import cn.edu.sdu.java.server.models.Teacher;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -12,4 +14,10 @@ public interface StudentLeaveRepository extends JpaRepository<StudentLeave,Integ
 
     @Query(value="select s.student.personId, count(s.studentLeaveId) from StudentLeave s where s.student.personId in ?1 group by s.student.personId" )
     List<?> getStudentStatisticsList(List<Integer> personId);
+    
+    // 根据学生查询请假记录
+    List<StudentLeave> findByStudent(Student student);
+    
+    // 根据教师查询请假记录
+    List<StudentLeave> findByTeacher(Teacher teacher);
 }

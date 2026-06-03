@@ -74,6 +74,8 @@ public class StudentLeaveService {
                 map.put("adminComment", sl.getAdminComment());
                 map.put("teacherId", t.getPersonId());
                 map.put("teacherComment", sl.getTeacherComment());
+                map.put("teacherStatus", sl.getTeacherStatus() != null ? sl.getTeacherStatus() : 0);
+                map.put("adminStatus", sl.getAdminStatus() != null ? sl.getAdminStatus() : 0);
                 dataList.add(map);
             }
         }
@@ -98,6 +100,8 @@ public class StudentLeaveService {
         if(sl == null) {
             sl = new StudentLeave();
             sl.setState(0);
+            sl.setTeacherStatus(0);  // 教师未审核
+            sl.setAdminStatus(0);    // 行政未审核
             sl.setApplyTime(new Date());
             sl.setTeacherComment("");
             sl.setAdminComment("");
@@ -120,7 +124,7 @@ public class StudentLeaveService {
     }
     public DataResponse studentLeaveCheck(DataRequest dataRequest) {
         String roleName = CommonMethod.getRoleName();
-        Integer state = dataRequest.getInteger("state");
+        Integer state = dataRequest.getInteger("state"); // 前端传来：1=通过, 2=不通过（或0=不通过）
         Integer studentLeaveId = dataRequest.getInteger("studentLeaveId");
         String teacherComment = dataRequest.getString("teacherComment");
         String adminComment = dataRequest.getString("adminComment");
@@ -133,15 +137,57 @@ public class StudentLeaveService {
         if(sl == null) {
             return CommonMethod.getReturnMessageOK();
         }
+        
+        // 记录当前审核人的意见、时间和状态
         if("ROLE_ADMIN".equals(roleName)) {
             sl.setAdminComment(adminComment);
             sl.setAdminTime(new Date());
-            sl.setState(state+2);
+            // 设置行政的审核状态：1表示通过，2表示不通过
+            if (state != null && state == 1) {
+                sl.setAdminStatus(1);  // 通过
+            } else if (state != null && (state == 0 || state == 2)) {
+                sl.setAdminStatus(2);  // 不通过
+            }
         } else if("ROLE_TEACHER".equals(roleName)) {
             sl.setTeacherComment(teacherComment);
             sl.setTeacherTime(new Date());
-            sl.setState(state);
+            // 设置教师的审核状态：1表示通过，2表示不通过
+            if (state != null && state == 1) {
+                sl.setTeacherStatus(1);  // 通过
+            } else if (state != null && (state == 0 || state == 2)) {
+                sl.setTeacherStatus(2);  // 不通过
+            }
         }
+        
+        // 新审核逻辑（仅限请假管理）：
+        // - 有一个人审核通过便显示通过 (state=1)
+        // - 此时另一个还可以更改
+        // - 如果没人审核就是未审核状态 (state=0)
+        // - 没人通过但有人不通过时显示不通过 (state=2)
+        
+        // 获取教师和行政的审核状态
+        Integer teacherStatus = sl.getTeacherStatus() != null ? sl.getTeacherStatus() : 0;
+        Integer adminStatus = sl.getAdminStatus() != null ? sl.getAdminStatus() : 0;
+        
+        boolean teacherApproved = (teacherStatus == 1);
+        boolean adminApproved = (adminStatus == 1);
+        boolean teacherRejected = (teacherStatus == 2);
+        boolean adminRejected = (adminStatus == 2);
+        
+        // 计算最终状态
+        int newStatus;
+        if (teacherApproved || adminApproved) {
+            // 有一个人审核通过便显示通过
+            newStatus = 1;
+        } else if (teacherRejected || adminRejected) {
+            // 没人通过但有人不通过
+            newStatus = 2;
+        } else {
+            // 没人审核就是未审核状态
+            newStatus = 0;
+        }
+        
+        sl.setState(newStatus);
         studentLeaveRepository.save(sl);
         return CommonMethod.getReturnMessageOK();
     }

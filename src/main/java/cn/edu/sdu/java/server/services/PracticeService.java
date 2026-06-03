@@ -140,6 +140,18 @@ public class PracticeService {
             sm.put("content", ps.getContent());
             sm.put("submitTime", ps.getSubmitTime());
             sm.put("status", ps.getStatus());
+            
+            // 添加状态显示文本
+            String statusDisplay;
+            switch (ps.getStatus()) {
+                case "DRAFT" -> statusDisplay = "草稿";
+                case "PENDING_REVIEW" -> statusDisplay = "待审核";
+                case "APPROVED" -> statusDisplay = "通过";
+                case "REJECTED" -> statusDisplay = "不通过";
+                default -> statusDisplay = ps.getStatus();
+            }
+            sm.put("statusDisplay", statusDisplay);
+            
             summaryList.add(sm);
         }
         data.put("summaries", summaryList);
@@ -327,6 +339,7 @@ public class PracticeService {
             if (sop.isEmpty())
                 return CommonMethod.getReturnMessageError("总结不存在");
             ps = sop.get();
+            // 允许编辑的状态：DRAFT、REJECTED（被驳回后可修改重新提交）
             if (!"DRAFT".equals(ps.getStatus()) && !"REJECTED".equals(ps.getStatus()))
                 return CommonMethod.getReturnMessageError("仅草稿或已驳回可编辑");
         } else {
@@ -349,7 +362,7 @@ public class PracticeService {
         ps.setTitle(title);
         ps.setContent(content != null ? content : "");
         ps.setSubmitTime(now);
-        ps.setStatus("SUBMIT".equals(action) ? "SUBMITTED" : "DRAFT");
+        ps.setStatus("SUBMIT".equals(action) ? "PENDING_REVIEW" : "DRAFT");
 
         summaryRepository.save(ps);
         return CommonMethod.getReturnMessageOK("SUBMIT".equals(action) ? "总结已提交" : "草稿已保存");
@@ -391,6 +404,34 @@ public class PracticeService {
             default -> statusDisplay = p.getStatus();
         }
         m.put("statusDisplay", statusDisplay);
+
+        // 计算总结的审核状态显示
+        List<PracticeSummary> summaries = summaryRepository.findByProjectId(p.getProjectId());
+        boolean hasPendingReview = false;
+        boolean hasApproved = false;
+        boolean hasRejected = false;
+        for (PracticeSummary s : summaries) {
+            if ("PENDING_REVIEW".equals(s.getStatus())) {
+                hasPendingReview = true;
+            } else if ("APPROVED".equals(s.getStatus())) {
+                hasApproved = true;
+            } else if ("REJECTED".equals(s.getStatus())) {
+                hasRejected = true;
+            }
+        }
+
+        String summaryStatusDisplay;
+        if (hasApproved) {
+            summaryStatusDisplay = "通过";
+        } else if (hasRejected && !hasPendingReview) {
+            summaryStatusDisplay = "不通过";
+        } else if (hasPendingReview) {
+            summaryStatusDisplay = "待审核";
+        } else {
+            summaryStatusDisplay = "未提交";
+        }
+        m.put("summaryStatusDisplay", summaryStatusDisplay);
+
         return m;
     }
 
@@ -468,6 +509,11 @@ public class PracticeService {
 
     /**
      * 教师/管理员端：审核总结
+     * 新审核逻辑：
+     * - 只要有一方通过，就显示为通过
+     * - 另一方可以继续修改（可以改为不通过）
+     * - 只有一方不通过时，显示为不通过
+     * - 两方都未审核时，显示为待审核
      */
     public DataResponse reviewSummary(DataRequest dataRequest) {
         Integer summaryId = dataRequest.getInteger("summaryId");
@@ -480,7 +526,8 @@ public class PracticeService {
             return CommonMethod.getReturnMessageError("总结不存在");
         PracticeSummary ps = sop.get();
 
-        if (!"SUBMITTED".equals(ps.getStatus()))
+        // 允许审核的状态：PENDING_REVIEW、APPROVED、REJECTED（支持重新审核）
+        if (!"PENDING_REVIEW".equals(ps.getStatus()) && !"APPROVED".equals(ps.getStatus()) && !"REJECTED".equals(ps.getStatus()))
             return CommonMethod.getReturnMessageError("总结状态不可审核");
 
         Optional<PracticeProject> op = projectRepository.findById(ps.getProjectId());
@@ -493,22 +540,78 @@ public class PracticeService {
         Optional<Person> pop = personRepository.findById(reviewerId);
         if (pop.isPresent()) reviewerName = pop.get().getName();
 
-        PracticeReview review = new PracticeReview();
-        review.setProjectId(ps.getProjectId());
-        review.setSummaryId(summaryId);
-        review.setReviewerId(reviewerId);
-        review.setReviewerName(reviewerName);
-        review.setReviewType("SUMMARY");
-        review.setReviewResult(reviewResult);
-        review.setComment(comment);
-        review.setReviewTime(now);
+        // 检查是否已有该审核人的记录，如果有则更新
+        List<PracticeReview> existingReviews = reviewRepository.findByProjectIdAndReviewTypeOrderByReviewTimeDesc(ps.getProjectId(), "SUMMARY");
+        PracticeReview existingReviewBySameReviewer = null;
+        for (PracticeReview review : existingReviews) {
+            if (review.getSummaryId() != null && review.getSummaryId().equals(summaryId) 
+                && review.getReviewerId().equals(reviewerId)) {
+                existingReviewBySameReviewer = review;
+                break;
+            }
+        }
+
+        PracticeReview review;
+        if (existingReviewBySameReviewer != null) {
+            // 更新已有的审核记录
+            review = existingReviewBySameReviewer;
+            review.setReviewResult(reviewResult);
+            review.setComment(comment);
+            review.setReviewTime(now);
+        } else {
+            // 创建新的审核记录
+            review = new PracticeReview();
+            review.setProjectId(ps.getProjectId());
+            review.setSummaryId(summaryId);
+            review.setReviewerId(reviewerId);
+            review.setReviewerName(reviewerName);
+            review.setReviewType("SUMMARY");
+            review.setReviewResult(reviewResult);
+            review.setComment(comment);
+            review.setReviewTime(now);
+        }
         reviewRepository.save(review);
 
-        ps.setStatus(reviewResult);
+        // 获取该总结的所有审核记录
+        List<PracticeReview> allReviewsForSummary = new ArrayList<>();
+        for (PracticeReview r : existingReviews) {
+            if (r.getSummaryId() != null && r.getSummaryId().equals(summaryId)) {
+                allReviewsForSummary.add(r);
+            }
+        }
+
+        // 根据新审核逻辑计算最终状态
+        boolean hasApproved = false;
+        boolean hasRejected = false;
+        for (PracticeReview r : allReviewsForSummary) {
+            if ("APPROVED".equals(r.getReviewResult())) {
+                hasApproved = true;
+            } else if ("REJECTED".equals(r.getReviewResult())) {
+                hasRejected = true;
+            }
+        }
+
+        // 新审核逻辑：
+        // - 只要有一方通过，就显示为通过
+        // - 只有一方不通过时（没有人通过），显示为不通过
+        // - 两方都未审核时，显示为待审核
+        String newStatus;
+        if (hasApproved) {
+            // 只要有一方通过，就显示为通过
+            newStatus = "APPROVED";
+        } else if (hasRejected) {
+            // 没有人通过，但有人不通过，显示为不通过
+            newStatus = "REJECTED";
+        } else {
+            // 两方都未审核
+            newStatus = "PENDING_REVIEW";
+        }
+
+        ps.setStatus(newStatus);
         summaryRepository.save(ps);
 
         // 检查是否所有总结都已审核通过
-        if ("APPROVED".equals(reviewResult)) {
+        if ("APPROVED".equals(newStatus)) {
             List<PracticeSummary> allSummaries = summaryRepository.findByProjectId(p.getProjectId());
             boolean allApproved = allSummaries.stream().allMatch(s -> "APPROVED".equals(s.getStatus()));
             if (allApproved && allSummaries.size() >= 2) { // 至少个人+团队
@@ -517,7 +620,7 @@ public class PracticeService {
             }
         }
 
-        return CommonMethod.getReturnMessageOK("APPROVED".equals(reviewResult) ? "已通过" : "已驳回");
+        return CommonMethod.getReturnMessageOK("APPROVED".equals(newStatus) ? "已通过" : "REJECTED".equals(newStatus) ? "已驳回" : "待审核");
     }
 
     /**
