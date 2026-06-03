@@ -118,6 +118,9 @@ public class TeacherController extends ToolController {
         DataResponse res = HttpRequestUtil.request("/api/teacher/getTeacherList", req);
         if (res != null && res.getCode() == 0) {
             teacherList = (ArrayList<Map>) res.getData();
+            if (teacherList != null && !teacherList.isEmpty()) {
+                System.out.println("教师数据示例: " + teacherList.get(0));
+            }
         }
 
         // 设置表格列映射
@@ -126,7 +129,25 @@ public class TeacherController extends ToolController {
         deptColumn.setCellValueFactory(new MapValueFactory<>("dept"));
         titleColumn.setCellValueFactory(new MapValueFactory<>("title"));
         degreeColumn.setCellValueFactory(new MapValueFactory<>("degree"));
-        genderColumn.setCellValueFactory(new MapValueFactory<>("gender"));
+        
+        genderColumn.setCellValueFactory(cellData -> {
+            Map<String, Object> row = cellData.getValue();
+            Object genderName = row.get("genderName");
+            Object gender = row.get("gender");
+            
+            if (genderName != null && !genderName.toString().isEmpty()) {
+                return new javafx.beans.property.SimpleStringProperty(genderName.toString());
+            } else if (gender != null) {
+                String genderStr = gender.toString();
+                switch (genderStr) {
+                    case "1": return new javafx.beans.property.SimpleStringProperty("男");
+                    case "2": return new javafx.beans.property.SimpleStringProperty("女");
+                    default: return new javafx.beans.property.SimpleStringProperty(genderStr);
+                }
+            }
+            return new javafx.beans.property.SimpleStringProperty("");
+        });
+        
         phoneColumn.setCellValueFactory(new MapValueFactory<>("phone"));
         emailColumn.setCellValueFactory(new MapValueFactory<>("email"));
         addressColumn.setCellValueFactory(new MapValueFactory<>("address"));

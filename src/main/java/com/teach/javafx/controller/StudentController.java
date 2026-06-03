@@ -430,7 +430,26 @@ public class StudentController extends ToolController {
         table.getColumns().add(nameColumn);
         TableColumn<Map, String> genderColumn = new TableColumn<>("性别");
         genderColumn.setCellValueFactory(new MapValueFactory<>("gender"));
-        genderColumn.setCellFactory(TextFieldTableCell.<Map>forTableColumn());
+        genderColumn.setCellFactory(column -> new TableCell<Map, String>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (item == null || empty) {
+                    setText(null);
+                } else {
+                    switch (item) {
+                        case "1":
+                            setText("男");
+                            break;
+                        case "2":
+                            setText("女");
+                            break;
+                        default:
+                            setText(item);
+                    }
+                }
+            }
+        });
         table.getColumns().add(genderColumn);
 
         TableColumn<Map, String> nationColumn = new TableColumn<>("民族");
